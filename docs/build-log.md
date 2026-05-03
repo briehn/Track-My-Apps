@@ -35,6 +35,8 @@ It should document what changed, why it mattered, and what the next step is. It 
 - Polished the `/sign-in` page into a more portfolio-ready entry screen with stronger product messaging and a more intentional sign-in panel.
 - Tightened the sign-in page copy so the right panel focuses on getting started and the left side carries the product benefits.
 - Added global cursor rules so normal text uses the default cursor while links, buttons, selects, and form inputs keep the expected interactive cursors.
+- Made the NextAuth config fail clearly when Google OAuth env vars are missing and set the auth secret explicitly in the NextAuth v4 options.
+- Clarified the README deployment notes for `NEXTAUTH_SECRET` and `NEXTAUTH_URL`.
 
 ### Notes
 - The MVP will focus on a polished job application tracker before adding AI features.
@@ -58,6 +60,7 @@ It should document what changed, why it mattered, and what the next step is. It 
 - The sign-in page now reads more like a polished SaaS entry point while keeping Google authentication behavior unchanged.
 - The sign-in page is now cleaner for screenshots and new-user onboarding without changing auth behavior.
 - Cursor behavior now matches the intended interaction model across the app shell, auth page, and form controls.
+- Auth startup errors should now be clearer if Google OAuth variables are missing, instead of falling through to empty-string credentials.
 
 ### Next Step
 - Validate the app one more time with lint/build, then capture screenshots or deploy a demo when ready.

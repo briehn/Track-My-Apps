@@ -191,9 +191,11 @@ This app is suitable for deployment on Vercel with a hosted PostgreSQL database 
 Deployment checklist:
 
 - Set all environment variables from `.env.example` in the deployment platform.
+- This project uses a NextAuth v4-style config, so production auth settings should use `NEXTAUTH_SECRET` and `NEXTAUTH_URL`.
 - Use a pooled Neon URL for `DATABASE_URL`.
 - Use a direct Neon URL for `DIRECT_URL`.
 - Set `NEXTAUTH_URL` to the production domain.
+- Set `NEXTAUTH_SECRET` to a strong random value that is stable across deployments.
 - Add the production Google OAuth callback URL in Google Cloud Console:
 
 ```text

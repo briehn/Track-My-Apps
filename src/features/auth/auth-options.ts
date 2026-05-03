@@ -4,12 +4,23 @@ import GoogleProvider from "next-auth/providers/google";
 
 import { prisma } from "@/server/db/prisma";
 
+function requiredEnv(name: "GOOGLE_CLIENT_ID" | "GOOGLE_CLIENT_SECRET") {
+  const value = process.env[name];
+
+  if (!value) {
+    throw new Error(`Missing required environment variable: ${name}`);
+  }
+
+  return value;
+}
+
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
+  secret: process.env.NEXTAUTH_SECRET,
   providers: [
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID ?? "",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
+      clientId: requiredEnv("GOOGLE_CLIENT_ID"),
+      clientSecret: requiredEnv("GOOGLE_CLIENT_SECRET"),
     }),
   ],
   session: {
