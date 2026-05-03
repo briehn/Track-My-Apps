@@ -46,6 +46,7 @@ Implemented foundation:
 - Authenticated job detail page with saved posting metadata
 - Status updates from the job detail page
 - Job editing from the detail page
+- Archive and permanent delete actions for saved jobs
 - Zod dependency foundation
 - Initial architecture folders from `docs/architecture.md`
 
@@ -258,13 +259,14 @@ Completed:
 - Authenticated job detail pages at `/jobs/[jobId]`
 - Application status updates for saved jobs
 - Job edit pages at `/jobs/[jobId]/edit`
+- Archive and permanent delete management from job detail pages
 - Environment variable example
 - Initial folder structure
 
 Not yet implemented:
 
 - Polished authentication screens
-- Archive/delete management and filtering workflows
+- Filtering workflows
 - Dashboard data and workflows
 - Notes
 - AI features

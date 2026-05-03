@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { JobManagementActions } from "@/features/jobs/components/job-management-actions";
 import { JobStatusForm } from "@/features/jobs/components/job-status-form";
 import { getJobForCurrentUser, type JobDetail } from "@/features/jobs/queries";
 
@@ -190,6 +191,19 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
               <DetailItem label="Applied" value={formatDate(job.appliedAt)} />
               <DetailItem label="Follow-up" value={formatDate(job.followUpAt)} />
             </dl>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Manage job</CardTitle>
+              <CardDescription>
+                Archive this role or permanently remove it from your tracker.
+              </CardDescription>
+            </CardHeader>
+            <JobManagementActions
+              jobId={job.id}
+              isArchived={job.status === "ARCHIVED"}
+            />
           </Card>
         </div>
       </div>

@@ -7,6 +7,8 @@ import { z } from "zod";
 import { requireUser } from "@/features/auth/require-user";
 import {
   createJobSchema,
+  deleteJobSchema,
+  jobIdSchema,
   updateJobSchema,
   updateJobStatusSchema,
 } from "@/features/jobs/schemas";
@@ -171,4 +173,82 @@ export async function updateJobStatus(
   revalidatePath(`/jobs/${job.id}`);
 
   return {};
+}
+
+export type JobManagementActionState = {
+  formError?: string;
+};
+
+export async function archiveJob(
+  _previousState: JobManagementActionState,
+  formData: FormData,
+): Promise<JobManagementActionState> {
+  const user = await requireUser();
+  const parsedInput = jobIdSchema.safeParse({
+    jobId: formData.get("jobId"),
+  });
+
+  if (!parsedInput.success) {
+    return {
+      formError: "This job could not be archived.",
+    };
+  }
+
+  const updateResult = await prisma.job.updateMany({
+    where: {
+      id: parsedInput.data.jobId,
+      userId: user.id,
+    },
+    data: {
+      status: "ARCHIVED",
+    },
+  });
+
+  if (updateResult.count === 0) {
+    return {
+      formError: "This job could not be found.",
+    };
+  }
+
+  revalidatePath("/jobs");
+  revalidatePath(`/jobs/${parsedInput.data.jobId}`);
+
+  redirect("/jobs");
+}
+
+export async function deleteJob(
+  _previousState: JobManagementActionState,
+  formData: FormData,
+): Promise<JobManagementActionState> {
+  const user = await requireUser();
+  const parsedInput = deleteJobSchema.safeParse({
+    jobId: formData.get("jobId"),
+    confirmDelete: formData.get("confirmDelete"),
+  });
+
+  if (!parsedInput.success) {
+    return {
+      formError:
+        parsedInput.error.flatten().fieldErrors.confirmDelete?.[0] ??
+        "This job could not be deleted.",
+    };
+  }
+
+  const deleteResult = await prisma.job.deleteMany({
+    where: {
+      id: parsedInput.data.jobId,
+      userId: user.id,
+    },
+  });
+
+  if (deleteResult.count === 0) {
+    return {
+      formError: "This job could not be found.",
+    };
+  }
+
+  revalidatePath("/jobs");
+  revalidatePath(`/jobs/${parsedInput.data.jobId}`);
+
+  redirect("/jobs");
 }

@@ -77,6 +77,20 @@ export const updateJobSchema = jobDetailsSchema.extend({
 
 export type UpdateJobInput = z.infer<typeof updateJobSchema>;
 
+export const jobIdSchema = z.object({
+  jobId: z.string().min(1, "Job is required."),
+});
+
+export type JobIdInput = z.infer<typeof jobIdSchema>;
+
+export const deleteJobSchema = jobIdSchema.extend({
+  confirmDelete: z.literal("on", {
+    message: "Confirm permanent deletion before deleting this job.",
+  }),
+});
+
+export type DeleteJobInput = z.infer<typeof deleteJobSchema>;
+
 export const updateJobStatusSchema = z.object({
   jobId: z.string().min(1, "Job is required."),
   status: z.enum(["SAVED", "APPLIED", "INTERVIEWING", "OFFER", "REJECTED", "ARCHIVED"]),
