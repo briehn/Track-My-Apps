@@ -1,12 +1,22 @@
 import { requireUser } from "@/features/auth/require-user";
 import { prisma } from "@/server/db/prisma";
 
-export async function getJobsForCurrentUser() {
+type JobListStatusFilter = "active" | "archived";
+
+export async function getJobsForCurrentUser(
+  statusFilter: JobListStatusFilter = "active",
+) {
   const user = await requireUser();
 
   return prisma.job.findMany({
     where: {
       userId: user.id,
+      status:
+        statusFilter === "archived"
+          ? "ARCHIVED"
+          : {
+              not: "ARCHIVED",
+            },
     },
     orderBy: {
       createdAt: "desc",

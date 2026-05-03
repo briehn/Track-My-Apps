@@ -43,6 +43,7 @@ Implemented foundation:
 - Minimal reusable UI primitives for buttons, form controls, badges, cards, and empty states
 - Manual job creation form with server-side validation and authenticated persistence
 - Authenticated job list with newest-first saved jobs
+- Active and archived job list views using `?status=archived`
 - Authenticated job detail page with saved posting metadata
 - Status updates from the job detail page
 - Job editing from the detail page
@@ -256,6 +257,7 @@ Completed:
 - Minimal UI primitive foundation
 - Manual job creation at `/jobs/new`
 - Authenticated job list at `/jobs`
+- Archived job list view at `/jobs?status=archived`
 - Authenticated job detail pages at `/jobs/[jobId]`
 - Application status updates for saved jobs
 - Job edit pages at `/jobs/[jobId]/edit`
