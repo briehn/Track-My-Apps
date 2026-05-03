@@ -19,4 +19,18 @@ body {
   margin: 0;
   background: #f8fafc;
   font-family: Arial, Helvetica, sans-serif;
+  cursor: default;
+}
+
+a[href],
+button:not(:disabled),
+select,
+input[type="checkbox"],
+input[type="radio"] {
+  cursor: pointer;
+}
+
+input:not([type="checkbox"]):not([type="radio"]),
+textarea {
+  cursor: text;
 }
