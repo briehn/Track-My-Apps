@@ -37,11 +37,12 @@ Implemented foundation:
 - ESLint configuration
 - Prisma schema and Prisma 7 config
 - PostgreSQL driver adapter setup
-- NextAuth dependency foundation
+- NextAuth route, Prisma adapter wiring, and server-side `requireUser()` helper
+- Basic Google sign-in page, sign-out control, and protected auth-check route
 - Zod dependency foundation
 - Initial architecture folders from `docs/architecture.md`
 
-Product workflows such as authentication screens, dashboards, job pages, notes, and AI features are planned but not implemented yet.
+Product workflows such as polished authentication screens, dashboards, job pages, notes, and AI features are planned but not implemented yet.
 
 ## MVP Scope
 
@@ -197,9 +198,19 @@ DATABASE_URL=
 DIRECT_URL=
 NEXTAUTH_SECRET=
 NEXTAUTH_URL=
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
 ```
 
-Additional provider-specific authentication variables may be added when authentication is implemented.
+`NEXTAUTH_SECRET` signs and protects auth session data. Generate a strong local value before using sign-in.
+
+`GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` come from a Google OAuth client. For local development, configure the OAuth callback URL as:
+
+```text
+http://localhost:3000/api/auth/callback/google
+```
+
+After configuring Google OAuth, visit `http://localhost:3000/sign-in` and sign in with Google. A successful sign-in redirects to `http://localhost:3000/auth-check`, a temporary protected route that verifies `requireUser()` can resolve the current database user server-side.
 
 ## Development Commands
 
@@ -230,12 +241,15 @@ Completed:
 - TypeScript, Tailwind, and ESLint setup
 - Prisma schema and client generation setup
 - Initial PostgreSQL migration applied through Prisma Migrate
+- NextAuth API route with Prisma-backed database sessions
+- Reusable `requireUser()` helper for protected server-side code
+- Basic Google OAuth sign-in/sign-out validation route
 - Environment variable example
 - Initial folder structure
 
 Not yet implemented:
 
-- Authentication
+- Polished authentication screens
 - Job tracking UI
 - Dashboard
 - Notes
