@@ -1,111 +1,70 @@
 # AI Job Search Copilot
 
-## Short Product Description
+AI Job Search Copilot is a full-stack job application tracker for saving roles, tracking application progress, keeping notes, and building a structured foundation for future AI-assisted job search workflows.
 
-AI Job Search Copilot is a full-stack job application tracker designed to help job seekers save roles, track application progress, keep notes, and build a structured foundation for future AI-assisted job search workflows.
+The current MVP is intentionally a polished tracker first. AI features are planned later, after the core product workflow, data model, and ownership boundaries are stable.
 
-The MVP is intentionally focused on being a polished tracker first. AI features are planned later, after the core product data model and user workflows are stable.
+## Why This Project Exists
 
-## Why I Built This
+Job searching creates scattered information: job descriptions, company details, statuses, follow-up dates, recruiter notes, interview notes, and resume tailoring decisions. This project brings that workflow into one authenticated app while demonstrating production-minded full-stack engineering.
 
-Job searching creates a lot of scattered information: job descriptions, company details, application statuses, follow-up dates, recruiter notes, interview notes, and resume tailoring decisions. Most job seekers end up tracking that across spreadsheets, browser tabs, documents, and memory.
+The goal is not to ship a thin AI demo. The goal is to build a useful product foundation that can support AI features in a way that is grounded in real user data.
 
-This project is designed to solve that workflow with a clean, practical application while also demonstrating production-minded full-stack engineering. The goal is not to build a thin AI demo. The goal is to build a useful product foundation that can support AI features in a way that is grounded in real user data.
+## Implemented Features
 
-## Core Features
+- Google OAuth sign-in with Prisma-backed NextAuth sessions
+- Protected application shell for authenticated routes
+- Dashboard summary for active jobs, status counts, recent jobs, and upcoming dates
+- Manual job creation with server-side Zod validation
+- Authenticated active jobs list at `/jobs`
+- Archived jobs view at `/jobs?status=archived`
+- Job detail pages with posting metadata, dates, description, and management actions
+- Full-card job navigation from list and dashboard views
+- Status updates from the job detail page with auto-save feedback
+- Job editing from `/jobs/[jobId]/edit`
+- Archive and permanent delete actions
+- Timestamped job notes with create, list, and delete behavior
+- User-owned data access enforced server-side through `requireUser()`
+- Prisma schema for future job analysis data
+- Reusable UI primitives for buttons, inputs, textareas, badges, cards, and empty states
 
-### Planned MVP Features
+## Planned Features
 
-- User authentication with protected application routes
-- User-owned job records
-- Dashboard with application status summaries
-- Manual job saving
-- Application status tracking
-- Job detail pages with full posting metadata
-- Notes per job for recruiter calls, interviews, follow-ups, and decision-making
-- Basic job analysis data structure for future AI workflows
+These are future scope and are not currently implemented:
 
-### Current Repository State
-
-This repository currently contains the product plan, architecture plan, database schema reference, roadmap, initial scope decision, and Phase 1 application foundation.
-
-Implemented foundation:
-
-- Next.js App Router scaffold
-- TypeScript configuration
-- Tailwind CSS configuration
-- ESLint configuration
-- Prisma schema and Prisma 7 config
-- PostgreSQL driver adapter setup
-- NextAuth route, Prisma adapter wiring, and server-side `requireUser()` helper
-- Basic Google sign-in page and sign-out control
-- Protected app shell with Dashboard and Jobs route placeholders
-- Minimal reusable UI primitives for buttons, form controls, badges, cards, and empty states
-- Manual job creation form with server-side validation and authenticated persistence
-- Authenticated job list with newest-first saved jobs
-- Active and archived job list views using `?status=archived`
-- Authenticated job detail page with saved posting metadata
-- Status updates from the job detail page
-- Job editing from the detail page
-- Archive and permanent delete actions for saved jobs
-- Timestamped notes on job detail pages
-- Dashboard summaries for active jobs, status counts, recent jobs, and upcoming dates
-- Zod dependency foundation
-- Initial architecture folders from `docs/architecture.md`
-
-Product workflows such as polished authentication screens, dashboards, job pages, notes, and AI features are planned but not implemented yet.
-
-## MVP Scope
-
-The MVP is a job application tracker with the following workflow:
-
-1. A user signs in.
-2. The user manually saves a job posting.
-3. The user tracks that job through statuses such as saved, applied, interviewing, offer, rejected, and archived.
-4. The user adds notes and important dates.
-5. The dashboard summarizes active job search activity.
-6. The job detail page becomes the source of truth for a single opportunity.
-
-The MVP does not include job scraping, browser automation, resume parsing, AI-generated documents, or match scoring. Those features depend on a reliable data foundation first.
-
-## Future AI Features
-
-The long-term direction is to add AI workflows on top of the tracker once the MVP is stable:
-
-- Job description analysis
+- AI job description analysis
 - Resume upload and parsing
 - Resume-to-job match scoring
 - Skill gap detection
 - Tailored resume bullet suggestions
 - Cover letter generation
-- Interview prep based on a saved job description
-- Browser extension or job import workflow
-
-These are future features, not current MVP functionality.
+- Interview prep based on saved job descriptions
+- Browser extension or URL-based job importing
+- Advanced search, filtering, charts, and analytics
+- Note editing
 
 ## Tech Stack
 
-Current foundation stack:
-
-- Next.js with App Router
+- Next.js App Router
+- React
 - TypeScript
 - Tailwind CSS
 - Prisma
 - PostgreSQL
-- NextAuth
+- NextAuth with Google OAuth
 - Zod
 
-This stack was chosen to demonstrate modern full-stack TypeScript architecture, server-side data access, explicit validation, and clear ownership boundaries.
+This stack was chosen to demonstrate modern full-stack TypeScript architecture, server-side data access, explicit validation, and clear user ownership boundaries.
 
 ## Architecture Overview
 
-The architecture uses the Next.js App Router with Server Components and Server Actions where they fit naturally.
+The app uses the Next.js App Router with Server Components for protected data views and Server Actions for form mutations.
 
 Key architecture decisions:
 
-- Route groups separate authentication screens from authenticated app routes.
+- Route groups separate public auth screens from authenticated app routes.
 - Pages stay focused on route-level composition.
-- Feature folders own domain-specific actions, queries, schemas, types, and components.
+- Feature folders own domain-specific actions, queries, schemas, and components.
 - Database access remains server-side.
 - Server Actions validate input, check ownership, mutate data, and revalidate or redirect.
 - Client Components are used only where browser interactivity is needed.
@@ -125,16 +84,13 @@ src/
   components/
     ui/
     layout/
-    forms/
     empty-states/
 
   features/
     auth/
     jobs/
     notes/
-    job-analysis/
 
-  lib/
   server/
     db/
 ```
@@ -143,14 +99,15 @@ See [docs/architecture.md](docs/architecture.md) for the full architecture notes
 
 ## Database Overview
 
-The planned database model is centered on user-owned job search data.
+The implemented database model is centered on authenticated, user-owned job search data.
 
-Core product models:
+Core models:
 
 - `User`: authenticated user and owner of product data
-- `Job`: saved job posting, status, dates, salary range, source, and description
+- `Job`: saved job posting, application status, dates, salary range, source, URL, and description
 - `Note`: timestamped notes attached to a job
-- `JobAnalysis`: optional structured analysis fields for future AI workflows
+- `JobAnalysis`: optional structured analysis fields reserved for future AI workflows
+- `Account`, `Session`, and `VerificationToken`: NextAuth Prisma adapter models
 
 Primary enums:
 
@@ -158,11 +115,11 @@ Primary enums:
 - `RemoteType`: `ONSITE`, `HYBRID`, `REMOTE`
 - `EmploymentType`: `FULL_TIME`, `PART_TIME`, `CONTRACT`, `INTERNSHIP`, `TEMPORARY`
 
-The schema is designed around ownership checks. Jobs and notes are scoped to the authenticated user, and job analysis is owned through its required job relation.
+Jobs and notes are scoped to the authenticated user. Job analysis is owned through its required job relation.
 
-See [docs/schema.md](docs/schema.md) for the canonical Prisma schema and data ownership rules.
+See [docs/schema.md](docs/schema.md) and [prisma/schema.prisma](prisma/schema.prisma) for schema details.
 
-## Getting Started / Local Setup
+## Local Setup
 
 Install dependencies:
 
@@ -176,9 +133,24 @@ Create a local environment file:
 cp .env.example .env
 ```
 
-Update `DATABASE_URL` in `.env` if your local PostgreSQL credentials or database name differ from the example.
+Configure the values in `.env`:
+
+```bash
+DATABASE_URL=
+DIRECT_URL=
+NEXTAUTH_SECRET=
+NEXTAUTH_URL=
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+```
 
 For Neon, use the pooled connection string for `DATABASE_URL` and the direct, non-pooled connection string for `DIRECT_URL`. Prisma CLI commands use `DIRECT_URL` through `prisma.config.ts` so migrations do not run through the connection pooler.
+
+Generate a strong `NEXTAUTH_SECRET`, then create a Google OAuth client and add this local callback URL:
+
+```text
+http://localhost:3000/api/auth/callback/google
+```
 
 Apply database migrations:
 
@@ -198,30 +170,7 @@ Start the development server:
 npm run dev
 ```
 
-The app runs at `http://localhost:3000` by default.
-
-## Environment Variables
-
-See [.env.example](.env.example).
-
-```bash
-DATABASE_URL=
-DIRECT_URL=
-NEXTAUTH_SECRET=
-NEXTAUTH_URL=
-GOOGLE_CLIENT_ID=
-GOOGLE_CLIENT_SECRET=
-```
-
-`NEXTAUTH_SECRET` signs and protects auth session data. Generate a strong local value before using sign-in.
-
-`GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` come from a Google OAuth client. For local development, configure the OAuth callback URL as:
-
-```text
-http://localhost:3000/api/auth/callback/google
-```
-
-After configuring Google OAuth, visit `http://localhost:3000/sign-in` and sign in with Google. A successful sign-in redirects to `http://localhost:3000/dashboard`, which is protected by the authenticated app layout.
+The app runs at `http://localhost:3000` by default. Visit `http://localhost:3000/sign-in` to sign in with Google.
 
 ## Development Commands
 
@@ -234,48 +183,62 @@ npm run prisma:migrate
 ```
 
 `npm run prisma:migrate` requires a reachable PostgreSQL database configured through `DIRECT_URL`.
-With Neon, `DATABASE_URL` should be pooled for application runtime and `DIRECT_URL` should be direct for Prisma migrations.
+
+## Deployment Notes
+
+This app is suitable for deployment on Vercel with a hosted PostgreSQL database such as Neon.
+
+Deployment checklist:
+
+- Set all environment variables from `.env.example` in the deployment platform.
+- Use a pooled Neon URL for `DATABASE_URL`.
+- Use a direct Neon URL for `DIRECT_URL`.
+- Set `NEXTAUTH_URL` to the production domain.
+- Add the production Google OAuth callback URL in Google Cloud Console:
+
+```text
+https://your-domain.com/api/auth/callback/google
+```
+
+- Run Prisma migrations against the production database before using the app.
+- Do not commit real `.env` values.
+
+## Screenshots
+
+Screenshots are not committed yet. Recommended portfolio screenshots:
+
+- Dashboard summary
+- Active jobs list
+- Archived jobs view
+- New job form
+- Job detail page with notes
+- Edit job page
 
 ## Project Status
 
-Status: Phase 1 foundation complete.
+Status: MVP tracker workflow implemented locally; portfolio/deployment readiness in progress.
 
 Completed:
 
-- Product scope
-- MVP definition
-- Architecture plan
-- Database schema plan
-- Implementation roadmap
-- Initial scope decision record
+- Product scope, architecture notes, schema notes, roadmap, and decision record
 - Next.js App Router foundation
 - TypeScript, Tailwind, and ESLint setup
-- Prisma schema and client generation setup
-- Initial PostgreSQL migration applied through Prisma Migrate
-- NextAuth API route with Prisma-backed database sessions
-- Reusable `requireUser()` helper for protected server-side code
-- Basic Google OAuth sign-in/sign-out flow
-- Protected app shell and initial Dashboard/Jobs placeholders
-- Minimal UI primitive foundation
-- Manual job creation at `/jobs/new`
-- Authenticated job list at `/jobs`
-- Archived job list view at `/jobs?status=archived`
-- Authenticated job detail pages at `/jobs/[jobId]`
-- Application status updates for saved jobs
-- Job edit pages at `/jobs/[jobId]/edit`
-- Archive and permanent delete management from job detail pages
-- Note creation, listing, and deletion on job detail pages
-- Dashboard summaries at `/dashboard`
-- Environment variable example
-- Initial folder structure
+- Prisma schema, Prisma 7 config, and initial PostgreSQL migration
+- Google OAuth authentication with Prisma-backed sessions
+- Protected dashboard and jobs app shell
+- Manual job creation, listing, detail, editing, status updates, archive/delete, and notes
+- Dashboard summaries and focused MVP polish pass
+- Safe environment variable example
 
 Not yet implemented:
 
-- Polished authentication screens
-- Filtering workflows
-- Dashboard charts and advanced analytics
-- Note editing
 - AI features
+- Resume features
+- URL-based job importing
+- Advanced filtering/search
+- Dashboard charts and advanced analytics
+- Automated tests
+- Production deployment
 
 ## Roadmap
 
@@ -297,18 +260,6 @@ High-level phases:
 12. Polish pass
 13. Testing
 14. Portfolio finish
-
-## Screenshots
-
-Screenshots will be added after the UI is implemented.
-
-Planned screenshots:
-
-- Dashboard
-- Job list
-- New job form
-- Job detail page
-- Notes workflow
 
 ## What This Project Demonstrates
 

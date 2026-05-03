@@ -57,10 +57,14 @@ export function JobStatusForm({
       </select>
 
       {isPending ? (
-        <p className="text-sm text-slate-500">Saving status...</p>
+        <p className="text-sm text-slate-500" role="status" aria-live="polite">
+          Saving status...
+        </p>
       ) : null}
       {state.formError ? (
-        <p className="text-sm text-red-600">{state.formError}</p>
+        <p className="text-sm text-red-600" role="alert">
+          {state.formError}
+        </p>
       ) : null}
     </form>
   );

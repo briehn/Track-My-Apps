@@ -39,7 +39,9 @@ export function JobManagementActions({
           archived view.
         </p>
         {archiveState.formError ? (
-          <p className="text-sm text-red-600">{archiveState.formError}</p>
+          <p className="text-sm text-red-600" role="alert">
+            {archiveState.formError}
+          </p>
         ) : null}
         <Button type="submit" variant="secondary" disabled={isArchiving || isArchived}>
           {isArchived
@@ -64,7 +66,9 @@ export function JobManagementActions({
           </label>
         </div>
         {deleteState.formError ? (
-          <p className="text-sm text-red-600">{deleteState.formError}</p>
+          <p className="text-sm text-red-600" role="alert">
+            {deleteState.formError}
+          </p>
         ) : null}
         <Button
           type="submit"

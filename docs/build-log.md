@@ -31,6 +31,7 @@ It should document what changed, why it mattered, and what the next step is. It 
 - Completed a focused MVP polish pass across navigation, empty states, status badges, forms, and responsive spacing.
 - Refined the dashboard into a compact pipeline summary and condensed the job detail layout for faster scanning.
 - Improved status update UX so changing the status select auto-saves with pending and error feedback.
+- Completed a final portfolio/readiness pass with an accurate reviewer-facing README, deployment notes, screenshot placeholders, and small accessibility improvements for navigation and action feedback.
 
 ### Notes
 - The MVP will focus on a polished job application tracker before adding AI features.
@@ -50,6 +51,7 @@ It should document what changed, why it mattered, and what the next step is. It 
 - Dashboard summaries exclude archived jobs from active totals, recent jobs, and upcoming reminders while still showing an archived count.
 - Shared status metadata keeps labels and badge styling consistent across dashboard, list, detail, and forms.
 - The job detail page now prioritizes summary metadata, status, dates, description, notes, and management actions in a denser responsive layout.
+- The README now clearly separates implemented tracker features from planned AI and resume features, and includes local setup plus production Google OAuth callback guidance.
 
 ### Next Step
-- Add a final portfolio/readiness pass next: README accuracy, screenshots, deployment notes, and any small accessibility fixes found during manual review.
+- Validate the app one more time with lint/build, then capture screenshots or deploy a demo when ready.

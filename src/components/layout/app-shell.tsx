@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname, useSearchParams } from "next/navigation";
 
 import { SignOutButton } from "@/features/auth/components/auth-buttons";
 
@@ -18,6 +21,8 @@ const navigationItems = [
 ];
 
 export function AppShell({ children, user }: AppShellProps) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const displayName = user.name ?? user.email ?? "Signed-in user";
 
   return (
@@ -39,15 +44,35 @@ export function AppShell({ children, user }: AppShellProps) {
             aria-label="Primary navigation"
             className="flex flex-wrap gap-2 md:block"
           >
-            {navigationItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="block rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-950"
-              >
-                {item.label}
-              </Link>
-            ))}
+            {navigationItems.map((item) => {
+              const status = searchParams.get("status");
+              const isArchivedView =
+                item.href === "/jobs?status=archived" &&
+                pathname === "/jobs" &&
+                status === "archived";
+              const isJobsView =
+                item.href === "/jobs" &&
+                ((pathname === "/jobs" && status !== "archived") ||
+                  (pathname.startsWith("/jobs/") && pathname !== "/jobs/new"));
+              const isActive =
+                isArchivedView || isJobsView || pathname === item.href;
+
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  aria-current={isActive ? "page" : undefined}
+                  className={[
+                    "block rounded-md px-3 py-2 text-sm font-medium transition",
+                    isActive
+                      ? "bg-slate-950 text-white"
+                      : "text-slate-700 hover:bg-slate-100 hover:text-slate-950",
+                  ].join(" ")}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
           </nav>
         </aside>
         <main className="p-4 sm:p-6">{children}</main>

@@ -33,12 +33,15 @@ function DeleteNoteForm({ jobId, noteId }: { jobId: string; noteId: string }) {
         type="submit"
         variant="ghost"
         disabled={isPending}
+        aria-label="Delete note"
         className="px-2 py-1 text-xs text-red-700 hover:bg-red-50"
       >
         {isPending ? "Deleting..." : "Delete"}
       </Button>
       {state.formError ? (
-        <p className="text-xs text-red-600">{state.formError}</p>
+        <p className="text-xs text-red-600" role="alert">
+          {state.formError}
+        </p>
       ) : null}
     </form>
   );
