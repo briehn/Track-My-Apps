@@ -12,18 +12,18 @@ export default async function SignInPage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-16">
-      <p className="text-sm font-medium uppercase tracking-wide text-slate-500">
-        AI Job Search Copilot
-      </p>
-      <h1 className="mt-4 text-3xl font-semibold text-slate-950">
-        Sign in
-      </h1>
-      <p className="mt-4 text-base leading-7 text-slate-700">
-        Use Google to create or access your account.
-      </p>
-      <div className="mt-8">
-        <SignInWithGoogleButton />
+    <main className="flex min-h-screen items-center justify-center bg-slate-50 px-6 py-16">
+      <div className="w-full max-w-md rounded-md border border-slate-200 bg-white p-8 shadow-sm">
+        <p className="text-sm font-medium uppercase tracking-wide text-slate-500">
+          AI Job Search Copilot
+        </p>
+        <h1 className="mt-4 text-3xl font-semibold text-slate-950">Sign in</h1>
+        <p className="mt-4 text-base leading-7 text-slate-700">
+          Use Google to access your private job search tracker.
+        </p>
+        <div className="mt-8">
+          <SignInWithGoogleButton />
+        </div>
       </div>
     </main>
   );

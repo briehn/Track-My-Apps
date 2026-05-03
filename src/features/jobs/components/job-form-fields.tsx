@@ -110,7 +110,7 @@ export function JobFormFields({ errors, defaultValues }: JobFormFieldsProps) {
             id="remoteType"
             name="remoteType"
             defaultValue={defaultValues?.remoteType ?? ""}
-            className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-950 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200"
+            className="mt-1 h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-950 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200"
           >
             <option value="">Not specified</option>
             <option value="ONSITE">Onsite</option>
@@ -131,7 +131,7 @@ export function JobFormFields({ errors, defaultValues }: JobFormFieldsProps) {
             id="employmentType"
             name="employmentType"
             defaultValue={defaultValues?.employmentType ?? ""}
-            className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-950 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200"
+            className="mt-1 h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-950 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200"
           >
             <option value="">Not specified</option>
             <option value="FULL_TIME">Full-time</option>

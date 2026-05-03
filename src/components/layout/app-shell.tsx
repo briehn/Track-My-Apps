@@ -13,6 +13,7 @@ type AppShellProps = Readonly<{
 const navigationItems = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/jobs", label: "Jobs" },
+  { href: "/jobs?status=archived", label: "Archived" },
   { href: "/jobs/new", label: "Add Job" },
 ];
 
@@ -22,7 +23,7 @@ export function AppShell({ children, user }: AppShellProps) {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-950">
       <header className="border-b border-slate-200 bg-white">
-        <div className="flex min-h-16 items-center justify-between gap-4 px-6">
+        <div className="flex min-h-16 items-center justify-between gap-4 px-4 sm:px-6">
           <div>
             <p className="text-sm font-semibold text-slate-950">
               AI Job Search Copilot
@@ -33,8 +34,11 @@ export function AppShell({ children, user }: AppShellProps) {
         </div>
       </header>
       <div className="grid min-h-[calc(100vh-4rem)] md:grid-cols-[15rem_1fr]">
-        <aside className="border-b border-slate-200 bg-white p-4 md:border-b-0 md:border-r">
-          <nav aria-label="Primary navigation" className="flex gap-2 md:block">
+        <aside className="border-b border-slate-200 bg-white p-3 sm:p-4 md:border-b-0 md:border-r">
+          <nav
+            aria-label="Primary navigation"
+            className="flex flex-wrap gap-2 md:block"
+          >
             {navigationItems.map((item) => (
               <Link
                 key={item.href}
@@ -46,7 +50,7 @@ export function AppShell({ children, user }: AppShellProps) {
             ))}
           </nav>
         </aside>
-        <main className="p-6">{children}</main>
+        <main className="p-4 sm:p-6">{children}</main>
       </div>
     </div>
   );

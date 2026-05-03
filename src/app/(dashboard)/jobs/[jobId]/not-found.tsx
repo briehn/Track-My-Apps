@@ -7,7 +7,7 @@ export default function JobNotFound() {
     <div className="mx-auto max-w-3xl">
       <EmptyState
         title="Job not found"
-        description="This job may have been deleted, or the link may be incorrect. Go back to your saved jobs to continue."
+        description="This job may have been deleted, archived under another account, or the link may be incorrect. Go back to your saved jobs to continue."
         action={
           <Link
             href="/jobs"

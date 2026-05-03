@@ -27,6 +27,10 @@ It should document what changed, why it mattered, and what the next step is. It 
 - Added archive and permanent delete management from the job detail page.
 - Split the jobs list into active and archived views using `/jobs` and `/jobs?status=archived`.
 - Added timestamped job notes with scoped creation, listing, and deletion on the job detail page.
+- Replaced the dashboard placeholder with scoped summaries for active jobs, status counts, recent jobs, and upcoming dates.
+- Completed a focused MVP polish pass across navigation, empty states, status badges, forms, and responsive spacing.
+- Refined the dashboard into a compact pipeline summary and condensed the job detail layout for faster scanning.
+- Improved status update UX so changing the status select auto-saves with pending and error feedback.
 
 ### Notes
 - The MVP will focus on a polished job application tracker before adding AI features.
@@ -43,6 +47,9 @@ It should document what changed, why it mattered, and what the next step is. It 
 - Archive keeps the job and changes status to `ARCHIVED`; delete removes the job and relies on Prisma cascade relations for related records.
 - Archived jobs are hidden from the default active list but remain accessible through the archived query-param view.
 - Notes are scoped by both authenticated user and parent job ownership.
+- Dashboard summaries exclude archived jobs from active totals, recent jobs, and upcoming reminders while still showing an archived count.
+- Shared status metadata keeps labels and badge styling consistent across dashboard, list, detail, and forms.
+- The job detail page now prioritizes summary metadata, status, dates, description, notes, and management actions in a denser responsive layout.
 
 ### Next Step
-- Add dashboard summaries next so the tracker gives users a useful overview.
+- Add a final portfolio/readiness pass next: README accuracy, screenshots, deployment notes, and any small accessibility fixes found during manual review.

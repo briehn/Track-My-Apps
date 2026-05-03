@@ -49,6 +49,7 @@ Implemented foundation:
 - Job editing from the detail page
 - Archive and permanent delete actions for saved jobs
 - Timestamped notes on job detail pages
+- Dashboard summaries for active jobs, status counts, recent jobs, and upcoming dates
 - Zod dependency foundation
 - Initial architecture folders from `docs/architecture.md`
 
@@ -264,6 +265,7 @@ Completed:
 - Job edit pages at `/jobs/[jobId]/edit`
 - Archive and permanent delete management from job detail pages
 - Note creation, listing, and deletion on job detail pages
+- Dashboard summaries at `/dashboard`
 - Environment variable example
 - Initial folder structure
 
@@ -271,7 +273,7 @@ Not yet implemented:
 
 - Polished authentication screens
 - Filtering workflows
-- Dashboard data and workflows
+- Dashboard charts and advanced analytics
 - Note editing
 - AI features
 

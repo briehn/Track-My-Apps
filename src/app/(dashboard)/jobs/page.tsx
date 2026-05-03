@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { EmptyState } from "@/components/empty-states/empty-state";
+import { LinkButton } from "@/components/ui/link-button";
 import { JobList } from "@/features/jobs/components/job-list";
 import { getJobsForCurrentUser } from "@/features/jobs/queries";
 
@@ -28,17 +29,15 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
               : "View active roles you have manually saved."}
           </p>
         </div>
-        <Link
-          href="/jobs/new"
-          className="inline-flex items-center justify-center rounded-md bg-slate-950 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
-        >
+        <LinkButton href="/jobs/new">
           Add job
-        </Link>
+        </LinkButton>
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2" aria-label="Job list views">
         <Link
           href="/jobs"
+          aria-current={!isArchivedView ? "page" : undefined}
           className={[
             "rounded-md px-3 py-2 text-sm font-medium transition",
             !isArchivedView
@@ -50,6 +49,7 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
         </Link>
         <Link
           href="/jobs?status=archived"
+          aria-current={isArchivedView ? "page" : undefined}
           className={[
             "rounded-md px-3 py-2 text-sm font-medium transition",
             isArchivedView
@@ -73,12 +73,9 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
           }
           action={
             isArchivedView ? null : (
-              <Link
-                href="/jobs/new"
-                className="inline-flex items-center justify-center rounded-md bg-slate-950 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
-              >
+              <LinkButton href="/jobs/new">
                 Add job
-              </Link>
+              </LinkButton>
             )
           }
         />

@@ -34,6 +34,10 @@ export function JobManagementActions({
     <div className="space-y-6">
       <form action={archiveAction} className="space-y-3">
         <input type="hidden" name="jobId" value={jobId} />
+        <p className="text-sm text-slate-600">
+          Archived jobs leave the active list but remain available from the
+          archived view.
+        </p>
         {archiveState.formError ? (
           <p className="text-sm text-red-600">{archiveState.formError}</p>
         ) : null}
@@ -56,7 +60,7 @@ export function JobManagementActions({
             className="mt-1 h-4 w-4 rounded border-slate-300 text-slate-950 focus:ring-slate-400"
           />
           <label htmlFor="confirmDelete" className="text-sm text-slate-700">
-            I understand this permanently deletes the job.
+            I understand this permanently deletes the job and its related data.
           </label>
         </div>
         {deleteState.formError ? (
