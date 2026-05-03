@@ -21,6 +21,7 @@ It should document what changed, why it mattered, and what the next step is. It 
 - Added manual job creation with a protected `/jobs/new` route, Zod validation, and a server action that saves jobs for the authenticated user.
 - Tightened job creation validation so company and title values must include at least one letter.
 - Added the authenticated `/jobs` list with newest-first ordering, status badges, core job metadata, and an empty state.
+- Added authenticated job detail pages with scoped single-job queries and full saved posting metadata.
 
 ### Notes
 - The MVP will focus on a polished job application tracker before adding AI features.
@@ -31,6 +32,7 @@ It should document what changed, why it mattered, and what the next step is. It 
 - Job ownership is enforced server-side by deriving `userId` from `requireUser()`, not from submitted form data.
 - Company and title validation now rejects numeric-only or punctuation-only input while still allowing realistic names with numbers.
 - The jobs list uses a server-side query scoped to the authenticated user's id.
+- Job detail access uses the same ownership boundary, returning not found for missing or unauthorized jobs.
 
 ### Next Step
-- Build the job detail page next so users can inspect one saved role.
+- Add status updates next so users can move a saved job through the application workflow.

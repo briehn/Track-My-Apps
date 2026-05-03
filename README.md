@@ -43,6 +43,7 @@ Implemented foundation:
 - Minimal reusable UI primitives for buttons, form controls, badges, cards, and empty states
 - Manual job creation form with server-side validation and authenticated persistence
 - Authenticated job list with newest-first saved jobs
+- Authenticated job detail page with saved posting metadata
 - Zod dependency foundation
 - Initial architecture folders from `docs/architecture.md`
 
@@ -252,13 +253,14 @@ Completed:
 - Minimal UI primitive foundation
 - Manual job creation at `/jobs/new`
 - Authenticated job list at `/jobs`
+- Authenticated job detail pages at `/jobs/[jobId]`
 - Environment variable example
 - Initial folder structure
 
 Not yet implemented:
 
 - Polished authentication screens
-- Job detail, editing, and filtering workflows
+- Job editing, status updates, and filtering workflows
 - Dashboard data and workflows
 - Notes
 - AI features
