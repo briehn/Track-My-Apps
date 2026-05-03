@@ -205,14 +205,29 @@ https://your-domain.com/api/auth/callback/google
 
 ## Screenshots
 
-Screenshots are not committed yet. Recommended portfolio screenshots:
+### Sign In
 
-- Dashboard summary
-- Active jobs list
-- Archived jobs view
-- New job form
-- Job detail page with notes
-- Edit job page
+![Sign in screen](/screenshots/sign-in.png)
+
+Clean entry point for Google OAuth access to the tracker.
+
+### Dashboard
+
+![Dashboard summary](/screenshots/dashboard.png)
+
+High-level view of active jobs, status counts, recent jobs, and upcoming dates.
+
+### Jobs List
+
+![Jobs list](/screenshots/jobs-list.png)
+
+Scannable list of saved jobs with status, company, and key metadata.
+
+### Job Detail
+
+![Job detail page](/screenshots/job-detail.png)
+
+Full saved posting view with status controls, notes, management actions, and job metadata.
 
 ## Project Status
 
