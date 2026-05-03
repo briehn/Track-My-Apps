@@ -20,6 +20,7 @@ It should document what changed, why it mattered, and what the next step is. It 
 - Replaced the temporary auth-check route with a protected app shell, Dashboard and Jobs placeholders, and minimal UI primitives for the next product workflows.
 - Added manual job creation with a protected `/jobs/new` route, Zod validation, and a server action that saves jobs for the authenticated user.
 - Tightened job creation validation so company and title values must include at least one letter.
+- Added the authenticated `/jobs` list with newest-first ordering, status badges, core job metadata, and an empty state.
 
 ### Notes
 - The MVP will focus on a polished job application tracker before adding AI features.
@@ -29,6 +30,7 @@ It should document what changed, why it mattered, and what the next step is. It 
 - The authenticated route-group layout is now the main auth boundary for future app pages.
 - Job ownership is enforced server-side by deriving `userId` from `requireUser()`, not from submitted form data.
 - Company and title validation now rejects numeric-only or punctuation-only input while still allowing realistic names with numbers.
+- The jobs list uses a server-side query scoped to the authenticated user's id.
 
 ### Next Step
-- Build the job list next so users can see their saved jobs after creation.
+- Build the job detail page next so users can inspect one saved role.
