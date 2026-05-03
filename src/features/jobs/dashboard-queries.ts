@@ -1,18 +1,15 @@
-import type { ApplicationStatus } from "@prisma/client";
-
 import { requireUser } from "@/features/auth/require-user";
+import type { ApplicationStatus } from "@/features/jobs/status";
 import { prisma } from "@/server/db/prisma";
 
-type TrackedStatus = ApplicationStatus;
-
 type StatusGroup = {
-  status: TrackedStatus;
+  status: ApplicationStatus;
   _count: {
     _all: number;
   };
 };
 
-const emptyStatusCounts: Record<TrackedStatus, number> = {
+const emptyStatusCounts: Record<ApplicationStatus, number> = {
   SAVED: 0,
   APPLIED: 0,
   INTERVIEWING: 0,
@@ -25,7 +22,7 @@ type RecentDashboardJob = {
   id: string;
   company: string;
   title: string;
-  status: TrackedStatus;
+  status: ApplicationStatus;
   createdAt: Date;
 };
 
@@ -39,7 +36,7 @@ type UpcomingDashboardJob = {
 
 export type DashboardSummary = {
   activeTotal: number;
-  statusCounts: Record<TrackedStatus, number>;
+  statusCounts: Record<ApplicationStatus, number>;
   recentJobs: RecentDashboardJob[];
   upcomingJobs: UpcomingDashboardJob[];
 };

@@ -1,6 +1,20 @@
 import type { JobDetail, JobListItem } from "@/features/jobs/queries";
 
-export type JobStatus = JobDetail["status"] | JobListItem["status"];
+export const APPLICATION_STATUSES = [
+  "SAVED",
+  "APPLIED",
+  "INTERVIEWING",
+  "OFFER",
+  "REJECTED",
+  "ARCHIVED",
+] as const;
+
+export type ApplicationStatus = (typeof APPLICATION_STATUSES)[number];
+
+export type JobStatus =
+  | ApplicationStatus
+  | JobDetail["status"]
+  | JobListItem["status"];
 
 export const statusLabels: Record<JobStatus, string> = {
   SAVED: "Saved",
