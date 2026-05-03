@@ -44,6 +44,7 @@ It should document what changed, why it mattered, and what the next step is. It 
 - Isolated dashboard `groupBy` typing from mixed `Promise.all` inference so `group.status` stays typed as `ApplicationStatus` when indexing status counts.
 - Hardened deployment configuration by requiring `DATABASE_URL` and `NEXTAUTH_SECRET` at runtime, adding a Node 22 engine target, and generating Prisma Client during install.
 - Replaced the broad dashboard status-group cast with an app-level status guard and typed mapper.
+- Added a public homepage at `/` with a clear sign-in CTA, feature overview, and explicit separation between implemented tracker features and planned AI features.
 
 ### Notes
 - The MVP will focus on a polished job application tracker before adding AI features.
@@ -74,6 +75,7 @@ It should document what changed, why it mattered, and what the next step is. It 
 - Status label/badge metadata and dashboard aggregation now share the same app-level status union type.
 - Dashboard status count aggregation now uses explicit query-boundary typing plus an explicit `Record<ApplicationStatus, number>` accumulator.
 - Deployment setup should now fail faster and more clearly when critical auth or database env vars are missing, instead of falling through to opaque runtime/build errors.
+- The root route now gives signed-out visitors a clear entry point and sends signed-in users straight to the dashboard.
 
 ### Next Step
 - Validate the app one more time with lint/build, then capture screenshots or deploy a demo when ready.
