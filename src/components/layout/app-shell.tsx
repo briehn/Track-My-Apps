@@ -13,6 +13,7 @@ type AppShellProps = Readonly<{
 const navigationItems = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/jobs", label: "Jobs" },
+  { href: "/jobs/new", label: "Add Job" },
 ];
 
 export function AppShell({ children, user }: AppShellProps) {

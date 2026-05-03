@@ -41,6 +41,7 @@ Implemented foundation:
 - Basic Google sign-in page and sign-out control
 - Protected app shell with Dashboard and Jobs route placeholders
 - Minimal reusable UI primitives for buttons, form controls, badges, cards, and empty states
+- Manual job creation form with server-side validation and authenticated persistence
 - Zod dependency foundation
 - Initial architecture folders from `docs/architecture.md`
 
@@ -248,13 +249,14 @@ Completed:
 - Basic Google OAuth sign-in/sign-out flow
 - Protected app shell and initial Dashboard/Jobs placeholders
 - Minimal UI primitive foundation
+- Manual job creation at `/jobs/new`
 - Environment variable example
 - Initial folder structure
 
 Not yet implemented:
 
 - Polished authentication screens
-- Job tracking UI
+- Job list, detail, editing, and filtering workflows
 - Dashboard data and workflows
 - Notes
 - AI features
