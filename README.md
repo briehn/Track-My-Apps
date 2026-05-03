@@ -27,7 +27,21 @@ This project is designed to solve that workflow with a clean, practical applicat
 
 ### Current Repository State
 
-This repository currently contains the product plan, architecture plan, database schema reference, roadmap, and initial scope decision. The application scaffold and product implementation are planned next.
+This repository currently contains the product plan, architecture plan, database schema reference, roadmap, initial scope decision, and Phase 1 application foundation.
+
+Implemented foundation:
+
+- Next.js App Router scaffold
+- TypeScript configuration
+- Tailwind CSS configuration
+- ESLint configuration
+- Prisma schema and Prisma 7 config
+- PostgreSQL driver adapter setup
+- NextAuth dependency foundation
+- Zod dependency foundation
+- Initial architecture folders from `docs/architecture.md`
+
+Product workflows such as authentication screens, dashboards, job pages, notes, and AI features are planned but not implemented yet.
 
 ## MVP Scope
 
@@ -59,21 +73,21 @@ These are future features, not current MVP functionality.
 
 ## Tech Stack
 
-Planned stack:
+Current foundation stack:
 
 - Next.js with App Router
 - TypeScript
 - Tailwind CSS
 - Prisma
 - PostgreSQL
-- Auth.js or NextAuth
+- NextAuth
 - Zod
 
 This stack was chosen to demonstrate modern full-stack TypeScript architecture, server-side data access, explicit validation, and clear ownership boundaries.
 
 ## Architecture Overview
 
-The planned architecture uses the Next.js App Router with Server Components and Server Actions where they fit naturally.
+The architecture uses the Next.js App Router with Server Components and Server Actions where they fit naturally.
 
 Key architecture decisions:
 
@@ -84,7 +98,7 @@ Key architecture decisions:
 - Server Actions validate input, check ownership, mutate data, and revalidate or redirect.
 - Client Components are used only where browser interactivity is needed.
 
-Planned source organization:
+Current source organization:
 
 ```text
 src/
@@ -138,49 +152,71 @@ See [docs/schema.md](docs/schema.md) for the canonical Prisma schema and data ow
 
 ## Getting Started / Local Setup
 
-The application scaffold has not been generated yet, so local setup commands are not available in this repository yet.
-
-Once the Next.js app is added, this section should include:
+Install dependencies:
 
 ```bash
 npm install
+```
+
+Create a local environment file:
+
+```bash
+cp .env.example .env
+```
+
+Update `DATABASE_URL` in `.env` if your local PostgreSQL credentials or database name differ from the example.
+
+For Neon, use the pooled connection string for `DATABASE_URL` and the direct, non-pooled connection string for `DIRECT_URL`. Prisma CLI commands use `DIRECT_URL` through `prisma.config.ts` so migrations do not run through the connection pooler.
+
+Apply database migrations:
+
+```bash
+npm run prisma:migrate
+```
+
+Generate Prisma Client:
+
+```bash
+npm run prisma:generate
+```
+
+Start the development server:
+
+```bash
 npm run dev
 ```
 
-The exact setup steps will be updated after `package.json`, Prisma configuration, and environment variable examples are added.
+The app runs at `http://localhost:3000` by default.
 
 ## Environment Variables
 
-No `.env.example` file exists yet.
-
-Expected future environment variables will likely include:
+See [.env.example](.env.example).
 
 ```bash
 DATABASE_URL=
-AUTH_SECRET=
-AUTH_URL=
+DIRECT_URL=
+NEXTAUTH_SECRET=
+NEXTAUTH_URL=
 ```
 
-Additional provider-specific authentication variables may be needed depending on the selected Auth.js or NextAuth provider setup.
+Additional provider-specific authentication variables may be added when authentication is implemented.
 
 ## Development Commands
 
-No `package.json` exists yet, so development scripts are not currently defined.
-
-Planned commands will likely include:
-
 ```bash
 npm run dev
+npm run build
 npm run lint
-npx prisma generate
-npx prisma migrate dev
+npm run prisma:generate
+npm run prisma:migrate
 ```
 
-This section should be updated with the real scripts after project setup is complete.
+`npm run prisma:migrate` requires a reachable PostgreSQL database configured through `DIRECT_URL`.
+With Neon, `DATABASE_URL` should be pooled for application runtime and `DIRECT_URL` should be direct for Prisma migrations.
 
 ## Project Status
 
-Status: planning and architecture phase.
+Status: Phase 1 foundation complete.
 
 Completed:
 
@@ -190,12 +226,16 @@ Completed:
 - Database schema plan
 - Implementation roadmap
 - Initial scope decision record
+- Next.js App Router foundation
+- TypeScript, Tailwind, and ESLint setup
+- Prisma schema and client generation setup
+- Initial PostgreSQL migration applied through Prisma Migrate
+- Environment variable example
+- Initial folder structure
 
 Not yet implemented:
 
-- Next.js application scaffold
 - Authentication
-- Prisma setup and migrations
 - Job tracking UI
 - Dashboard
 - Notes
