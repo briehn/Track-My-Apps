@@ -1,5 +1,3 @@
-import type { Prisma } from "@prisma/client";
-
 import { requireUser } from "@/features/auth/require-user";
 import { prisma } from "@/server/db/prisma";
 
@@ -20,25 +18,21 @@ const emptyStatusCounts: Record<TrackedStatus, number> = {
   ARCHIVED: 0,
 };
 
-type RecentDashboardJob = Prisma.JobGetPayload<{
-  select: {
-    id: true;
-    company: true;
-    title: true;
-    status: true;
-    createdAt: true;
-  };
-}>;
+type RecentDashboardJob = {
+  id: string;
+  company: string;
+  title: string;
+  status: TrackedStatus;
+  createdAt: Date;
+};
 
-type UpcomingDashboardJob = Prisma.JobGetPayload<{
-  select: {
-    id: true;
-    company: true;
-    title: true;
-    deadline: true;
-    followUpAt: true;
-  };
-}>;
+type UpcomingDashboardJob = {
+  id: string;
+  company: string;
+  title: string;
+  deadline: Date | null;
+  followUpAt: Date | null;
+};
 
 export type DashboardSummary = {
   activeTotal: number;
