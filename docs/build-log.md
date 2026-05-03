@@ -26,6 +26,7 @@ It should document what changed, why it mattered, and what the next step is. It 
 - Added job editing with a prefilled edit page, shared create/edit field rendering, shared field validation, and scoped update action.
 - Added archive and permanent delete management from the job detail page.
 - Split the jobs list into active and archived views using `/jobs` and `/jobs?status=archived`.
+- Added timestamped job notes with scoped creation, listing, and deletion on the job detail page.
 
 ### Notes
 - The MVP will focus on a polished job application tracker before adding AI features.
@@ -41,6 +42,7 @@ It should document what changed, why it mattered, and what the next step is. It 
 - Edit updates reuse the core job field validation and write through `id` plus authenticated `userId`.
 - Archive keeps the job and changes status to `ARCHIVED`; delete removes the job and relies on Prisma cascade relations for related records.
 - Archived jobs are hidden from the default active list but remain accessible through the archived query-param view.
+- Notes are scoped by both authenticated user and parent job ownership.
 
 ### Next Step
-- Add notes next so users can capture context for a saved job.
+- Add dashboard summaries next so the tracker gives users a useful overview.

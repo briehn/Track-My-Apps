@@ -11,6 +11,9 @@ import {
 import { JobManagementActions } from "@/features/jobs/components/job-management-actions";
 import { JobStatusForm } from "@/features/jobs/components/job-status-form";
 import { getJobForCurrentUser, type JobDetail } from "@/features/jobs/queries";
+import { NoteForm } from "@/features/notes/components/note-form";
+import { NotesList } from "@/features/notes/components/notes-list";
+import { getNotesForJobForCurrentUser } from "@/features/notes/queries";
 
 type JobDetailPageProps = {
   params: Promise<{
@@ -83,7 +86,10 @@ function DetailItem({ label, value }: { label: string; value: string }) {
 
 export default async function JobDetailPage({ params }: JobDetailPageProps) {
   const { jobId } = await params;
-  const job = await getJobForCurrentUser(jobId);
+  const [job, notes] = await Promise.all([
+    getJobForCurrentUser(jobId),
+    getNotesForJobForCurrentUser(jobId),
+  ]);
 
   if (!job) {
     notFound();
@@ -224,9 +230,31 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle>Notes and analysis</CardTitle>
+          <CardTitle>Notes</CardTitle>
           <CardDescription>
-            Notes and structured analysis will be added in later milestones.
+            Capture recruiter updates, interview notes, and decision context.
+          </CardDescription>
+        </CardHeader>
+        <div className="space-y-6">
+          <NoteForm jobId={job.id} />
+          {notes.length > 0 ? (
+            <NotesList jobId={job.id} notes={notes} />
+          ) : (
+            <div className="rounded-md border border-dashed border-slate-300 bg-slate-50 p-6 text-center">
+              <p className="text-sm font-medium text-slate-950">No notes yet</p>
+              <p className="mt-1 text-sm text-slate-600">
+                Add the first note to keep context with this job.
+              </p>
+            </div>
+          )}
+        </div>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Analysis</CardTitle>
+          <CardDescription>
+            Structured job analysis will be added in a later milestone.
           </CardDescription>
         </CardHeader>
         <p className="text-sm text-slate-600">Not implemented yet.</p>
