@@ -39,6 +39,7 @@ It should document what changed, why it mattered, and what the next step is. It 
 - Clarified the README deployment notes for `NEXTAUTH_SECRET` and `NEXTAUTH_URL`.
 - Added explicit dashboard summary types so Vercel/TypeScript builds do not degrade mapped job items to implicit `any`.
 - Replaced a Prisma namespace type import that was incompatible in the deployment environment with explicit dashboard payload types.
+- Added explicit typing for dashboard `groupBy` status results so status counts remain strictly keyed by `ApplicationStatus` in deployment builds.
 
 ### Notes
 - The MVP will focus on a polished job application tracker before adding AI features.
@@ -65,6 +66,7 @@ It should document what changed, why it mattered, and what the next step is. It 
 - Auth startup errors should now be clearer if Google OAuth variables are missing, instead of falling through to empty-string credentials.
 - Dashboard summary data now has an explicit typed contract for recent and upcoming jobs, which keeps page rendering strictly typed across environments.
 - Dashboard query typing no longer depends on `Prisma` namespace exports, avoiding environment-specific type import failures.
+- Dashboard status aggregation no longer allows `group.status` to degrade to `any` when indexing status count records.
 
 ### Next Step
 - Validate the app one more time with lint/build, then capture screenshots or deploy a demo when ready.

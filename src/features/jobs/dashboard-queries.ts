@@ -1,13 +1,16 @@
+import type { ApplicationStatus } from "@prisma/client";
+
 import { requireUser } from "@/features/auth/require-user";
 import { prisma } from "@/server/db/prisma";
 
-type TrackedStatus =
-  | "SAVED"
-  | "APPLIED"
-  | "INTERVIEWING"
-  | "OFFER"
-  | "REJECTED"
-  | "ARCHIVED";
+type TrackedStatus = ApplicationStatus;
+
+type StatusGroup = {
+  status: TrackedStatus;
+  _count: {
+    _all: number;
+  };
+};
 
 const emptyStatusCounts: Record<TrackedStatus, number> = {
   SAVED: 0,
@@ -46,8 +49,7 @@ export async function getDashboardSummaryForCurrentUser(): Promise<DashboardSumm
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const [statusGroups, recentJobs, upcomingJobs] = await Promise.all([
-    prisma.job.groupBy({
+  const statusGroupsPromise = prisma.job.groupBy({
       by: ["status"],
       where: {
         userId: user.id,
@@ -55,7 +57,10 @@ export async function getDashboardSummaryForCurrentUser(): Promise<DashboardSumm
       _count: {
         _all: true,
       },
-    }),
+    }) as unknown as Promise<StatusGroup[]>;
+
+  const [statusGroups, recentJobs, upcomingJobs] = await Promise.all([
+    statusGroupsPromise,
     prisma.job.findMany({
       where: {
         userId: user.id,
