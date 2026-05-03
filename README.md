@@ -38,7 +38,9 @@ Implemented foundation:
 - Prisma schema and Prisma 7 config
 - PostgreSQL driver adapter setup
 - NextAuth route, Prisma adapter wiring, and server-side `requireUser()` helper
-- Basic Google sign-in page, sign-out control, and protected auth-check route
+- Basic Google sign-in page and sign-out control
+- Protected app shell with Dashboard and Jobs route placeholders
+- Minimal reusable UI primitives for buttons, form controls, badges, cards, and empty states
 - Zod dependency foundation
 - Initial architecture folders from `docs/architecture.md`
 
@@ -210,7 +212,7 @@ GOOGLE_CLIENT_SECRET=
 http://localhost:3000/api/auth/callback/google
 ```
 
-After configuring Google OAuth, visit `http://localhost:3000/sign-in` and sign in with Google. A successful sign-in redirects to `http://localhost:3000/auth-check`, a temporary protected route that verifies `requireUser()` can resolve the current database user server-side.
+After configuring Google OAuth, visit `http://localhost:3000/sign-in` and sign in with Google. A successful sign-in redirects to `http://localhost:3000/dashboard`, which is protected by the authenticated app layout.
 
 ## Development Commands
 
@@ -243,7 +245,9 @@ Completed:
 - Initial PostgreSQL migration applied through Prisma Migrate
 - NextAuth API route with Prisma-backed database sessions
 - Reusable `requireUser()` helper for protected server-side code
-- Basic Google OAuth sign-in/sign-out validation route
+- Basic Google OAuth sign-in/sign-out flow
+- Protected app shell and initial Dashboard/Jobs placeholders
+- Minimal UI primitive foundation
 - Environment variable example
 - Initial folder structure
 
@@ -251,7 +255,7 @@ Not yet implemented:
 
 - Polished authentication screens
 - Job tracking UI
-- Dashboard
+- Dashboard data and workflows
 - Notes
 - AI features
 

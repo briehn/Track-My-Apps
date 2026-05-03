@@ -7,7 +7,7 @@ type SignInWithGoogleButtonProps = {
 };
 
 export function SignInWithGoogleButton({
-  callbackUrl = "/auth-check",
+  callbackUrl = "/dashboard",
 }: SignInWithGoogleButtonProps) {
   return (
     <button

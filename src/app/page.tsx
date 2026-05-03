@@ -1,4 +1,15 @@
-export default function HomePage() {
+import { redirect } from "next/navigation";
+import { getServerSession } from "next-auth";
+
+import { authOptions } from "@/features/auth/auth-options";
+
+export default async function HomePage() {
+  const session = await getServerSession(authOptions);
+
+  if (session?.user) {
+    redirect("/dashboard");
+  }
+
   return (
     <main className="mx-auto flex min-h-screen max-w-3xl flex-col justify-center px-6 py-16">
       <p className="text-sm font-medium uppercase tracking-wide text-slate-500">
