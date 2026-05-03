@@ -1,10 +1,11 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { requireUser } from "@/features/auth/require-user";
-import { createJobSchema } from "@/features/jobs/schemas";
+import { createJobSchema, updateJobStatusSchema } from "@/features/jobs/schemas";
 import { prisma } from "@/server/db/prisma";
 
 export type CreateJobActionState = {
@@ -47,4 +48,68 @@ export async function createJob(
   });
 
   redirect("/jobs");
+}
+
+export type UpdateJobStatusActionState = {
+  formError?: string;
+};
+
+export async function updateJobStatus(
+  _previousState: UpdateJobStatusActionState,
+  formData: FormData,
+): Promise<UpdateJobStatusActionState> {
+  const user = await requireUser();
+
+  const parsedInput = updateJobStatusSchema.safeParse({
+    jobId: formData.get("jobId"),
+    status: formData.get("status"),
+  });
+
+  if (!parsedInput.success) {
+    return {
+      formError: "Choose a valid status.",
+    };
+  }
+
+  const job = await prisma.job.findFirst({
+    where: {
+      id: parsedInput.data.jobId,
+      userId: user.id,
+    },
+    select: {
+      id: true,
+      appliedAt: true,
+    },
+  });
+
+  if (!job) {
+    return {
+      formError: "This job could not be found.",
+    };
+  }
+
+  const updateResult = await prisma.job.updateMany({
+    where: {
+      id: job.id,
+      userId: user.id,
+    },
+    data: {
+      status: parsedInput.data.status,
+      appliedAt:
+        parsedInput.data.status === "APPLIED" && job.appliedAt === null
+          ? new Date()
+          : undefined,
+    },
+  });
+
+  if (updateResult.count === 0) {
+    return {
+      formError: "This job could not be updated.",
+    };
+  }
+
+  revalidatePath("/jobs");
+  revalidatePath(`/jobs/${job.id}`);
+
+  return {};
 }

@@ -68,3 +68,10 @@ export const createJobSchema = z
   );
 
 export type CreateJobInput = z.infer<typeof createJobSchema>;
+
+export const updateJobStatusSchema = z.object({
+  jobId: z.string().min(1, "Job is required."),
+  status: z.enum(["SAVED", "APPLIED", "INTERVIEWING", "OFFER", "REJECTED", "ARCHIVED"]),
+});
+
+export type UpdateJobStatusInput = z.infer<typeof updateJobStatusSchema>;

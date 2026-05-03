@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { JobStatusForm } from "@/features/jobs/components/job-status-form";
 import { getJobForCurrentUser, type JobDetail } from "@/features/jobs/queries";
 
 type JobDetailPageProps = {
@@ -158,19 +159,31 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
           </dl>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Dates</CardTitle>
-            <CardDescription>Timeline fields for this role.</CardDescription>
-          </CardHeader>
-          <dl className="space-y-5">
-            <DetailItem label="Saved" value={formatDate(job.createdAt)} />
-            <DetailItem label="Updated" value={formatDate(job.updatedAt)} />
-            <DetailItem label="Deadline" value={formatDate(job.deadline)} />
-            <DetailItem label="Applied" value={formatDate(job.appliedAt)} />
-            <DetailItem label="Follow-up" value={formatDate(job.followUpAt)} />
-          </dl>
-        </Card>
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Status</CardTitle>
+              <CardDescription>
+                Move this job through your application workflow.
+              </CardDescription>
+            </CardHeader>
+            <JobStatusForm jobId={job.id} currentStatus={job.status} />
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Dates</CardTitle>
+              <CardDescription>Timeline fields for this role.</CardDescription>
+            </CardHeader>
+            <dl className="space-y-5">
+              <DetailItem label="Saved" value={formatDate(job.createdAt)} />
+              <DetailItem label="Updated" value={formatDate(job.updatedAt)} />
+              <DetailItem label="Deadline" value={formatDate(job.deadline)} />
+              <DetailItem label="Applied" value={formatDate(job.appliedAt)} />
+              <DetailItem label="Follow-up" value={formatDate(job.followUpAt)} />
+            </dl>
+          </Card>
+        </div>
       </div>
 
       <Card>

@@ -44,6 +44,7 @@ Implemented foundation:
 - Manual job creation form with server-side validation and authenticated persistence
 - Authenticated job list with newest-first saved jobs
 - Authenticated job detail page with saved posting metadata
+- Status updates from the job detail page
 - Zod dependency foundation
 - Initial architecture folders from `docs/architecture.md`
 
@@ -254,13 +255,14 @@ Completed:
 - Manual job creation at `/jobs/new`
 - Authenticated job list at `/jobs`
 - Authenticated job detail pages at `/jobs/[jobId]`
+- Application status updates for saved jobs
 - Environment variable example
 - Initial folder structure
 
 Not yet implemented:
 
 - Polished authentication screens
-- Job editing, status updates, and filtering workflows
+- Job editing, archive/delete management, and filtering workflows
 - Dashboard data and workflows
 - Notes
 - AI features
