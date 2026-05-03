@@ -1,3 +1,5 @@
+import type { Prisma } from "@prisma/client";
+
 import { requireUser } from "@/features/auth/require-user";
 import { prisma } from "@/server/db/prisma";
 
@@ -18,7 +20,34 @@ const emptyStatusCounts: Record<TrackedStatus, number> = {
   ARCHIVED: 0,
 };
 
-export async function getDashboardSummaryForCurrentUser() {
+type RecentDashboardJob = Prisma.JobGetPayload<{
+  select: {
+    id: true;
+    company: true;
+    title: true;
+    status: true;
+    createdAt: true;
+  };
+}>;
+
+type UpcomingDashboardJob = Prisma.JobGetPayload<{
+  select: {
+    id: true;
+    company: true;
+    title: true;
+    deadline: true;
+    followUpAt: true;
+  };
+}>;
+
+export type DashboardSummary = {
+  activeTotal: number;
+  statusCounts: Record<TrackedStatus, number>;
+  recentJobs: RecentDashboardJob[];
+  upcomingJobs: UpcomingDashboardJob[];
+};
+
+export async function getDashboardSummaryForCurrentUser(): Promise<DashboardSummary> {
   const user = await requireUser();
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -103,7 +132,3 @@ export async function getDashboardSummaryForCurrentUser() {
     upcomingJobs,
   };
 }
-
-export type DashboardSummary = Awaited<
-  ReturnType<typeof getDashboardSummaryForCurrentUser>
->;

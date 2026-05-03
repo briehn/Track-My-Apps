@@ -9,7 +9,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { LinkButton } from "@/components/ui/link-button";
-import { getDashboardSummaryForCurrentUser } from "@/features/jobs/dashboard-queries";
+import {
+  type DashboardSummary,
+  getDashboardSummaryForCurrentUser,
+} from "@/features/jobs/dashboard-queries";
 import { statusBadgeVariants, statusLabels } from "@/features/jobs/status";
 
 const pipelineStatuses = ["SAVED", "APPLIED", "INTERVIEWING", "OFFER"] as const;
@@ -25,7 +28,7 @@ function formatDate(date: Date) {
 }
 
 export default async function DashboardPage() {
-  const summary = await getDashboardSummaryForCurrentUser();
+  const summary: DashboardSummary = await getDashboardSummaryForCurrentUser();
 
   return (
     <div className="space-y-6">
