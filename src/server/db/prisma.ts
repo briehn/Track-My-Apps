@@ -5,7 +5,17 @@ const globalForPrisma = globalThis as unknown as {
   prisma?: PrismaClient;
 };
 
-const adapter = new PrismaPg(process.env.DATABASE_URL ?? "");
+function requiredEnv(name: "DATABASE_URL") {
+  const value = process.env[name];
+
+  if (!value) {
+    throw new Error(`Missing required environment variable: ${name}`);
+  }
+
+  return value;
+}
+
+const adapter = new PrismaPg(requiredEnv("DATABASE_URL"));
 
 export const prisma = globalForPrisma.prisma ?? new PrismaClient({ adapter });
 

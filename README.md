@@ -190,6 +190,7 @@ This app is suitable for deployment on Vercel with a hosted PostgreSQL database 
 
 Deployment checklist:
 
+- Use Node.js `22.x` locally and in Vercel for consistent builds.
 - Set all environment variables from `.env.example` in the deployment platform.
 - This project uses a NextAuth v4-style config, so production auth settings should use `NEXTAUTH_SECRET` and `NEXTAUTH_URL`.
 - Use a pooled Neon URL for `DATABASE_URL`.
@@ -203,6 +204,7 @@ https://your-domain.com/api/auth/callback/google
 ```
 
 - Run Prisma migrations against the production database before using the app.
+- Prisma Client is generated during install via `postinstall`, which helps keep Vercel builds aligned with the checked-in schema.
 - Do not commit real `.env` values.
 
 ## Screenshots

@@ -16,6 +16,12 @@ export type JobStatus =
   | JobDetail["status"]
   | JobListItem["status"];
 
+const applicationStatusSet = new Set<string>(APPLICATION_STATUSES);
+
+export function isApplicationStatus(value: string): value is ApplicationStatus {
+  return applicationStatusSet.has(value);
+}
+
 export const statusLabels: Record<JobStatus, string> = {
   SAVED: "Saved",
   APPLIED: "Applied",

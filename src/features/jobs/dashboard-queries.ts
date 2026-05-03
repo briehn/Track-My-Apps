@@ -1,5 +1,8 @@
 import { requireUser } from "@/features/auth/require-user";
-import type { ApplicationStatus } from "@/features/jobs/status";
+import {
+  isApplicationStatus,
+  type ApplicationStatus,
+} from "@/features/jobs/status";
 import { prisma } from "@/server/db/prisma";
 
 type StatusGroup = {
@@ -41,23 +44,46 @@ export type DashboardSummary = {
   upcomingJobs: UpcomingDashboardJob[];
 };
 
+function toStatusGroups(
+  groups: Array<{
+    status: string;
+    _count: {
+      _all: number;
+    };
+  }>,
+): StatusGroup[] {
+  return groups.flatMap((group) =>
+    isApplicationStatus(group.status)
+      ? [
+          {
+            status: group.status,
+            _count: {
+              _all: group._count._all,
+            },
+          },
+        ]
+      : [],
+  );
+}
+
 export async function getDashboardSummaryForCurrentUser(): Promise<DashboardSummary> {
   const user = await requireUser();
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const statusGroupsPromise = prisma.job.groupBy({
-      by: ["status"],
-      where: {
-        userId: user.id,
-      },
-      _count: {
-        _all: true,
-      },
-    }) as unknown as Promise<StatusGroup[]>;
+  const rawStatusGroups = await prisma.job.groupBy({
+    by: ["status"],
+    where: {
+      userId: user.id,
+    },
+    _count: {
+      _all: true,
+    },
+  });
 
-  const [statusGroups, recentJobs, upcomingJobs] = await Promise.all([
-    statusGroupsPromise,
+  const statusGroups = toStatusGroups(rawStatusGroups);
+
+  const [recentJobs, upcomingJobs] = await Promise.all([
     prisma.job.findMany({
       where: {
         userId: user.id,
@@ -108,7 +134,9 @@ export async function getDashboardSummaryForCurrentUser(): Promise<DashboardSumm
     }),
   ]);
 
-  const statusCounts = { ...emptyStatusCounts };
+  const statusCounts: Record<ApplicationStatus, number> = {
+    ...emptyStatusCounts,
+  };
 
   for (const group of statusGroups) {
     statusCounts[group.status] = group._count._all;

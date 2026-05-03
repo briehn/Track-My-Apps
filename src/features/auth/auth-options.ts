@@ -4,7 +4,9 @@ import GoogleProvider from "next-auth/providers/google";
 
 import { prisma } from "@/server/db/prisma";
 
-function requiredEnv(name: "GOOGLE_CLIENT_ID" | "GOOGLE_CLIENT_SECRET") {
+function requiredEnv(
+  name: "NEXTAUTH_SECRET" | "GOOGLE_CLIENT_ID" | "GOOGLE_CLIENT_SECRET",
+) {
   const value = process.env[name];
 
   if (!value) {
@@ -16,7 +18,7 @@ function requiredEnv(name: "GOOGLE_CLIENT_ID" | "GOOGLE_CLIENT_SECRET") {
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: requiredEnv("NEXTAUTH_SECRET"),
   providers: [
     GoogleProvider({
       clientId: requiredEnv("GOOGLE_CLIENT_ID"),
