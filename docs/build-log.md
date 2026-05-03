@@ -19,6 +19,7 @@ It should document what changed, why it mattered, and what the next step is. It 
 - Added a minimal Google sign-in page, sign-out control, and protected auth-check route for validating the authentication foundation.
 - Replaced the temporary auth-check route with a protected app shell, Dashboard and Jobs placeholders, and minimal UI primitives for the next product workflows.
 - Added manual job creation with a protected `/jobs/new` route, Zod validation, and a server action that saves jobs for the authenticated user.
+- Tightened job creation validation so company and title values must include at least one letter.
 
 ### Notes
 - The MVP will focus on a polished job application tracker before adding AI features.
@@ -27,6 +28,7 @@ It should document what changed, why it mattered, and what the next step is. It 
 - Authentication now has the server-side foundation needed for future protected routes and user-owned data checks, but custom auth UI is still intentionally deferred.
 - The authenticated route-group layout is now the main auth boundary for future app pages.
 - Job ownership is enforced server-side by deriving `userId` from `requireUser()`, not from submitted form data.
+- Company and title validation now rejects numeric-only or punctuation-only input while still allowing realistic names with numbers.
 
 ### Next Step
 - Build the job list next so users can see their saved jobs after creation.

@@ -1,5 +1,10 @@
 import { z } from "zod";
 
+const containsLetter = /[A-Za-z]/;
+
+const humanReadableRequiredString = (requiredMessage: string, letterMessage: string) =>
+  z.string().trim().min(1, requiredMessage).regex(containsLetter, letterMessage);
+
 const optionalTrimmedString = z.preprocess(
   (value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
   z.string().trim().optional(),
@@ -30,8 +35,14 @@ const optionalDate = z.preprocess((value) => {
 
 export const createJobSchema = z
   .object({
-    company: z.string().trim().min(1, "Company is required."),
-    title: z.string().trim().min(1, "Title is required."),
+    company: humanReadableRequiredString(
+      "Company is required.",
+      "Company must include at least one letter.",
+    ),
+    title: humanReadableRequiredString(
+      "Title is required.",
+      "Job title must include at least one letter.",
+    ),
     location: optionalTrimmedString,
     remoteType: z.enum(["ONSITE", "HYBRID", "REMOTE"]).optional(),
     employmentType: z
