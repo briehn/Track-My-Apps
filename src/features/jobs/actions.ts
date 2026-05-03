@@ -5,7 +5,11 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { requireUser } from "@/features/auth/require-user";
-import { createJobSchema, updateJobStatusSchema } from "@/features/jobs/schemas";
+import {
+  createJobSchema,
+  updateJobSchema,
+  updateJobStatusSchema,
+} from "@/features/jobs/schemas";
 import { prisma } from "@/server/db/prisma";
 
 export type CreateJobActionState = {
@@ -48,6 +52,61 @@ export async function createJob(
   });
 
   redirect("/jobs");
+}
+
+export type UpdateJobActionState = {
+  fieldErrors?: Partial<Record<keyof z.infer<typeof updateJobSchema>, string[]>>;
+  formError?: string;
+};
+
+export async function updateJob(
+  _previousState: UpdateJobActionState,
+  formData: FormData,
+): Promise<UpdateJobActionState> {
+  const user = await requireUser();
+
+  const parsedInput = updateJobSchema.safeParse({
+    jobId: formData.get("jobId"),
+    company: formData.get("company"),
+    title: formData.get("title"),
+    location: formData.get("location"),
+    remoteType: formData.get("remoteType") || undefined,
+    employmentType: formData.get("employmentType") || undefined,
+    source: formData.get("source"),
+    url: formData.get("url"),
+    salaryMin: formData.get("salaryMin"),
+    salaryMax: formData.get("salaryMax"),
+    salaryCurrency: formData.get("salaryCurrency"),
+    description: formData.get("description"),
+    deadline: formData.get("deadline"),
+  });
+
+  if (!parsedInput.success) {
+    return {
+      fieldErrors: parsedInput.error.flatten().fieldErrors,
+    };
+  }
+
+  const { jobId, ...jobData } = parsedInput.data;
+
+  const updateResult = await prisma.job.updateMany({
+    where: {
+      id: jobId,
+      userId: user.id,
+    },
+    data: jobData,
+  });
+
+  if (updateResult.count === 0) {
+    return {
+      formError: "This job could not be updated.",
+    };
+  }
+
+  revalidatePath("/jobs");
+  revalidatePath(`/jobs/${jobId}`);
+
+  redirect(`/jobs/${jobId}`);
 }
 
 export type UpdateJobStatusActionState = {

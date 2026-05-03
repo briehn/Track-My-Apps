@@ -23,6 +23,7 @@ It should document what changed, why it mattered, and what the next step is. It 
 - Added the authenticated `/jobs` list with newest-first ordering, status badges, core job metadata, and an empty state.
 - Added authenticated job detail pages with scoped single-job queries and full saved posting metadata.
 - Added job status updates from the detail page, scoped to the authenticated user.
+- Added job editing with a prefilled edit page, shared create/edit field rendering, shared field validation, and scoped update action.
 
 ### Notes
 - The MVP will focus on a polished job application tracker before adding AI features.
@@ -35,6 +36,7 @@ It should document what changed, why it mattered, and what the next step is. It 
 - The jobs list uses a server-side query scoped to the authenticated user's id.
 - Job detail access uses the same ownership boundary, returning not found for missing or unauthorized jobs.
 - Status updates use server-side validation and scoped writes, and first set `appliedAt` when a job moves to `APPLIED`.
+- Edit updates reuse the core job field validation and write through `id` plus authenticated `userId`.
 
 ### Next Step
-- Add edit/archive/delete job management next.
+- Add archive/delete job management next.

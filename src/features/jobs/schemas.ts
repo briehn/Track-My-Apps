@@ -33,7 +33,7 @@ const optionalDate = z.preprocess((value) => {
   return trimmedValue === "" ? undefined : new Date(`${trimmedValue}T00:00:00.000Z`);
 }, z.date().optional());
 
-export const createJobSchema = z
+const jobDetailsSchema = z
   .object({
     company: humanReadableRequiredString(
       "Company is required.",
@@ -67,7 +67,15 @@ export const createJobSchema = z
     },
   );
 
+export const createJobSchema = jobDetailsSchema;
+
 export type CreateJobInput = z.infer<typeof createJobSchema>;
+
+export const updateJobSchema = jobDetailsSchema.extend({
+  jobId: z.string().min(1, "Job is required."),
+});
+
+export type UpdateJobInput = z.infer<typeof updateJobSchema>;
 
 export const updateJobStatusSchema = z.object({
   jobId: z.string().min(1, "Job is required."),
