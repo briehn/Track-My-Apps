@@ -1,6 +1,7 @@
 "use client";
 
 import { signIn, signOut } from "next-auth/react";
+import type { ButtonHTMLAttributes } from "react";
 
 type SignInWithGoogleButtonProps = {
   callbackUrl?: string;
@@ -22,12 +23,20 @@ export function SignInWithGoogleButton({
   );
 }
 
-export function SignOutButton() {
+type SignOutButtonProps = ButtonHTMLAttributes<HTMLButtonElement>;
+
+export function SignOutButton({ className, ...props }: SignOutButtonProps) {
   return (
     <button
       type="button"
       onClick={() => void signOut({ callbackUrl: "/sign-in" })}
-      className="inline-flex items-center justify-center rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-900 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
+      className={[
+        "inline-flex items-center justify-center rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-900 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2",
+        className,
+      ]
+        .filter(Boolean)
+        .join(" ")}
+      {...props}
     >
       Sign out
     </button>
