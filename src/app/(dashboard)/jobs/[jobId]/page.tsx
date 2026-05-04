@@ -9,6 +9,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { LinkButton } from "@/components/ui/link-button";
+import { JobAnalysisCard } from "@/features/job-analysis/components/job-analysis-card";
+import {
+  hasAnalyzableJobDescription,
+  isJobDescriptionTooLong,
+} from "@/features/job-analysis/schemas";
 import { JobManagementActions } from "@/features/jobs/components/job-management-actions";
 import { JobStatusForm } from "@/features/jobs/components/job-status-form";
 import { getJobForCurrentUser, type JobDetail } from "@/features/jobs/queries";
@@ -226,14 +231,23 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
             />
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Analysis</CardTitle>
-              <CardDescription>
-                Structured job analysis will be added in a later milestone.
-              </CardDescription>
-            </CardHeader>
-            <p className="text-sm text-slate-600">Not implemented yet.</p>
+            <Card>
+              <CardHeader>
+                <CardTitle>Analysis</CardTitle>
+                <CardDescription>
+                  Extract a structured summary and key requirements from the
+                  saved job description.
+                </CardDescription>
+              </CardHeader>
+              <JobAnalysisCard
+                analysis={job.analysis}
+                hasAnalyzableDescription={hasAnalyzableJobDescription(job.description)}
+                isDescriptionTooLong={
+                  job.description ? isJobDescriptionTooLong(job.description) : false
+                }
+                descriptionLength={job.description?.length ?? 0}
+                jobId={job.id}
+              />
           </Card>
         </div>
       </div>

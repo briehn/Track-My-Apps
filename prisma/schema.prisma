@@ -19,6 +19,7 @@ model User {
   sessions      Session[]
   jobs          Job[]
   notes         Note[]
+  analysisRuns  JobAnalysisRun[]
 }
 
 model Account {
@@ -84,6 +85,7 @@ model Job {
   user           User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   notes          Note[]
   analysis       JobAnalysis?
+  analysisRuns   JobAnalysisRun[]
 
   @@index([userId])
   @@index([userId, status])
@@ -118,6 +120,19 @@ model JobAnalysis {
   updatedAt        DateTime @updatedAt
 
   job              Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+}
+
+model JobAnalysisRun {
+  id        String   @id @default(cuid())
+  userId    String
+  jobId     String
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([jobId])
 }
 
 enum ApplicationStatus {

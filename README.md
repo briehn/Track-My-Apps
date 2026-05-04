@@ -24,6 +24,7 @@ The goal is not to ship a thin AI demo. The goal is to build a useful product fo
 - Job editing from `/jobs/[jobId]/edit`
 - Archive and permanent delete actions
 - Timestamped job notes with create, list, and delete behavior
+- Manual AI job description analysis with structured saved results
 - User-owned data access enforced server-side through `requireUser()`
 - Prisma schema for future job analysis data
 - Reusable UI primitives for buttons, inputs, textareas, badges, cards, and empty states
@@ -32,7 +33,6 @@ The goal is not to ship a thin AI demo. The goal is to build a useful product fo
 
 These are future scope and are not currently implemented:
 
-- AI job description analysis
 - Resume upload and parsing
 - Resume-to-job match scoring
 - Skill gap detection
@@ -52,6 +52,7 @@ These are future scope and are not currently implemented:
 - Prisma
 - PostgreSQL
 - NextAuth with Google OAuth
+- OpenAI
 - Zod
 
 This stack was chosen to demonstrate modern full-stack TypeScript architecture, server-side data access, explicit validation, and clear user ownership boundaries.
@@ -142,6 +143,8 @@ NEXTAUTH_SECRET=
 NEXTAUTH_URL=
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
+OPENAI_API_KEY=
+OPENAI_MODEL=
 ```
 
 For Neon, use the pooled connection string for `DATABASE_URL` and the direct, non-pooled connection string for `DIRECT_URL`. Prisma CLI commands use `DIRECT_URL` through `prisma.config.ts` so migrations do not run through the connection pooler.
@@ -172,6 +175,9 @@ npm run dev
 
 The app runs at `http://localhost:3000` by default. Visit `http://localhost:3000/sign-in` to sign in with Google.
 
+For AI job analysis, set `OPENAI_API_KEY` and choose a model in `OPENAI_MODEL`. The default placeholder uses `gpt-4o-mini` to keep MVP analysis costs lower.
+AI analysis is manually triggered only. In production, the app also enforces a small per-user daily analysis limit and blocks descriptions longer than 10,000 characters before calling OpenAI.
+
 ## Development Commands
 
 ```bash
@@ -197,6 +203,9 @@ Deployment checklist:
 - Use a direct Neon URL for `DIRECT_URL`.
 - Set `NEXTAUTH_URL` to the production domain.
 - Set `NEXTAUTH_SECRET` to a strong random value that is stable across deployments.
+- Set `OPENAI_API_KEY` for server-side AI analysis requests.
+- Set `OPENAI_MODEL` to the model you want the analysis action to use.
+- Production AI analysis is limited per authenticated user per day and skips descriptions longer than 10,000 characters.
 - Add the production Google OAuth callback URL in Google Cloud Console:
 
 ```text
@@ -211,25 +220,25 @@ https://your-domain.com/api/auth/callback/google
 
 ### Sign In
 
-![Sign in screen](/public/screenshots/sign-in.png)
+![Sign in screen](public/screenshots/sign-in.png)
 
 Clean entry point for Google OAuth access to the tracker.
 
 ### Dashboard
 
-![Dashboard summary](/public/screenshots/dashboard.png)
+![Dashboard summary](public/screenshots/dashboard.png)
 
 High-level view of active jobs, status counts, recent jobs, and upcoming dates.
 
 ### Jobs List
 
-![Jobs list](/public/screenshots/jobs-list.png)
+![Jobs list](public/screenshots/jobs-list.png)
 
 Scannable list of saved jobs with status, company, and key metadata.
 
 ### Job Detail
 
-![Job detail page](/public/screenshots/job-detail.png)
+![Job detail page](public/screenshots/job-detail.png)
 
 Full saved posting view with status controls, notes, management actions, and job metadata.
 
@@ -246,12 +255,12 @@ Completed:
 - Google OAuth authentication with Prisma-backed sessions
 - Protected dashboard and jobs app shell
 - Manual job creation, listing, detail, editing, status updates, archive/delete, and notes
+- Manual AI job description analysis saved to `JobAnalysis`
 - Dashboard summaries and focused MVP polish pass
 - Safe environment variable example
 
 Not yet implemented:
 
-- AI features
 - Resume features
 - URL-based job importing
 - Advanced filtering/search

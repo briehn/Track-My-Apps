@@ -61,6 +61,17 @@ export async function getJobForCurrentUser(jobId: string) {
       followUpAt: true,
       createdAt: true,
       updatedAt: true,
+      analysis: {
+        select: {
+          summary: true,
+          requiredSkills: true,
+          preferredSkills: true,
+          responsibilities: true,
+          keywords: true,
+          seniorityLevel: true,
+          updatedAt: true,
+        },
+      },
     },
   });
 }
