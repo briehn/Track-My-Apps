@@ -1,6 +1,6 @@
-# AI Job Search Copilot
+# Track My Apps
 
-AI Job Search Copilot is a full-stack job application tracker for saving roles, tracking application progress, keeping notes, and building a structured foundation for future AI-assisted job search workflows.
+Track My Apps is a full-stack job application tracker for saving roles, tracking application progress, keeping notes, and building a structured foundation for future AI-assisted job search workflows.
 
 The current MVP is intentionally a polished tracker first. AI features are planned later, after the core product workflow, data model, and ownership boundaries are stable.
 
