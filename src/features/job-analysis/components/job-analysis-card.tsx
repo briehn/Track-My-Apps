@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -37,20 +38,37 @@ function AnalysisList({
   items: string[];
   title: string;
 }) {
+  const [expanded, setExpanded] = useState(false);
+  const defaultVisibleCount = 8;
+
   if (items.length === 0) {
     return null;
   }
+
+  const visibleItems = expanded ? items : items.slice(0, defaultVisibleCount);
+  const hasHiddenItems = items.length > defaultVisibleCount;
 
   return (
     <div className="space-y-2">
       <h3 className="text-sm font-medium text-slate-950">{title}</h3>
       <ul className="space-y-2 text-sm leading-6 text-slate-700">
-        {items.map((item) => (
+        {visibleItems.map((item) => (
           <li key={item} className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2">
             {item}
           </li>
         ))}
       </ul>
+      {hasHiddenItems ? (
+        <button
+          type="button"
+          className="text-xs font-medium text-slate-700 underline underline-offset-4 hover:text-slate-950"
+          onClick={() => {
+            setExpanded((previous) => !previous);
+          }}
+        >
+          {expanded ? "Show fewer items" : `Show ${items.length - defaultVisibleCount} more items`}
+        </button>
+      ) : null}
     </div>
   );
 }
@@ -128,7 +146,9 @@ export function JobAnalysisCard({
           {analysis.summary ? (
             <div className="space-y-2">
               <h3 className="text-sm font-medium text-slate-950">Summary</h3>
-              <p className="text-sm leading-6 text-slate-700">{analysis.summary}</p>
+              <div className="max-h-40 overflow-auto rounded-md border border-slate-200 bg-slate-50 px-3 py-2">
+                <p className="text-sm leading-6 text-slate-700">{analysis.summary}</p>
+              </div>
             </div>
           ) : null}
 

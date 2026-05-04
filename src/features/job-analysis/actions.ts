@@ -89,23 +89,27 @@ export async function analyzeJobDescription(
   }
 
   try {
-    const analysis = await analyzeJobDescriptionWithOpenAI(job.description);
+    const result = await analyzeJobDescriptionWithOpenAI(job.description);
 
     await prisma.$transaction([
       prisma.jobAnalysis.upsert({
         where: {
           jobId: job.id,
         },
-        update: analysis,
+        update: result.analysis,
         create: {
           jobId: job.id,
-          ...analysis,
+          ...result.analysis,
         },
       }),
       prisma.jobAnalysisRun.create({
         data: {
           jobId: job.id,
           userId: user.id,
+          model: result.usage.model,
+          inputTokens: result.usage.inputTokens,
+          outputTokens: result.usage.outputTokens,
+          totalTokens: result.usage.totalTokens,
         },
       }),
     ]);
@@ -119,6 +123,14 @@ export async function analyzeJobDescription(
         case "MALFORMED_OUTPUT":
           return {
             formError: "The AI response could not be validated. Try again.",
+          };
+        case "RATE_LIMITED":
+          return {
+            formError: "AI analysis is busy right now. Please try again shortly.",
+          };
+        case "UNAVAILABLE":
+          return {
+            formError: "AI analysis is temporarily unavailable. Try again in a moment.",
           };
         case "PROVIDER_FAILURE":
         default:

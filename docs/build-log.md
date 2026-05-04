@@ -51,6 +51,7 @@ It should document what changed, why it mattered, and what the next step is. It 
 - Added production-only AI usage protection with a database-backed daily per-user analysis limit and a pre-provider job description length guard.
 - Polished the job analysis card UX with clear usage-limit messaging, pre-submit over-length warnings, and a stronger in-progress state while AI analysis runs.
 - Updated the roadmap to mark the MVP as complete and deployed, then defined the next post-MVP phases for AI refinement, profile-based matching, importing, testing, and portfolio polish.
+- Polished AI analysis quality and resilience with tighter extraction constraints, clearer provider error mapping, improved long-result readability, and optional usage metadata capture per analysis run.
 
 ### Notes
 - The MVP will focus on a polished job application tracker before adding AI features.
@@ -88,6 +89,7 @@ It should document what changed, why it mattered, and what the next step is. It 
 - OpenAI is now skipped entirely when a description is too long or the authenticated user has reached the daily production analysis limit.
 - The analysis UI now explains the character and daily production limits before submission and shows explicit progress feedback during analysis.
 - The roadmap now reflects the shipped MVP instead of the original pre-launch phase plan.
+- AI analysis now handles rate-limit and provider-unavailable failures with clearer user-facing responses and records optional model/token metadata for future cost and quality tuning.
 
 ### Next Step
 - Validate the app one more time with lint/build, then capture screenshots or deploy a demo when ready.

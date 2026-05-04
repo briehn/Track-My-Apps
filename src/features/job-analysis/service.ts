@@ -12,7 +12,9 @@ import {
 type JobAnalysisErrorCode =
   | "NOT_CONFIGURED"
   | "PROVIDER_FAILURE"
-  | "MALFORMED_OUTPUT";
+  | "MALFORMED_OUTPUT"
+  | "RATE_LIMITED"
+  | "UNAVAILABLE";
 
 export class JobAnalysisServiceError extends Error {
   constructor(
@@ -22,6 +24,18 @@ export class JobAnalysisServiceError extends Error {
     super(message);
   }
 }
+
+type JobAnalysisUsageMetadata = {
+  model: string | null;
+  inputTokens: number | null;
+  outputTokens: number | null;
+  totalTokens: number | null;
+};
+
+type JobAnalysisResult = {
+  analysis: NormalizedJobAnalysis;
+  usage: JobAnalysisUsageMetadata;
+};
 
 function requiredEnv(name: "OPENAI_API_KEY" | "OPENAI_MODEL") {
   const value = process.env[name];
@@ -38,14 +52,21 @@ function requiredEnv(name: "OPENAI_API_KEY" | "OPENAI_MODEL") {
 
 export async function analyzeJobDescriptionWithOpenAI(
   description: string,
-): Promise<NormalizedJobAnalysis> {
+): Promise<JobAnalysisResult> {
   const openai = new OpenAI({
     apiKey: requiredEnv("OPENAI_API_KEY"),
   });
+  const model = requiredEnv("OPENAI_MODEL");
+  const normalizedDescription = description
+    .replace(/\r\n/g, "\n")
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 
   try {
     const response = await openai.responses.parse({
-      model: requiredEnv("OPENAI_MODEL"),
+      model,
+      max_output_tokens: 1200,
       input: [
         {
           role: "system",
@@ -69,7 +90,10 @@ export async function analyzeJobDescriptionWithOpenAI(
                 "Infer seniorityLevel conservatively when years are explicit:",
                 "0-2 years => Junior-level, 3-5 years => Mid-level, 6+ years => Senior-level.",
                 "If years are not explicit and level is unclear, return null for seniorityLevel.",
-                "summary must be factual, brief, and based only on the posting.",
+                "summary must be factual, based only on the posting, and no more than 450 characters.",
+                "Each array should contain at most 12 items.",
+                "Each item should be concise, ideally under 90 characters.",
+                "Prefer concrete technologies and role requirements over generic wording.",
               ].join(" "),
             },
           ],
@@ -84,7 +108,7 @@ export async function analyzeJobDescriptionWithOpenAI(
                 "Use the category rules exactly.",
                 "Return structured output only from the job description text below.",
                 "JOB_DESCRIPTION_START",
-                description,
+                normalizedDescription,
                 "JOB_DESCRIPTION_END",
               ].join("\n"),
             },
@@ -103,10 +127,39 @@ export async function analyzeJobDescriptionWithOpenAI(
       );
     }
 
-    return normalizeJobAnalysis(response.output_parsed);
+    return {
+      analysis: normalizeJobAnalysis(response.output_parsed),
+      usage: {
+        model: response.model ?? model,
+        inputTokens: response.usage?.input_tokens ?? null,
+        outputTokens: response.usage?.output_tokens ?? null,
+        totalTokens: response.usage?.total_tokens ?? null,
+      },
+    };
   } catch (error) {
     if (error instanceof JobAnalysisServiceError) {
       throw error;
+    }
+
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "status" in error &&
+      typeof error.status === "number"
+    ) {
+      if (error.status === 429) {
+        throw new JobAnalysisServiceError(
+          "RATE_LIMITED",
+          "OpenAI rate limit reached.",
+        );
+      }
+
+      if (error.status >= 500) {
+        throw new JobAnalysisServiceError(
+          "UNAVAILABLE",
+          "OpenAI provider temporarily unavailable.",
+        );
+      }
     }
 
     throw new JobAnalysisServiceError(

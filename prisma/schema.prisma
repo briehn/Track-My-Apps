@@ -126,6 +126,10 @@ model JobAnalysisRun {
   id        String   @id @default(cuid())
   userId    String
   jobId     String
+  model     String?
+  inputTokens Int?
+  outputTokens Int?
+  totalTokens Int?
   createdAt DateTime @default(now())
 
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
