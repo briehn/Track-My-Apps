@@ -56,6 +56,8 @@ It should document what changed, why it mattered, and what the next step is. It 
 - Hardened AI failure classification by handling OpenAI SDK error classes directly (`APIConnectionTimeoutError`, `RateLimitError`, connection/server errors) so retry messages are more accurate in production.
 - Split AI failure handling into provider-call errors and analysis-save errors so non-provider failures no longer appear as generic OpenAI issues, and retry guidance is now conditional by error retriability.
 - Added a save-path compatibility fallback: if Prisma rejects optional usage metadata fields (`model`/token columns), analysis is retried and saved without metadata instead of failing the whole user flow.
+- Re-enabled optional AI usage metadata persistence on `JobAnalysisRun` now that schema and database alignment are confirmed (`model`, `inputTokens`, `outputTokens`, `totalTokens`).
+- Added runtime capability detection for `JobAnalysisRun` usage metadata fields so analysis saves do not fail if the active Prisma client process is temporarily out of sync with the latest schema generation.
 
 ### Notes
 - The MVP will focus on a polished job application tracker before adding AI features.
@@ -98,6 +100,8 @@ It should document what changed, why it mattered, and what the next step is. It 
 - Re-analyze errors now prioritize specific failure messages over generic fallback text and include safer action-level error diagnostics for operations triage.
 - Logging now captures provider request IDs when available, plus separate diagnostics for provider classification failures versus database save failures.
 - Save-failure logs now explicitly distinguish metadata schema/client mismatch from genuine persistence failures.
+- Usage runs now store both ownership (`userId`, `jobId`) and optional model/token metadata when returned by OpenAI.
+- Metadata writes are now conditional on the generated client's runtime data model, which preserves reliability while still capturing usage fields when supported.
 
 ### Next Step
 - Validate the app one more time with lint/build, then capture screenshots or deploy a demo when ready.

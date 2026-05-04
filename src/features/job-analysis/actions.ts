@@ -21,6 +21,66 @@ export type AnalyzeJobDescriptionActionState = {
   canRetry?: boolean;
 };
 
+type RuntimeDataModelField = {
+  name: string;
+};
+
+type RuntimeDataModelModel = {
+  fields: RuntimeDataModelField[];
+};
+
+type RuntimeDataModel = {
+  models: Record<string, RuntimeDataModelModel>;
+};
+
+const JOB_ANALYSIS_USAGE_FIELDS = [
+  "model",
+  "inputTokens",
+  "outputTokens",
+  "totalTokens",
+] as const;
+
+let metadataSupportCache: boolean | null = null;
+
+function isRuntimeDataModel(value: unknown): value is RuntimeDataModel {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  if (!("models" in value) || typeof value.models !== "object" || !value.models) {
+    return false;
+  }
+
+  return true;
+}
+
+function supportsJobAnalysisRunUsageMetadata(): boolean {
+  if (metadataSupportCache !== null) {
+    return metadataSupportCache;
+  }
+
+  const runtimeDataModel = Reflect.get(prisma, "_runtimeDataModel");
+
+  if (!isRuntimeDataModel(runtimeDataModel)) {
+    metadataSupportCache = false;
+    return metadataSupportCache;
+  }
+
+  const analysisRunModel = runtimeDataModel.models.JobAnalysisRun;
+
+  if (!analysisRunModel || !Array.isArray(analysisRunModel.fields)) {
+    metadataSupportCache = false;
+    return metadataSupportCache;
+  }
+
+  const fieldNames = new Set(analysisRunModel.fields.map((field) => field.name));
+  metadataSupportCache = JOB_ANALYSIS_USAGE_FIELDS.every((fieldName) =>
+    fieldNames.has(fieldName),
+  );
+
+  return metadataSupportCache;
+}
+
 export async function analyzeJobDescription(
   _previousState: AnalyzeJobDescriptionActionState,
   formData: FormData,
@@ -163,6 +223,20 @@ export async function analyzeJobDescription(
   }
 
   try {
+    const runData = supportsJobAnalysisRunUsageMetadata()
+      ? {
+          jobId: job.id,
+          userId: user.id,
+          model: result.usage.model,
+          inputTokens: result.usage.inputTokens,
+          outputTokens: result.usage.outputTokens,
+          totalTokens: result.usage.totalTokens,
+        }
+      : {
+          jobId: job.id,
+          userId: user.id,
+        };
+
     await prisma.$transaction([
       prisma.jobAnalysis.upsert({
         where: {
@@ -175,10 +249,7 @@ export async function analyzeJobDescription(
         },
       }),
       prisma.jobAnalysisRun.create({
-        data: {
-          jobId: job.id,
-          userId: user.id,
-        },
+        data: runData,
       }),
     ]);
   } catch (error) {
