@@ -52,6 +52,10 @@ It should document what changed, why it mattered, and what the next step is. It 
 - Polished the job analysis card UX with clear usage-limit messaging, pre-submit over-length warnings, and a stronger in-progress state while AI analysis runs.
 - Updated the roadmap to mark the MVP as complete and deployed, then defined the next post-MVP phases for AI refinement, profile-based matching, importing, testing, and portfolio polish.
 - Polished AI analysis quality and resilience with tighter extraction constraints, clearer provider error mapping, improved long-result readability, and optional usage metadata capture per analysis run.
+- Improved AI analysis failure UX by classifying timeout, rate-limit, and provider failures with explicit user-facing messages, plus structured server-side provider error logging.
+- Hardened AI failure classification by handling OpenAI SDK error classes directly (`APIConnectionTimeoutError`, `RateLimitError`, connection/server errors) so retry messages are more accurate in production.
+- Split AI failure handling into provider-call errors and analysis-save errors so non-provider failures no longer appear as generic OpenAI issues, and retry guidance is now conditional by error retriability.
+- Added a save-path compatibility fallback: if Prisma rejects optional usage metadata fields (`model`/token columns), analysis is retried and saved without metadata instead of failing the whole user flow.
 
 ### Notes
 - The MVP will focus on a polished job application tracker before adding AI features.
@@ -90,6 +94,10 @@ It should document what changed, why it mattered, and what the next step is. It 
 - The analysis UI now explains the character and daily production limits before submission and shows explicit progress feedback during analysis.
 - The roadmap now reflects the shipped MVP instead of the original pre-launch phase plan.
 - AI analysis now handles rate-limit and provider-unavailable failures with clearer user-facing responses and records optional model/token metadata for future cost and quality tuning.
+- Failure states now provide clearer retry guidance in the UI while preserving existing pending and ownership-protected server action flow.
+- Re-analyze errors now prioritize specific failure messages over generic fallback text and include safer action-level error diagnostics for operations triage.
+- Logging now captures provider request IDs when available, plus separate diagnostics for provider classification failures versus database save failures.
+- Save-failure logs now explicitly distinguish metadata schema/client mismatch from genuine persistence failures.
 
 ### Next Step
 - Validate the app one more time with lint/build, then capture screenshots or deploy a demo when ready.

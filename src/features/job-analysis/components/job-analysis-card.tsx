@@ -135,9 +135,17 @@ export function JobAnalysisCard({
           <p className="text-sm text-slate-600">{actionHelperText}</p>
         )}
         {state.formError ? (
-          <p className="text-sm text-red-600" role="alert">
-            {state.formError}
-          </p>
+          <div
+            className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+            role="alert"
+          >
+            <p>{state.formError}</p>
+            {state.canRetry ? (
+              <p className="mt-1 text-xs text-red-600">
+                You can retry analysis now.
+              </p>
+            ) : null}
+          </div>
         ) : null}
       </form>
 

@@ -1,6 +1,12 @@
 import "server-only";
 
-import OpenAI from "openai";
+import OpenAI, {
+  APIError,
+  APIConnectionError,
+  APIConnectionTimeoutError,
+  InternalServerError,
+  RateLimitError,
+} from "openai";
 import { zodTextFormat } from "openai/helpers/zod";
 
 import {
@@ -14,15 +20,75 @@ type JobAnalysisErrorCode =
   | "PROVIDER_FAILURE"
   | "MALFORMED_OUTPUT"
   | "RATE_LIMITED"
-  | "UNAVAILABLE";
+  | "UNAVAILABLE"
+  | "QUOTA_EXCEEDED"
+  | "TIMEOUT";
 
 export class JobAnalysisServiceError extends Error {
   constructor(
     public code: JobAnalysisErrorCode,
     message: string,
+    public details?: ProviderErrorDetails,
   ) {
     super(message);
   }
+}
+
+type ProviderErrorDetails = {
+  status: number | null;
+  code: string | null;
+  name: string | null;
+  message: string | null;
+  requestId: string | null;
+};
+
+function getProviderErrorDetails(error: unknown): ProviderErrorDetails {
+  if (!error || typeof error !== "object") {
+    return {
+      status: null,
+      code: null,
+      name: null,
+      message: null,
+      requestId: null,
+    };
+  }
+
+  const status =
+    "status" in error && typeof error.status === "number" ? error.status : null;
+  const code =
+    "code" in error && typeof error.code === "string" ? error.code : null;
+  const name =
+    "name" in error && typeof error.name === "string" ? error.name : null;
+  const message =
+    "message" in error && typeof error.message === "string"
+      ? error.message
+      : null;
+  const requestId =
+    "requestID" in error && typeof error.requestID === "string"
+      ? error.requestID
+      : null;
+
+  return {
+    status,
+    code,
+    name,
+    message,
+    requestId,
+  };
+}
+
+function logProviderFailure(
+  category: "TIMEOUT" | "RATE_LIMITED" | "UNAVAILABLE" | "PROVIDER_FAILURE",
+  details: ProviderErrorDetails,
+) {
+  console.error("Job analysis OpenAI request failed", {
+    category,
+    status: details.status,
+    code: details.code,
+    name: details.name,
+    message: details.message,
+    requestId: details.requestId,
+  });
 }
 
 type JobAnalysisUsageMetadata = {
@@ -141,30 +207,118 @@ export async function analyzeJobDescriptionWithOpenAI(
       throw error;
     }
 
-    if (
-      typeof error === "object" &&
-      error !== null &&
-      "status" in error &&
-      typeof error.status === "number"
-    ) {
-      if (error.status === 429) {
+    if (error instanceof APIConnectionTimeoutError) {
+      const details = getProviderErrorDetails(error);
+      logProviderFailure("TIMEOUT", details);
+      throw new JobAnalysisServiceError(
+        "TIMEOUT",
+        "OpenAI request timed out.",
+        details,
+      );
+    }
+
+    if (error instanceof RateLimitError) {
+      const details = getProviderErrorDetails(error);
+      if (details.code === "insufficient_quota") {
+        logProviderFailure("UNAVAILABLE", details);
         throw new JobAnalysisServiceError(
-          "RATE_LIMITED",
-          "OpenAI rate limit reached.",
+          "QUOTA_EXCEEDED",
+          "OpenAI quota exceeded.",
+          details,
         );
       }
 
-      if (error.status >= 500) {
+      logProviderFailure("RATE_LIMITED", details);
+      throw new JobAnalysisServiceError(
+        "RATE_LIMITED",
+        "OpenAI rate limit reached.",
+        details,
+      );
+    }
+
+    if (
+      error instanceof InternalServerError ||
+      error instanceof APIConnectionError
+    ) {
+      const details = getProviderErrorDetails(error);
+      logProviderFailure("UNAVAILABLE", details);
+      throw new JobAnalysisServiceError(
+        "UNAVAILABLE",
+        "OpenAI provider temporarily unavailable.",
+        details,
+      );
+    }
+
+    const details = getProviderErrorDetails(error);
+    if (error instanceof APIError) {
+      if (details.status === 429) {
+        if (details.code === "insufficient_quota") {
+          logProviderFailure("UNAVAILABLE", details);
+          throw new JobAnalysisServiceError(
+            "QUOTA_EXCEEDED",
+            "OpenAI quota exceeded.",
+            details,
+          );
+        }
+
+        logProviderFailure("RATE_LIMITED", details);
+        throw new JobAnalysisServiceError(
+          "RATE_LIMITED",
+          "OpenAI rate limit reached.",
+          details,
+        );
+      }
+
+      if (details.status !== null && details.status >= 500) {
+        logProviderFailure("UNAVAILABLE", details);
         throw new JobAnalysisServiceError(
           "UNAVAILABLE",
           "OpenAI provider temporarily unavailable.",
+          details,
         );
       }
     }
 
+    const isTimeout =
+      details.status === 408 ||
+      details.code === "ETIMEDOUT" ||
+      details.code === "ECONNABORTED" ||
+      (details.name !== null && details.name.toLowerCase().includes("timeout")) ||
+      (details.message !== null &&
+        details.message.toLowerCase().includes("timed out"));
+
+    if (isTimeout) {
+      logProviderFailure("TIMEOUT", details);
+      throw new JobAnalysisServiceError(
+        "TIMEOUT",
+        "OpenAI request timed out.",
+        details,
+      );
+    }
+
+    if (details.status === 429) {
+      logProviderFailure("RATE_LIMITED", details);
+      throw new JobAnalysisServiceError(
+        "RATE_LIMITED",
+        "OpenAI rate limit reached.",
+        details,
+      );
+    }
+
+    if (details.status !== null && details.status >= 500) {
+      logProviderFailure("UNAVAILABLE", details);
+      throw new JobAnalysisServiceError(
+        "UNAVAILABLE",
+        "OpenAI provider temporarily unavailable.",
+        details,
+      );
+    }
+
+    logProviderFailure("PROVIDER_FAILURE", details);
     throw new JobAnalysisServiceError(
       "PROVIDER_FAILURE",
       "OpenAI job analysis request failed.",
+      details,
     );
   }
 }

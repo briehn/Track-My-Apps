@@ -18,6 +18,7 @@ import { prisma } from "@/server/db/prisma";
 
 export type AnalyzeJobDescriptionActionState = {
   formError?: string;
+  canRetry?: boolean;
 };
 
 export async function analyzeJobDescription(
@@ -32,6 +33,7 @@ export async function analyzeJobDescription(
   if (!parsedInput.success) {
     return {
       formError: "This job could not be analyzed.",
+      canRetry: false,
     };
   }
 
@@ -49,18 +51,21 @@ export async function analyzeJobDescription(
   if (!job) {
     return {
       formError: "This job could not be found.",
+      canRetry: false,
     };
   }
 
   if (!hasAnalyzableJobDescription(job.description)) {
     return {
       formError: "Add a fuller job description before running analysis.",
+      canRetry: false,
     };
   }
 
   if (isJobDescriptionTooLong(job.description)) {
     return {
       formError: "This job description is too long to analyze. Shorten it to 10,000 characters or less.",
+      canRetry: false,
     };
   }
 
@@ -84,13 +89,80 @@ export async function analyzeJobDescription(
     if (runsToday >= PRODUCTION_DAILY_AI_ANALYSIS_LIMIT) {
       return {
         formError: "You have reached today's AI analysis limit. Please try again tomorrow.",
+        canRetry: false,
       };
     }
   }
 
-  try {
-    const result = await analyzeJobDescriptionWithOpenAI(job.description);
+  let result: Awaited<ReturnType<typeof analyzeJobDescriptionWithOpenAI>>;
 
+  try {
+    result = await analyzeJobDescriptionWithOpenAI(job.description);
+  } catch (error) {
+    if (error instanceof JobAnalysisServiceError) {
+      console.error("Job analysis action failed", {
+        code: error.code,
+        jobId: job.id,
+        userId: user.id,
+        status: error.details?.status ?? null,
+        providerCode: error.details?.code ?? null,
+        providerName: error.details?.name ?? null,
+        providerRequestId: error.details?.requestId ?? null,
+      });
+
+      switch (error.code) {
+        case "NOT_CONFIGURED":
+          return {
+            formError: "AI analysis is not configured right now.",
+            canRetry: false,
+          };
+        case "MALFORMED_OUTPUT":
+          return {
+            formError: "The AI response could not be validated. Try again.",
+            canRetry: true,
+          };
+        case "TIMEOUT":
+          return {
+            formError: "The AI analysis took too long. Please try again.",
+            canRetry: true,
+          };
+        case "RATE_LIMITED":
+          return {
+            formError: "OpenAI is rate-limiting requests right now. Please try again in a few minutes.",
+            canRetry: true,
+          };
+        case "QUOTA_EXCEEDED":
+          return {
+            formError: "AI analysis is temporarily unavailable due to provider quota limits. Please try again later.",
+            canRetry: false,
+          };
+        case "UNAVAILABLE":
+          return {
+            formError: "There was an issue with the analysis. Please try again later.",
+            canRetry: true,
+          };
+        case "PROVIDER_FAILURE":
+        default:
+          return {
+            formError: "There was an issue with the analysis. Please try again later.",
+            canRetry: true,
+          };
+      }
+    }
+
+    console.error("Job analysis action failed with unexpected provider error", {
+      jobId: job.id,
+      userId: user.id,
+      error,
+    });
+
+    return {
+      formError: "There was an issue with the analysis. Please try again later.",
+      canRetry: true,
+    };
+  }
+
+  try {
     await prisma.$transaction([
       prisma.jobAnalysis.upsert({
         where: {
@@ -106,42 +178,19 @@ export async function analyzeJobDescription(
         data: {
           jobId: job.id,
           userId: user.id,
-          model: result.usage.model,
-          inputTokens: result.usage.inputTokens,
-          outputTokens: result.usage.outputTokens,
-          totalTokens: result.usage.totalTokens,
         },
       }),
     ]);
   } catch (error) {
-    if (error instanceof JobAnalysisServiceError) {
-      switch (error.code) {
-        case "NOT_CONFIGURED":
-          return {
-            formError: "AI analysis is not configured right now.",
-          };
-        case "MALFORMED_OUTPUT":
-          return {
-            formError: "The AI response could not be validated. Try again.",
-          };
-        case "RATE_LIMITED":
-          return {
-            formError: "AI analysis is busy right now. Please try again shortly.",
-          };
-        case "UNAVAILABLE":
-          return {
-            formError: "AI analysis is temporarily unavailable. Try again in a moment.",
-          };
-        case "PROVIDER_FAILURE":
-        default:
-          return {
-            formError: "The AI request failed. Try again in a moment.",
-          };
-      }
-    }
+    console.error("Job analysis save failed", {
+      jobId: job.id,
+      userId: user.id,
+      error,
+    });
 
     return {
-      formError: "The AI request failed. Try again in a moment.",
+      formError: "The analysis completed, but saving it failed. Please try again in a moment.",
+      canRetry: true,
     };
   }
 
