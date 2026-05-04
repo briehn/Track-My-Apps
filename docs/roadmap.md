@@ -1,179 +1,169 @@
 # Roadmap
 
-This roadmap defines the MVP implementation order. The strategy is to ship a strong job application tracker first, with the database already shaped for later AI features.
+Track My Apps now has a complete, deployed MVP. The remaining roadmap shifts from core tracker delivery to AI refinement, profile-based matching, importing, and later product polish.
 
-## Phase 1: Project Setup
+## Status Summary
 
-- Create the Next.js app with TypeScript, Tailwind CSS, and ESLint.
-- Add Prisma, PostgreSQL, Auth.js or NextAuth, and Zod.
-- Configure environment variables.
-- Add the initial `prisma/schema.prisma` from `docs/schema.md`.
-- Confirm the app can run locally before building product features.
+- Core MVP is complete and deployed.
+- The first AI feature, job description analysis, is implemented.
+- Resume/profile matching, interview prep, and job importing are still planned.
+- Automated tests, advanced filtering, and broader accessibility polish remain useful future improvements.
 
-Validation:
+## Completed MVP Phases
 
-- `npm run lint`
-- Initial Prisma migration runs successfully.
-- Local app boots without runtime errors.
+### Phase 1: Project Setup
 
-## Phase 2: Design Foundation
+- Completed.
+- Set up the Next.js app with TypeScript, Tailwind CSS, ESLint, Prisma, PostgreSQL, NextAuth, and Zod.
+- Configured environment variables and the initial Prisma schema.
 
-- Define the authenticated app shell.
-- Add dashboard navigation.
-- Build reusable UI primitives: button, input, textarea, select, badge, card, and basic form wrappers as needed.
-- Establish loading, empty, and error states early.
+### Phase 2: Design Foundation
 
-Validation:
+- Completed.
+- Defined the authenticated app shell.
+- Added dashboard navigation and reusable UI primitives.
+- Established loading, empty, and error states early.
 
-- Pages have stable responsive layout.
-- Form controls are labeled and keyboard-accessible.
-- Empty states are useful, not placeholder filler.
+### Phase 3: Authentication
 
-## Phase 3: Authentication
+- Completed.
+- Added Google OAuth sign-in and sign-out.
+- Added protected app routes and `requireUser()`.
+- Confirmed user-owned data is checked server-side.
 
-- Add sign-up, sign-in, and sign-out.
-- Add protected app routes.
-- Create `requireUser()` for server-side route protection.
-- Confirm user-owned data cannot be accessed while signed out.
+### Phase 4: Database Models
 
-Validation:
+- Completed.
+- Added auth models plus `Job`, `Note`, `JobAnalysis`, and supporting enums.
+- Ran the initial product migration.
 
-- Signed-out users are redirected from protected routes.
-- Authenticated pages always resolve the current user server-side.
+### Phase 5: Job Creation
 
-## Phase 4: Database Models
+- Completed.
+- Built `/jobs/new`.
+- Added Zod validation and a create-job server action.
+- Redirects to the new job detail page after creation.
 
-- Add required auth models for the selected auth provider.
-- Add `Job`, `Note`, `JobAnalysis`, and enums.
-- Run the first product migration.
-- Seed a small amount of sample data only if it improves development speed.
+### Phase 6: Job List
 
-Validation:
+- Completed.
+- Built `/jobs`.
+- Added status filtering, newest-first ordering, and empty states.
+- Added archived job access through `/jobs?status=archived`.
 
-- Prisma Client generates successfully.
-- Cascade behavior and indexes match `docs/schema.md`.
+### Phase 7: Dashboard
 
-## Phase 5: Job Creation
+- Completed.
+- Built `/dashboard`.
+- Added status counts, recent jobs, and upcoming dates.
 
-- Build `/jobs/new`.
-- Add a Zod schema for job input.
-- Add a create-job server action.
-- Redirect to the job detail page after successful creation.
+### Phase 8: Job Detail
 
-Validation:
+- Completed.
+- Built `/jobs/[jobId]`.
+- Added metadata, full descriptions, status updates, and key dates.
 
-- Required fields are enforced.
-- Invalid URLs and invalid salary ranges are rejected.
-- Created jobs are owned by the authenticated user, not by submitted form data.
+### Phase 9: Notes
 
-## Phase 6: Job List
+- Completed.
+- Added note creation, listing, and deletion on the job detail page.
 
-- Build `/jobs`.
-- Add filtering by application status.
-- Add search by title and company.
-- Sort newest first for MVP.
-- Add an empty state.
+### Phase 10: Edit Job
 
-Validation:
+- Completed.
+- Built `/jobs/[jobId]/edit`.
+- Reused the job form and update action where it improved clarity.
 
-- Users only see their own jobs.
-- Filters and search compose predictably.
-- Empty states distinguish no jobs from no matching jobs.
+### Phase 11: Basic Analysis Placeholder
 
-## Phase 7: Dashboard
+- Completed and superseded.
+- The placeholder has been replaced by real structured AI analysis storage and display.
 
-- Build `/dashboard`.
-- Show status counts.
-- Show recent jobs.
-- Show next deadlines or follow-ups when present.
+### Phase 12: Polish Pass
 
-Validation:
+- Completed.
+- Improved responsive layout, loading states, form errors, and pending UI.
+- Tightened naming, boundaries, and empty states.
 
-- Counts are scoped by user.
-- Dashboard remains useful with zero, few, and many jobs.
+### Phase 13: Testing
 
-## Phase 8: Job Detail
+- Partially complete.
+- Lint and build checks are in place.
+- A broader automated test suite remains a useful future improvement.
 
-- Build `/jobs/[jobId]`.
-- Show job metadata and full description.
-- Add status update controls.
-- Display applied date, deadline, and follow-up date when present.
-- Add a basic analysis placeholder section.
+### Phase 14: Portfolio Finish
 
-Validation:
+- Completed.
+- Updated README content, deployment notes, and screenshots.
+- Added portfolio-ready presentation and reviewer-friendly documentation.
 
-- Unknown or unauthorized jobs return the appropriate not-found or redirect behavior.
-- Status updates persist and refresh the right views.
+## Remaining MVP-Adjacent Improvements
 
-## Phase 9: Notes
+- Add automated tests if the project grows enough to justify them.
+- Add title/company search if it becomes useful beyond the current list views.
+- Add advanced filtering and sorting only if the tracker workflow starts to feel crowded.
+- Continue accessibility polish over time as specific issues surface.
 
-- Add note creation on the job detail page.
-- Add note list.
-- Add note deletion first; note editing can follow if it remains low-cost.
+## Post-MVP Roadmap
 
-Validation:
+### Phase 15: AI Job Description Analysis
 
-- Notes are scoped to both the current user and the current job.
-- Empty notes state is clear.
-- Deleting a job deletes its notes.
+- Implemented.
+- Structured AI analysis extracts summaries, required skills, preferred skills, responsibilities, keywords, and seniority signals.
+- Results are stored in `JobAnalysis` with validation and normalization.
+- Usage protections limit input length and production usage.
 
-## Phase 10: Edit Job
+### Phase 16: AI Analysis Polish
 
-- Build `/jobs/[jobId]/edit`.
-- Reuse the job form where it improves clarity.
-- Add an update-job server action.
+- Improve prompts based on real job descriptions.
+- Improve UI for long analysis results and dense postings.
+- Track model and cost metadata later if needed.
+- Add stale-analysis detection if the job description changes.
 
-Validation:
+### Phase 17: Resume/Profile Foundation
 
-- Ownership checks prevent cross-user edits.
-- Existing values hydrate correctly.
-- Validation matches job creation rules.
+- Add user profile and resume text storage.
+- Store skills, projects, and experience in a user-owned profile model.
+- Keep ownership and privacy boundaries explicit.
+- Do not add AI matching until profile data exists.
 
-## Phase 11: Basic Analysis Placeholder
+### Phase 18: Resume-to-Job Matching
 
-- Display stored `JobAnalysis` fields on job detail.
-- Show a clear empty analysis state.
-- Optionally allow manual keyword or skill entry only if it does not distract from the core tracker.
+- Compare saved profile data against job analysis.
+- Add fit scores, matching skills, and missing skills.
+- Suggest keywords and resume bullets without fabricating experience.
 
-Validation:
+### Phase 19: Interview Prep
 
-- Analysis remains optional.
-- Empty analysis does not block the job detail workflow.
+- Generate job-specific technical questions.
+- Generate behavioral questions and STAR prompts.
+- Surface study topics tied to the role.
 
-## Phase 12: Polish Pass
+### Phase 20: Job URL Importing
 
-- Improve responsive layout.
-- Add loading states.
-- Add form error states.
-- Add pending UI for status changes where useful.
-- Tighten naming and file boundaries.
+- Allow pasting a job URL to prefill job details.
+- Keep a manual review and edit step before saving.
+- Consider future `JobPosting` and `UserSavedJob` normalization if the feature expands.
+- Keep scraping scope narrow until product requirements are clearer.
 
-Validation:
+### Phase 21: Search, Filtering, and Organization
 
-- Manual walkthrough of the primary workflows.
-- Accessibility pass for forms, buttons, and navigation.
-- No obvious layout overlap on mobile or desktop.
+- Add search by company and title.
+- Add filtering by status, deadline, remote type, and employment type.
+- Add sorting by newest, deadline, and follow-up.
+- Improve active and archived organization if the list grows further.
 
-## Phase 13: Testing
+### Phase 22: Testing and Reliability
 
-- Add focused tests for validation schemas if test tooling is included.
-- Add integration-style checks around server actions where practical.
-- Manually test auth boundaries and user data isolation.
+- Add tests for Zod schemas.
+- Add tests for server actions where practical.
+- Verify auth and ownership boundaries.
+- Test AI usage limits.
+- Add production monitoring considerations.
 
-Validation:
+### Phase 23: Portfolio/Resume Polish
 
-- Lint passes.
-- Tests pass if configured.
-- Critical user-owned data paths are manually verified.
+- Update README screenshots when the AI UI is stable.
+- Refresh resume wording from AI-ready to AI-powered job description analysis.
+- Keep planned features clearly marked as planned.
 
-## Phase 14: Portfolio Finish
-
-- Add README with product framing, setup instructions, tech decisions, schema overview, and screenshots.
-- Add deployment notes.
-- Add future AI roadmap section.
-- Record major architecture decisions under `docs/decisions/` as they arise.
-
-Validation:
-
-- A reviewer can understand what the app does, how to run it, and why the architecture choices were made.
-- The app has a complete MVP narrative instead of looking like an unfinished AI demo.

@@ -50,6 +50,7 @@ It should document what changed, why it mattered, and what the next step is. It 
 - Tightened AI analysis prompt instructions to improve category separation for required skills vs preferred skills vs responsibilities, preserve either/or requirements, and infer seniority conservatively from explicit years.
 - Added production-only AI usage protection with a database-backed daily per-user analysis limit and a pre-provider job description length guard.
 - Polished the job analysis card UX with clear usage-limit messaging, pre-submit over-length warnings, and a stronger in-progress state while AI analysis runs.
+- Updated the roadmap to mark the MVP as complete and deployed, then defined the next post-MVP phases for AI refinement, profile-based matching, importing, testing, and portfolio polish.
 
 ### Notes
 - The MVP will focus on a polished job application tracker before adding AI features.
@@ -86,6 +87,7 @@ It should document what changed, why it mattered, and what the next step is. It 
 - Prompt quality now better emphasizes concrete required qualifications, avoids vague trait leakage into required skills, and routes company-only terms toward keywords.
 - OpenAI is now skipped entirely when a description is too long or the authenticated user has reached the daily production analysis limit.
 - The analysis UI now explains the character and daily production limits before submission and shows explicit progress feedback during analysis.
+- The roadmap now reflects the shipped MVP instead of the original pre-launch phase plan.
 
 ### Next Step
 - Validate the app one more time with lint/build, then capture screenshots or deploy a demo when ready.
