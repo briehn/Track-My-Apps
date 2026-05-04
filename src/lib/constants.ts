@@ -1,1 +1,1 @@
-export const APP_NAME = "AI Job Search Copilot";
+export const APP_NAME = "Track My Apps";

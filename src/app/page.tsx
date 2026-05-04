@@ -48,7 +48,7 @@ export default async function HomePage() {
             </Badge>
             <div className="space-y-4">
               <h1 className="max-w-3xl text-4xl font-semibold tracking-tight text-slate-950 sm:text-5xl">
-                AI Job Search Copilot helps you track every application in one
+                Track My Apps helps you track every application in one
                 place.
               </h1>
               <p className="max-w-2xl text-base leading-7 text-slate-700 sm:text-lg">

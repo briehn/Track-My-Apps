@@ -29,7 +29,7 @@ export function AppShell({ children, user }: AppShellProps) {
         <div className="flex min-h-16 items-center justify-between gap-4 px-4 sm:px-6">
           <div>
             <p className="text-sm font-semibold text-slate-950">
-              AI Job Search Copilot
+              Track My Apps
             </p>
             <p className="text-xs text-slate-500">{displayName}</p>
           </div>

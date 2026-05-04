@@ -23,7 +23,7 @@ export default async function SignInPage() {
       <div className="mx-auto grid w-full max-w-5xl gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
         <section className="space-y-6">
           <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-            AI Job Search Copilot
+            Track My Apps
           </p>
           <div className="space-y-4">
             <h1 className="max-w-xl text-4xl font-semibold tracking-tight text-slate-950 sm:text-5xl">
