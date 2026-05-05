@@ -15,6 +15,7 @@ It should document what changed, why it mattered, and what the next step is. It 
 - Revalidated the project with `npm run lint` and `npm run build`.
 - Added the first automated test setup with Vitest and path-alias support for TypeScript feature-module unit tests.
 - Added focused unit coverage for job schemas, status helpers, job-analysis description guards, normalization, and extracted UTC usage-limit helpers.
+- Refreshed the README to describe the deployed MVP, implemented AI analysis, usage protections, Vitest coverage, and the current post-MVP roadmap.
 
 ### Notes
 - The save path remains compatible with environments that do not support optional usage metadata fields yet.

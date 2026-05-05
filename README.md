@@ -1,18 +1,21 @@
 # Track My Apps
 
-Track My Apps is a full-stack job application tracker for saving roles, tracking application progress, keeping notes, and building a structured foundation for future AI-assisted job search workflows.
+Track My Apps is a deployed full-stack job application tracker with AI-powered job description analysis.
 
-The current MVP is intentionally a polished tracker first. AI features are planned later, after the core product workflow, data model, and ownership boundaries are stable.
+Live app: [trackmyapps.dev](https://trackmyapps.dev)
+
+The current MVP is intentionally a polished tracker first, with grounded AI features layered on top of real saved job data. The core workflow is complete, while resume matching, interview prep, importing, and deeper analytics remain planned.
 
 ## Why This Project Exists
 
 Job searching creates scattered information: job descriptions, company details, statuses, follow-up dates, recruiter notes, interview notes, and resume tailoring decisions. This project brings that workflow into one authenticated app while demonstrating production-minded full-stack engineering.
 
-The goal is not to ship a thin AI demo. The goal is to build a useful product foundation that can support AI features in a way that is grounded in real user data.
+The goal is to ship a useful tracker first and add AI features that are grounded in real user data rather than speculative prompts. That keeps the product practical today and gives future AI features a structured foundation.
 
 ## Implemented Features
 
 - Google OAuth sign-in with Prisma-backed NextAuth sessions
+- Deployed custom domain at `trackmyapps.dev`
 - Protected application shell for authenticated routes
 - Dashboard summary for active jobs, status counts, recent jobs, and upcoming dates
 - Manual job creation with server-side Zod validation
@@ -25,8 +28,11 @@ The goal is not to ship a thin AI demo. The goal is to build a useful product fo
 - Archive and permanent delete actions
 - Timestamped job notes with create, list, and delete behavior
 - Manual AI job description analysis with structured saved results
+- Structured analysis stored in `JobAnalysis`
+- AI usage protections for 10,000-character input max and production-only per-user daily limits
+- Focused Vitest unit tests for core validation and helper logic
 - User-owned data access enforced server-side through `requireUser()`
-- Prisma schema for future job analysis data
+- Prisma schema for job analysis and usage tracking
 - Reusable UI primitives for buttons, inputs, textareas, badges, cards, and empty states
 
 ## Planned Features
@@ -100,14 +106,15 @@ See [docs/architecture.md](docs/architecture.md) for the full architecture notes
 
 ## Database Overview
 
-The implemented database model is centered on authenticated, user-owned job search data.
+The implemented database model is centered on authenticated, user-owned job search data and saved AI analysis.
 
 Core models:
 
 - `User`: authenticated user and owner of product data
 - `Job`: saved job posting, application status, dates, salary range, source, URL, and description
 - `Note`: timestamped notes attached to a job
-- `JobAnalysis`: optional structured analysis fields reserved for future AI workflows
+- `JobAnalysis`: structured AI analysis fields linked to a job, including summary, skills, responsibilities, keywords, and seniority
+- `JobAnalysisRun`: usage tracking for AI analysis runs, including optional model and token metadata
 - `Account`, `Session`, and `VerificationToken`: NextAuth Prisma adapter models
 
 Primary enums:
@@ -117,6 +124,7 @@ Primary enums:
 - `EmploymentType`: `FULL_TIME`, `PART_TIME`, `CONTRACT`, `INTERNSHIP`, `TEMPORARY`
 
 Jobs and notes are scoped to the authenticated user. Job analysis is owned through its required job relation.
+AI usage tracking is scoped to the authenticated user and job through `JobAnalysisRun`.
 
 See [docs/schema.md](docs/schema.md) and [prisma/schema.prisma](prisma/schema.prisma) for schema details.
 
@@ -246,7 +254,7 @@ Full saved posting view with status controls, notes, management actions, and job
 
 ## Project Status
 
-Status: MVP tracker workflow implemented locally; portfolio/deployment readiness in progress.
+Status: Deployed MVP is complete; post-MVP AI and product expansion work is underway.
 
 Completed:
 
@@ -258,9 +266,10 @@ Completed:
 - Protected dashboard and jobs app shell
 - Manual job creation, listing, detail, editing, status updates, archive/delete, and notes
 - Manual AI job description analysis saved to `JobAnalysis`
+- AI usage protections and usage tracking for analysis runs
 - Vitest unit tests for core validation and helper logic
 - Dashboard summaries and focused MVP polish pass
-- Safe environment variable example
+- Deployed custom domain and production release
 
 Not yet implemented:
 
@@ -275,22 +284,13 @@ Not yet implemented:
 
 The implementation roadmap is documented in [docs/roadmap.md](docs/roadmap.md).
 
-High-level phases:
+Current focus:
 
-1. Project setup
-2. Design foundation
-3. Authentication
-4. Database models
-5. Job creation
-6. Job list
-7. Dashboard
-8. Job detail page
-9. Notes
-10. Edit job
-11. Basic analysis placeholder
-12. Polish pass
-13. Testing
-14. Portfolio finish
+- Maintain the deployed MVP tracker workflow.
+- Improve AI analysis quality, reliability, and observability.
+- Add resume/profile foundations before any matching features.
+- Add importing, search, filtering, and analytics only when they serve the workflow.
+- Expand testing and reliability around the highest-value pure logic first.
 
 ## What This Project Demonstrates
 
@@ -307,6 +307,10 @@ Engineering priorities:
 - Schema-based validation with Zod
 - Maintainable feature-oriented folder structure
 - Practical UX for repeated workflows
+- Implemented AI integration with structured output validation and normalization
+- AI usage limits and save-path tracking
+- Focused automated testing for core validation and helper logic
+- Deployed production readiness with a live custom domain
 - AI-ready product design without premature AI complexity
 
 The main technical decision is to build a strong tracker before adding AI generation. That keeps the MVP useful on its own and gives future AI features real structured data to work with.
