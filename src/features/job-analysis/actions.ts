@@ -14,6 +14,10 @@ import {
   analyzeJobDescriptionWithOpenAI,
   JobAnalysisServiceError,
 } from "@/features/job-analysis/service";
+import {
+  getUtcDayRange,
+  hasReachedDailyAnalysisLimit,
+} from "@/features/job-analysis/usage-limits";
 import { prisma } from "@/server/db/prisma";
 
 export type AnalyzeJobDescriptionActionState = {
@@ -159,11 +163,7 @@ export async function analyzeJobDescription(
   }
 
   if (process.env.NODE_ENV === "production") {
-    const dayStart = new Date();
-    dayStart.setUTCHours(0, 0, 0, 0);
-
-    const nextDayStart = new Date(dayStart);
-    nextDayStart.setUTCDate(nextDayStart.getUTCDate() + 1);
+    const { dayStart, nextDayStart } = getUtcDayRange(new Date());
 
     const runsToday = await prisma.jobAnalysisRun.count({
       where: {
@@ -175,7 +175,7 @@ export async function analyzeJobDescription(
       },
     });
 
-    if (runsToday >= PRODUCTION_DAILY_AI_ANALYSIS_LIMIT) {
+    if (hasReachedDailyAnalysisLimit(runsToday, PRODUCTION_DAILY_AI_ANALYSIS_LIMIT)) {
       return {
         formError: "You have reached today's AI analysis limit. Please try again tomorrow.",
         canRetry: false,

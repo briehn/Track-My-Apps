@@ -184,6 +184,8 @@ AI analysis is manually triggered only. In production, the app also enforces a s
 npm run dev
 npm run build
 npm run lint
+npm run test
+npm run test:watch
 npm run prisma:generate
 npm run prisma:migrate
 ```
@@ -256,6 +258,7 @@ Completed:
 - Protected dashboard and jobs app shell
 - Manual job creation, listing, detail, editing, status updates, archive/delete, and notes
 - Manual AI job description analysis saved to `JobAnalysis`
+- Vitest unit tests for core validation and helper logic
 - Dashboard summaries and focused MVP polish pass
 - Safe environment variable example
 
@@ -265,7 +268,7 @@ Not yet implemented:
 - URL-based job importing
 - Advanced filtering/search
 - Dashboard charts and advanced analytics
-- Automated tests
+- Browser-level and integration test coverage
 - Production deployment
 
 ## Roadmap

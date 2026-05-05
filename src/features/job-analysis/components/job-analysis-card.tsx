@@ -178,9 +178,7 @@ export function JobAnalysisCard({
             Last analyzed {analysis.updatedAt.toLocaleDateString()}
           </p>
         </div>
-      ) : (
-        <p className="text-sm text-slate-600">{actionHelperText}</p>
-      )}
+      ) : null}
     </div>
   );
 }
