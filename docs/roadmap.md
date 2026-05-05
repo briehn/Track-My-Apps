@@ -153,7 +153,16 @@ Track My Apps now has a complete, deployed MVP. The remaining roadmap shifts fro
 - Add sorting by newest, deadline, and follow-up.
 - Improve active and archived organization if the list grows further.
 
-### Phase 22: Testing and Reliability
+## Phase 22: Import / Export
+
+- Export saved jobs to CSV.
+- Import existing CSV/XLSX job trackers.
+- Add column mapping for spreadsheet imports.
+- Validate imported rows before saving.
+- Show a preview and skipped-row report.
+- Keep all imported jobs scoped to the authenticated user.
+
+### Phase 23: Testing and Reliability
 
 - Add tests for Zod schemas.
 - Add tests for server actions where practical.
@@ -161,7 +170,7 @@ Track My Apps now has a complete, deployed MVP. The remaining roadmap shifts fro
 - Test AI usage limits.
 - Add production monitoring considerations.
 
-### Phase 23: Portfolio/Resume Polish
+### Phase 24: Portfolio/Resume Polish
 
 - Update README screenshots when the AI UI is stable.
 - Refresh resume wording from AI-ready to AI-powered job description analysis.

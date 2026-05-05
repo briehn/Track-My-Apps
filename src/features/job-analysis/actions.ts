@@ -33,6 +33,13 @@ type RuntimeDataModel = {
   models: Record<string, RuntimeDataModelModel>;
 };
 
+type ProviderErrorDiagnostics = {
+  status: number | null;
+  code: string | null;
+  name: string | null;
+  requestId: string | null;
+};
+
 const JOB_ANALYSIS_USAGE_FIELDS = [
   "model",
   "inputTokens",
@@ -79,6 +86,28 @@ function supportsJobAnalysisRunUsageMetadata(): boolean {
   );
 
   return metadataSupportCache;
+}
+
+function getProviderErrorDiagnostics(error: unknown): ProviderErrorDiagnostics {
+  if (!error || typeof error !== "object") {
+    return {
+      status: null,
+      code: null,
+      name: null,
+      requestId: null,
+    };
+  }
+
+  return {
+    status:
+      "status" in error && typeof error.status === "number" ? error.status : null,
+    code: "code" in error && typeof error.code === "string" ? error.code : null,
+    name: "name" in error && typeof error.name === "string" ? error.name : null,
+    requestId:
+      "requestID" in error && typeof error.requestID === "string"
+        ? error.requestID
+        : null,
+  };
 }
 
 export async function analyzeJobDescription(
@@ -210,10 +239,15 @@ export async function analyzeJobDescription(
       }
     }
 
+    const providerErrorDiagnostics = getProviderErrorDiagnostics(error);
+
     console.error("Job analysis action failed with unexpected provider error", {
       jobId: job.id,
       userId: user.id,
-      error,
+      status: providerErrorDiagnostics.status,
+      providerCode: providerErrorDiagnostics.code,
+      providerName: providerErrorDiagnostics.name,
+      providerRequestId: providerErrorDiagnostics.requestId,
     });
 
     return {

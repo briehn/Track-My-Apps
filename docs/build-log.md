@@ -6,6 +6,21 @@ It should document what changed, why it mattered, and what the next step is. It 
 
 ---
 
+## 2026-05-05
+
+### Changes
+- Ran a focused AI analysis stability checkpoint after Prisma usage-metadata compatibility fixes.
+- Verified ownership checks, description guards, production usage limiting, and analysis persistence flow (`JobAnalysis` upsert + `JobAnalysisRun` create).
+- Hardened unexpected provider-error logging in the job-analysis action to avoid logging raw error objects and keep diagnostics to safe structured fields.
+- Revalidated the project with `npm run lint` and `npm run build`.
+
+### Notes
+- The save path remains compatible with environments that may not support optional usage metadata fields yet.
+- AI analysis now has lower risk of accidentally logging oversized or sensitive provider error payloads during unexpected failures.
+
+### Next Step
+- Run a quick manual smoke test for first-run analysis and re-analysis on a real job record in the deployed/runtime environment.
+
 ## 2026-05-03
 
 ### Changes
