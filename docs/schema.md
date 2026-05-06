@@ -14,8 +14,28 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
+  profile       UserProfile?
   jobs          Job[]
   notes         Note[]
+}
+
+model UserProfile {
+  id                 String      @id @default(cuid())
+  userId             String      @unique
+  targetTitle        String?
+  locationPreference String?
+  workPreference     RemoteType?
+  yearsOfExperience  Int?
+  skills             String[]    @default([])
+  experienceSummary  String?
+  resumeText         String?
+  portfolioUrl       String?
+  githubUrl          String?
+  linkedinUrl        String?
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+
+  user               User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Job {
@@ -113,16 +133,17 @@ Keep authentication tables conceptually separate from product tables. The produc
 User-owned data is the central security boundary.
 
 - `Job.userId` defines the owner of a saved job.
+- `UserProfile.userId` defines the owner of the canonical profile and enforces one profile per user.
 - `Note.userId` defines the owner of a note and should match the owner of the related job.
 - `JobAnalysis` is owned through its required one-to-one `Job` relation.
-- Every query that reads or mutates jobs, notes, or analysis must be scoped by the authenticated user's id.
+- Every query that reads or mutates profiles, jobs, notes, or analysis must be scoped by the authenticated user's id.
 - Authentication proves who the user is. Authorization still needs explicit ownership checks in queries and server actions.
 
-For note creation, validate both `jobId` and ownership before inserting the note. Do not trust a submitted `userId` from form data.
+For note creation, validate both `jobId` and ownership before inserting the note. For profile saves, derive `userId` only from the authenticated session. Do not trust a submitted `userId` from form data.
 
 ## Cascades
 
-The schema uses cascade deletes from `User` to `Job` and `Note`, and from `Job` to `Note` and `JobAnalysis`.
+The schema uses cascade deletes from `User` to `UserProfile`, `Job`, and `Note`, and from `Job` to `Note` and `JobAnalysis`.
 
 This is appropriate for MVP because the data is personal workspace data. If the product later adds team accounts, audit logs, or shared jobs, deletion rules should be revisited before shipping those features.
 
@@ -134,6 +155,7 @@ The MVP indexes support the first expected access patterns:
 - `@@index([userId, status])` for dashboard counts and status filtering.
 - `@@index([userId, createdAt])` for recent jobs.
 - `@@index([jobId])` on notes for loading the job detail page.
+- `@unique` on `UserProfile.userId` for one canonical profile lookup per authenticated user.
 
 Avoid adding speculative indexes until real queries require them.
 
@@ -143,6 +165,10 @@ Use Zod schemas at server-action and route-handler boundaries. Prisma types desc
 
 Important validation cases:
 
+- Optional profile text fields should trim empty strings to `undefined`.
+- Profile `skills` input should normalize comma/newline text into a deduped `String[]`.
+- Profile URLs should be validated when provided.
+- `yearsOfExperience` should parse as a non-negative integer when provided.
 - Required job fields: `company`, `title`.
 - URL format for `url` when provided.
 - Salary ranges where `salaryMin <= salaryMax` when both are provided.

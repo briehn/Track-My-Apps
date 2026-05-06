@@ -25,6 +25,23 @@ It should document what changed, why it mattered, and what the next step is. It 
 ### Next Step
 - Run the unit tests in CI and add a small manual smoke pass for auth and AI analysis in the deployed/runtime environment.
 
+## 2026-05-06
+
+### Changes
+- Added a `UserProfile` Prisma model with a one-to-one `User` relation for a single canonical career profile per account.
+- Built the authenticated `/profile` page inside the dashboard shell with a private profile form for target role, work preferences, experience, skills, resume text, and career links.
+- Added authenticated profile query and upsert server action paths that derive ownership exclusively from `requireUser()`.
+- Added Zod-based profile validation plus skills normalization from comma/newline input into a deduped string array.
+- Added focused Vitest coverage for profile schema normalization and validation behavior.
+- Updated schema, roadmap, and README documentation to reflect the new profile foundation milestone.
+
+### Notes
+- The milestone intentionally stops at profile storage and validation; no resume uploads, parsing, matching, or public sharing were added.
+- Resume text remains private account data and is not logged or accepted with a client-supplied `userId`.
+
+### Next Step
+- Add the next profile-foundation slice only after deciding how repeatable project entries should be modeled without overcomplicating the canonical profile.
+
 ## 2026-05-03
 
 ### Changes

@@ -17,6 +17,7 @@ The goal is to ship a useful tracker first and add AI features that are grounded
 - Google OAuth sign-in with Prisma-backed NextAuth sessions
 - Deployed custom domain at `trackmyapps.dev`
 - Protected application shell for authenticated routes
+- Private canonical career profile page for resume and matching groundwork
 - Dashboard summary for active jobs, status counts, recent jobs, and upcoming dates
 - Manual job creation with server-side Zod validation
 - Authenticated active jobs list at `/jobs`
@@ -96,6 +97,7 @@ src/
   features/
     auth/
     jobs/
+    profiles/
     notes/
 
   server/
@@ -111,6 +113,7 @@ The implemented database model is centered on authenticated, user-owned job sear
 Core models:
 
 - `User`: authenticated user and owner of product data
+- `UserProfile`: one private canonical profile per user, including target role, work preferences, skills, resume text, and career links
 - `Job`: saved job posting, application status, dates, salary range, source, URL, and description
 - `Note`: timestamped notes attached to a job
 - `JobAnalysis`: structured AI analysis fields linked to a job, including summary, skills, responsibilities, keywords, and seniority
@@ -123,7 +126,7 @@ Primary enums:
 - `RemoteType`: `ONSITE`, `HYBRID`, `REMOTE`
 - `EmploymentType`: `FULL_TIME`, `PART_TIME`, `CONTRACT`, `INTERNSHIP`, `TEMPORARY`
 
-Jobs and notes are scoped to the authenticated user. Job analysis is owned through its required job relation.
+Jobs, notes, and the canonical profile are scoped to the authenticated user. Job analysis is owned through its required job relation.
 AI usage tracking is scoped to the authenticated user and job through `JobAnalysisRun`.
 
 See [docs/schema.md](docs/schema.md) and [prisma/schema.prisma](prisma/schema.prisma) for schema details.
@@ -273,7 +276,8 @@ Completed:
 
 Not yet implemented:
 
-- Resume features
+- Resume upload and parsing
+- Resume-to-job matching
 - URL-based job importing
 - Advanced filtering/search
 - Dashboard charts and advanced analytics
@@ -289,6 +293,7 @@ Current focus:
 - Maintain the deployed MVP tracker workflow.
 - Improve AI analysis quality, reliability, and observability.
 - Add resume/profile foundations before any matching features.
+- Expand the profile foundation before adding any resume-to-job matching logic.
 - Add importing, search, filtering, and analytics only when they serve the workflow.
 - Expand testing and reliability around the highest-value pure logic first.
 

@@ -25,6 +25,7 @@ export function AppShell({ children, user }: AppShellProps) {
   const isActiveJobsView = pathname === "/jobs" && !isArchivedView;
   const showArchivedNav = isJobsRoute || isMobileMenuOpen;
   const isAddJobView = pathname === "/jobs/new";
+  const isProfileView = pathname === "/profile";
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-950">
@@ -128,6 +129,20 @@ export function AppShell({ children, user }: AppShellProps) {
               >
                 Add Job
               </Link>
+
+              <Link
+                href="/profile"
+                onClick={() => setIsMobileMenuOpen(false)}
+                aria-current={isProfileView ? "page" : undefined}
+                className={[
+                  "block rounded-md px-3 py-2 text-sm font-medium transition",
+                  isProfileView
+                    ? "bg-slate-950 text-white"
+                    : "text-slate-700 hover:bg-slate-100 hover:text-slate-950",
+                ].join(" ")}
+              >
+                Profile
+              </Link>
             </nav>
             <div className="mt-4 border-t border-slate-200 pt-4">
               <SignOutButton className="w-full" />
@@ -189,7 +204,7 @@ export function AppShell({ children, user }: AppShellProps) {
             </div>
 
             <Link
-                href="/jobs/new"
+              href="/jobs/new"
               aria-current={isAddJobView ? "page" : undefined}
               className={[
                 "mt-2 block rounded-md px-3 py-2 text-sm font-medium transition",
@@ -199,6 +214,19 @@ export function AppShell({ children, user }: AppShellProps) {
               ].join(" ")}
             >
               Add Job
+            </Link>
+
+            <Link
+              href="/profile"
+              aria-current={isProfileView ? "page" : undefined}
+              className={[
+                "mt-2 block rounded-md px-3 py-2 text-sm font-medium transition",
+                isProfileView
+                  ? "bg-slate-950 text-white"
+                  : "text-slate-700 hover:bg-slate-100 hover:text-slate-950",
+              ].join(" ")}
+            >
+              Profile
             </Link>
           </nav>
         </aside>

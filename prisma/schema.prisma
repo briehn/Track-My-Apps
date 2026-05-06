@@ -17,9 +17,29 @@ model User {
 
   accounts      Account[]
   sessions      Session[]
+  profile       UserProfile?
   jobs          Job[]
   notes         Note[]
   analysisRuns  JobAnalysisRun[]
+}
+
+model UserProfile {
+  id                 String      @id @default(cuid())
+  userId             String      @unique
+  targetTitle        String?
+  locationPreference String?
+  workPreference     RemoteType?
+  yearsOfExperience  Int?
+  skills             String[]    @default([])
+  experienceSummary  String?
+  resumeText         String?
+  portfolioUrl       String?
+  githubUrl          String?
+  linkedinUrl        String?
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+
+  user               User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Account {
