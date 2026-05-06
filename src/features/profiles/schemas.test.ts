@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { normalizeSkillsInput, profileSchema } from "@/features/profiles/schemas";
+import {
+  getProfileFormFieldErrors,
+  normalizeSkillsInput,
+  profileFormInputSchema,
+  profileFormSchema,
+} from "@/features/profiles/schemas";
 
 describe("normalizeSkillsInput", () => {
   it("splits on commas and newlines, trims entries, and dedupes case-insensitively", () => {
@@ -16,13 +21,14 @@ describe("normalizeSkillsInput", () => {
   });
 });
 
-describe("profileSchema", () => {
+describe("profileFormSchema", () => {
   it("accepts valid input and normalizes optional blanks to undefined", () => {
-    const result = profileSchema.parse({
-      targetTitle: "  Senior Frontend Engineer  ",
+    const result = profileFormSchema.parse({
+      targetTitleOption: "Frontend Engineer",
+      targetTitleOther: "   ",
       locationPreference: "   ",
-      workPreference: "REMOTE",
-      yearsOfExperience: "7",
+      workPreferences: ["REMOTE", "HYBRID", "REMOTE"],
+      yearsOfExperience: "THREE_TO_FIVE",
       skills: " React, TypeScript \nAccessibility\nreact ",
       experienceSummary: "\t",
       resumeText: "  Built internal tools at scale.  ",
@@ -32,10 +38,10 @@ describe("profileSchema", () => {
     });
 
     expect(result).toMatchObject({
-      targetTitle: "Senior Frontend Engineer",
+      targetTitle: "Frontend Engineer",
       locationPreference: undefined,
-      workPreference: "REMOTE",
-      yearsOfExperience: 7,
+      workPreferences: ["REMOTE", "HYBRID"],
+      yearsOfExperience: "THREE_TO_FIVE",
       skills: ["React", "TypeScript", "Accessibility"],
       experienceSummary: undefined,
       resumeText: "Built internal tools at scale.",
@@ -45,9 +51,44 @@ describe("profileSchema", () => {
     });
   });
 
-  it("rejects invalid urls and negative experience values", () => {
-    const result = profileSchema.safeParse({
-      yearsOfExperience: "-1",
+  it("requires a custom title when Other is selected", () => {
+    const result = profileFormInputSchema.safeParse({
+      targetTitleOption: "OTHER",
+      skills: "TypeScript",
+    });
+
+    expect(result.success).toBe(false);
+    if (result.success) {
+      return;
+    }
+
+    expect(getProfileFormFieldErrors(result.error).targetTitleOther).toContain(
+      "Enter your target title.",
+    );
+  });
+
+  it("accepts missing targetTitleOther when a predefined title is selected", () => {
+    const result = profileFormInputSchema.safeParse({
+      targetTitleOption: "Software Engineer",
+      locationPreference: "Remote within current country",
+      workPreferences: ["REMOTE"],
+      yearsOfExperience: "THREE_TO_FIVE",
+      skills: "TypeScript",
+      experienceSummary: "",
+      resumeText: "",
+      portfolioUrl: "",
+      githubUrl: "",
+      linkedinUrl: "",
+    });
+
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects invalid urls and unsupported experience values", () => {
+    const result = profileFormInputSchema.safeParse({
+      targetTitleOption: "Software Engineer",
+      yearsOfExperience: "7",
+      workPreferences: ["REMOTE"],
       skills: "TypeScript",
       portfolioUrl: "not-a-url",
     });
@@ -57,9 +98,7 @@ describe("profileSchema", () => {
       return;
     }
 
-    expect(result.error.flatten().fieldErrors.yearsOfExperience).toContain(
-      "Enter 0 or more years.",
-    );
+    expect(result.error.flatten().fieldErrors.yearsOfExperience).toBeDefined();
     expect(result.error.flatten().fieldErrors.portfolioUrl).toContain(
       "Enter a valid URL.",
     );

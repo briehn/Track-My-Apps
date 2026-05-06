@@ -1,21 +1,35 @@
+"use client";
+
+import { useState } from "react";
+
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-
-type ProfileFormFieldName =
-  | "targetTitle"
-  | "locationPreference"
-  | "workPreference"
-  | "yearsOfExperience"
-  | "skills"
-  | "experienceSummary"
-  | "resumeText"
-  | "portfolioUrl"
-  | "githubUrl"
-  | "linkedinUrl";
+import {
+  locationPreferenceSuggestions,
+  TARGET_TITLE_OPTIONS,
+  TARGET_TITLE_OTHER_OPTION,
+  yearsOfExperienceLabels,
+  YEARS_OF_EXPERIENCE_OPTIONS,
+  workPreferenceOptions,
+} from "@/features/profiles/options";
+import { ProfileSelect } from "@/features/profiles/components/profile-select";
+import type { ProfileFormFieldName } from "@/features/profiles/schemas";
 
 export type ProfileFormFieldErrors = Partial<Record<ProfileFormFieldName, string[]>>;
 
-export type ProfileFormValues = Partial<Record<ProfileFormFieldName, string>>;
+export type ProfileFormValues = {
+  targetTitleOption?: string;
+  targetTitleOther?: string;
+  locationPreference?: string;
+  workPreferences?: string[];
+  yearsOfExperience?: string;
+  skills?: string;
+  experienceSummary?: string;
+  resumeText?: string;
+  portfolioUrl?: string;
+  githubUrl?: string;
+  linkedinUrl?: string;
+};
 
 type ProfileFormFieldsProps = {
   errors?: ProfileFormFieldErrors;
@@ -30,35 +44,72 @@ function FieldError({ errors }: { errors?: string[] }) {
   return <p className="mt-1 text-sm text-red-600">{errors[0]}</p>;
 }
 
-export function ProfileFormFields({ errors, defaultValues }: ProfileFormFieldsProps) {
+export function ProfileFormFields({
+  errors,
+  defaultValues,
+}: ProfileFormFieldsProps) {
+  const [targetTitleOption, setTargetTitleOption] = useState(
+    defaultValues?.targetTitleOption ?? "",
+  );
+
   return (
     <>
       <div className="grid gap-4 md:grid-cols-2">
         <div>
-          <label htmlFor="targetTitle" className="text-sm font-medium text-slate-950">
+          <label htmlFor="targetTitleOption" className="text-sm font-medium text-slate-950">
             Target title
           </label>
-          <Input
-            id="targetTitle"
-            name="targetTitle"
-            autoComplete="organization-title"
-            defaultValue={defaultValues?.targetTitle}
-          />
-          <FieldError errors={errors?.targetTitle} />
+          <ProfileSelect
+            id="targetTitleOption"
+            name="targetTitleOption"
+            defaultValue={defaultValues?.targetTitleOption ?? ""}
+            onChange={(event) => setTargetTitleOption(event.currentTarget.value)}
+          >
+            <option value="">Not specified</option>
+            {TARGET_TITLE_OPTIONS.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+            <option value={TARGET_TITLE_OTHER_OPTION}>Other</option>
+          </ProfileSelect>
+          <FieldError errors={errors?.targetTitleOption} />
+
+          {targetTitleOption === TARGET_TITLE_OTHER_OPTION ? (
+            <div className="mt-3">
+              <label
+                htmlFor="targetTitleOther"
+                className="text-sm font-medium text-slate-950"
+              >
+                Custom target title
+              </label>
+              <Input
+                id="targetTitleOther"
+                name="targetTitleOther"
+                autoComplete="organization-title"
+                defaultValue={defaultValues?.targetTitleOther}
+              />
+              <FieldError errors={errors?.targetTitleOther} />
+            </div>
+          ) : null}
         </div>
 
         <div>
           <label htmlFor="yearsOfExperience" className="text-sm font-medium text-slate-950">
             Years of experience
           </label>
-          <Input
+          <ProfileSelect
             id="yearsOfExperience"
             name="yearsOfExperience"
-            type="number"
-            min="0"
-            max="80"
             defaultValue={defaultValues?.yearsOfExperience}
-          />
+          >
+            <option value="">Not specified</option>
+            {YEARS_OF_EXPERIENCE_OPTIONS.map((option) => (
+              <option key={option} value={option}>
+                {yearsOfExperienceLabels[option]}
+              </option>
+            ))}
+          </ProfileSelect>
           <FieldError errors={errors?.yearsOfExperience} />
         </div>
       </div>
@@ -72,27 +123,49 @@ export function ProfileFormFields({ errors, defaultValues }: ProfileFormFieldsPr
             id="locationPreference"
             name="locationPreference"
             autoComplete="address-level2"
+            list="location-preference-suggestions"
             defaultValue={defaultValues?.locationPreference}
           />
+          <datalist id="location-preference-suggestions">
+            {locationPreferenceSuggestions.map((suggestion) => (
+              <option key={suggestion} value={suggestion} />
+            ))}
+          </datalist>
+          <p className="mt-1 text-xs text-slate-500">
+            Suggested phrases keep this usable globally without restricting you to a hard-coded city list.
+          </p>
           <FieldError errors={errors?.locationPreference} />
         </div>
 
         <div>
-          <label htmlFor="workPreference" className="text-sm font-medium text-slate-950">
-            Work preference
-          </label>
-          <select
-            id="workPreference"
-            name="workPreference"
-            defaultValue={defaultValues?.workPreference ?? ""}
-            className="mt-1 h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-950 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200"
-          >
-            <option value="">Not specified</option>
-            <option value="ONSITE">Onsite</option>
-            <option value="HYBRID">Hybrid</option>
-            <option value="REMOTE">Remote</option>
-          </select>
-          <FieldError errors={errors?.workPreference} />
+          <fieldset>
+            <legend className="text-sm font-medium text-slate-950">Work preferences</legend>
+            <div className="mt-2 space-y-2">
+              {workPreferenceOptions.map((option) => (
+                <label
+                  key={option.value}
+                  className="flex items-start gap-3 rounded-md border border-slate-200 bg-slate-50 px-3 py-3"
+                >
+                  <input
+                    type="checkbox"
+                    name="workPreferences"
+                    value={option.value}
+                    defaultChecked={defaultValues?.workPreferences?.includes(option.value)}
+                    className="mt-0.5 h-4 w-4 rounded border-slate-300 text-slate-950 focus:ring-slate-400"
+                  />
+                  <span>
+                    <span className="block text-sm font-medium text-slate-950">
+                      {option.label}
+                    </span>
+                    <span className="block text-xs text-slate-500">
+                      {option.description}
+                    </span>
+                  </span>
+                </label>
+              ))}
+            </div>
+            <FieldError errors={errors?.workPreferences} />
+          </fieldset>
         </div>
       </div>
 

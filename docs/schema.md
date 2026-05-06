@@ -24,8 +24,8 @@ model UserProfile {
   userId             String      @unique
   targetTitle        String?
   locationPreference String?
-  workPreference     RemoteType?
-  yearsOfExperience  Int?
+  workPreferences    RemoteType[] @default([])
+  yearsOfExperience  ExperienceRange?
   skills             String[]    @default([])
   experienceSummary  String?
   resumeText         String?
@@ -113,6 +113,14 @@ enum RemoteType {
   REMOTE
 }
 
+enum ExperienceRange {
+  ZERO_TO_ONE
+  ONE_TO_TWO
+  THREE_TO_FIVE
+  SIX_TO_NINE
+  TEN_PLUS
+}
+
 enum EmploymentType {
   FULL_TIME
   PART_TIME
@@ -166,9 +174,12 @@ Use Zod schemas at server-action and route-handler boundaries. Prisma types desc
 Important validation cases:
 
 - Optional profile text fields should trim empty strings to `undefined`.
+- Profile target titles should come from a predefined list, with an explicit `Other` path for uncommon roles.
+- Profile `locationPreference` should stay globally usable, so suggested phrases are appropriate while the stored field remains freeform text.
+- Profile `workPreferences` should validate as a deduped `RemoteType[]`.
+- `yearsOfExperience` should validate as an `ExperienceRange` enum value when provided.
 - Profile `skills` input should normalize comma/newline text into a deduped `String[]`.
 - Profile URLs should be validated when provided.
-- `yearsOfExperience` should parse as a non-negative integer when provided.
 - Required job fields: `company`, `title`.
 - URL format for `url` when provided.
 - Salary ranges where `salaryMin <= salaryMax` when both are provided.

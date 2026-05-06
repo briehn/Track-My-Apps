@@ -1,14 +1,18 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { z } from "zod";
 
 import { requireUser } from "@/features/auth/require-user";
-import { profileSchema } from "@/features/profiles/schemas";
+import {
+  getProfileFormFieldErrors,
+  profileFormInputSchema,
+  toProfileInput,
+  type ProfileFormFieldName,
+} from "@/features/profiles/schemas";
 import { prisma } from "@/server/db/prisma";
 
 export type UpsertProfileActionState = {
-  fieldErrors?: Partial<Record<keyof z.infer<typeof profileSchema>, string[]>>;
+  fieldErrors?: Partial<Record<ProfileFormFieldName, string[]>>;
   formError?: string;
   successMessage?: string;
 };
@@ -19,11 +23,12 @@ export async function upsertProfile(
 ): Promise<UpsertProfileActionState> {
   const user = await requireUser();
 
-  const parsedInput = profileSchema.safeParse({
-    targetTitle: formData.get("targetTitle"),
+  const parsedForm = profileFormInputSchema.safeParse({
+    targetTitleOption: formData.get("targetTitleOption") || undefined,
+    targetTitleOther: formData.get("targetTitleOther"),
     locationPreference: formData.get("locationPreference"),
-    workPreference: formData.get("workPreference") || undefined,
-    yearsOfExperience: formData.get("yearsOfExperience"),
+    workPreferences: formData.getAll("workPreferences"),
+    yearsOfExperience: formData.get("yearsOfExperience") || undefined,
     skills: formData.get("skills"),
     experienceSummary: formData.get("experienceSummary"),
     resumeText: formData.get("resumeText"),
@@ -32,11 +37,13 @@ export async function upsertProfile(
     linkedinUrl: formData.get("linkedinUrl"),
   });
 
-  if (!parsedInput.success) {
+  if (!parsedForm.success) {
     return {
-      fieldErrors: parsedInput.error.flatten().fieldErrors,
+      fieldErrors: getProfileFormFieldErrors(parsedForm.error),
     };
   }
+
+  const profileInput = toProfileInput(parsedForm.data);
 
   try {
     await prisma.userProfile.upsert({
@@ -45,9 +52,9 @@ export async function upsertProfile(
       },
       create: {
         userId: user.id,
-        ...parsedInput.data,
+        ...profileInput,
       },
-      update: parsedInput.data,
+      update: profileInput,
     });
   } catch {
     return {

@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -11,6 +12,7 @@ import {
   upsertProfile,
   type UpsertProfileActionState,
 } from "@/features/profiles/actions";
+import { isPredefinedTargetTitle, TARGET_TITLE_OTHER_OPTION } from "@/features/profiles/options";
 import type { UserProfileDetail } from "@/features/profiles/queries";
 
 type ProfileFormProps = {
@@ -24,11 +26,16 @@ function toProfileFormValues(profile: UserProfileDetail): ProfileFormValues {
     return {};
   }
 
+  const usesCustomTargetTitle = !isPredefinedTargetTitle(profile.targetTitle);
+
   return {
-    targetTitle: profile.targetTitle ?? undefined,
+    targetTitleOption: usesCustomTargetTitle
+      ? TARGET_TITLE_OTHER_OPTION
+      : (profile.targetTitle ?? undefined),
+    targetTitleOther: usesCustomTargetTitle ? (profile.targetTitle ?? undefined) : undefined,
     locationPreference: profile.locationPreference ?? undefined,
-    workPreference: profile.workPreference ?? undefined,
-    yearsOfExperience: profile.yearsOfExperience?.toString(),
+    workPreferences: profile.workPreferences,
+    yearsOfExperience: profile.yearsOfExperience ?? undefined,
     skills: profile.skills.join("\n"),
     experienceSummary: profile.experienceSummary ?? undefined,
     resumeText: profile.resumeText ?? undefined,
@@ -38,14 +45,90 @@ function toProfileFormValues(profile: UserProfileDetail): ProfileFormValues {
   };
 }
 
+function normalizeFormValues(values: ProfileFormValues) {
+  return {
+    targetTitleOption: values.targetTitleOption ?? "",
+    targetTitleOther: values.targetTitleOther ?? "",
+    locationPreference: values.locationPreference ?? "",
+    workPreferences: [...(values.workPreferences ?? [])].sort(),
+    yearsOfExperience: values.yearsOfExperience ?? "",
+    skills: values.skills ?? "",
+    experienceSummary: values.experienceSummary ?? "",
+    resumeText: values.resumeText ?? "",
+    portfolioUrl: values.portfolioUrl ?? "",
+    githubUrl: values.githubUrl ?? "",
+    linkedinUrl: values.linkedinUrl ?? "",
+  };
+}
+
+function toSnapshot(values: ProfileFormValues) {
+  return JSON.stringify(normalizeFormValues(values));
+}
+
+function toCurrentFormValues(form: HTMLFormElement): ProfileFormValues {
+  const formData = new FormData(form);
+
+  return {
+    targetTitleOption: formData.get("targetTitleOption")?.toString() ?? "",
+    targetTitleOther: formData.get("targetTitleOther")?.toString() ?? "",
+    locationPreference: formData.get("locationPreference")?.toString() ?? "",
+    workPreferences: formData.getAll("workPreferences").map((value) => value.toString()),
+    yearsOfExperience: formData.get("yearsOfExperience")?.toString() ?? "",
+    skills: formData.get("skills")?.toString() ?? "",
+    experienceSummary: formData.get("experienceSummary")?.toString() ?? "",
+    resumeText: formData.get("resumeText")?.toString() ?? "",
+    portfolioUrl: formData.get("portfolioUrl")?.toString() ?? "",
+    githubUrl: formData.get("githubUrl")?.toString() ?? "",
+    linkedinUrl: formData.get("linkedinUrl")?.toString() ?? "",
+  };
+}
+
 export function ProfileForm({ profile }: ProfileFormProps) {
+  const router = useRouter();
+  const formRef = useRef<HTMLFormElement>(null);
+  const defaultValues = useMemo(() => toProfileFormValues(profile), [profile]);
+  const [resetKey, setResetKey] = useState(0);
+  const [isDirty, setIsDirty] = useState(false);
   const [state, formAction, isPending] = useActionState(
     upsertProfile,
     initialState,
   );
+  const defaultSnapshot = useMemo(() => toSnapshot(defaultValues), [defaultValues]);
+
+  useEffect(() => {
+    if (!state.successMessage) {
+      return;
+    }
+
+    router.refresh();
+  }, [router, state.successMessage]);
+
+  function updateDirtyState() {
+    if (!formRef.current) {
+      return;
+    }
+
+    const currentSnapshot = toSnapshot(toCurrentFormValues(formRef.current));
+    setIsDirty(currentSnapshot !== defaultSnapshot);
+  }
+
+  function handleDiscardChanges() {
+    if (!formRef.current) {
+      return;
+    }
+
+    formRef.current.reset();
+    setResetKey((value) => value + 1);
+    setIsDirty(false);
+  }
 
   return (
-    <form action={formAction} className="space-y-6">
+    <form
+      ref={formRef}
+      action={formAction}
+      onChange={updateDirtyState}
+      className="space-y-6 pb-28"
+    >
       {state.formError ? (
         <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {state.formError}
@@ -59,15 +142,33 @@ export function ProfileForm({ profile }: ProfileFormProps) {
       ) : null}
 
       <ProfileFormFields
+        key={resetKey}
         errors={state.fieldErrors}
-        defaultValues={toProfileFormValues(profile)}
+        defaultValues={defaultValues}
       />
 
-      <div className="flex justify-end">
-        <Button type="submit" disabled={isPending}>
-          {isPending ? "Saving..." : "Save profile"}
-        </Button>
-      </div>
+      {isDirty ? (
+        <div className="fixed bottom-4 left-1/2 z-50 w-[calc(100%-1.5rem)] max-w-3xl -translate-x-1/2 rounded-lg border border-slate-300 bg-white/95 p-3 shadow-xl backdrop-blur sm:w-[calc(100%-2rem)]">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm text-slate-700">
+              {isPending ? "Saving changes..." : "You have unsaved changes."}
+            </p>
+            <div className="flex gap-2 sm:justify-end">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={handleDiscardChanges}
+                disabled={isPending}
+              >
+                Discard changes
+              </Button>
+              <Button type="submit" disabled={isPending}>
+                {isPending ? "Saving..." : "Save changes"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </form>
   );
 }

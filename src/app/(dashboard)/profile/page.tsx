@@ -34,7 +34,10 @@ export default async function ProfilePage() {
             This stays private to your account and is not shared publicly.
           </CardDescription>
         </CardHeader>
-        <ProfileForm profile={profile} />
+        <ProfileForm
+          key={profile?.updatedAt.toISOString() ?? "new-profile"}
+          profile={profile}
+        />
       </Card>
     </div>
   );

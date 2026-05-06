@@ -28,8 +28,8 @@ model UserProfile {
   userId             String      @unique
   targetTitle        String?
   locationPreference String?
-  workPreference     RemoteType?
-  yearsOfExperience  Int?
+  workPreferences    RemoteType[] @default([])
+  yearsOfExperience  ExperienceRange?
   skills             String[]    @default([])
   experienceSummary  String?
   resumeText         String?
@@ -172,6 +172,14 @@ enum RemoteType {
   ONSITE
   HYBRID
   REMOTE
+}
+
+enum ExperienceRange {
+  ZERO_TO_ONE
+  ONE_TO_TWO
+  THREE_TO_FIVE
+  SIX_TO_NINE
+  TEN_PLUS
 }
 
 enum EmploymentType {

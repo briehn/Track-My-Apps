@@ -123,7 +123,7 @@ Track My Apps now has a complete, deployed MVP. The remaining roadmap shifts fro
 ### Phase 17: Resume/Profile Foundation
 
 - In progress.
-- Added a private canonical user profile page with resume text, skills, work preferences, and career links.
+- Added a private canonical user profile page with resume text, skills, structured target titles, structured experience ranges, multi-select work preferences, and career links.
 - Add user profile and resume text storage.
 - Store skills, projects, and experience in a user-owned profile model.
 - Keep ownership and privacy boundaries explicit.

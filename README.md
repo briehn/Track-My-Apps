@@ -17,7 +17,7 @@ The goal is to ship a useful tracker first and add AI features that are grounded
 - Google OAuth sign-in with Prisma-backed NextAuth sessions
 - Deployed custom domain at `trackmyapps.dev`
 - Protected application shell for authenticated routes
-- Private canonical career profile page for resume and matching groundwork
+- Private canonical career profile page with structured target titles, experience ranges, and multi-select work preferences
 - Dashboard summary for active jobs, status counts, recent jobs, and upcoming dates
 - Manual job creation with server-side Zod validation
 - Authenticated active jobs list at `/jobs`
@@ -113,7 +113,7 @@ The implemented database model is centered on authenticated, user-owned job sear
 Core models:
 
 - `User`: authenticated user and owner of product data
-- `UserProfile`: one private canonical profile per user, including target role, work preferences, skills, resume text, and career links
+- `UserProfile`: one private canonical profile per user, including target role, suggested location preference text, multi-select work preferences, experience range, skills, resume text, and career links
 - `Job`: saved job posting, application status, dates, salary range, source, URL, and description
 - `Note`: timestamped notes attached to a job
 - `JobAnalysis`: structured AI analysis fields linked to a job, including summary, skills, responsibilities, keywords, and seniority
@@ -124,6 +124,7 @@ Primary enums:
 
 - `ApplicationStatus`: `SAVED`, `APPLIED`, `INTERVIEWING`, `OFFER`, `REJECTED`, `ARCHIVED`
 - `RemoteType`: `ONSITE`, `HYBRID`, `REMOTE`
+- `ExperienceRange`: `ZERO_TO_ONE`, `ONE_TO_TWO`, `THREE_TO_FIVE`, `SIX_TO_NINE`, `TEN_PLUS`
 - `EmploymentType`: `FULL_TIME`, `PART_TIME`, `CONTRACT`, `INTERNSHIP`, `TEMPORARY`
 
 Jobs, notes, and the canonical profile are scoped to the authenticated user. Job analysis is owned through its required job relation.
@@ -177,6 +178,8 @@ Generate Prisma Client:
 ```bash
 npm run prisma:generate
 ```
+
+If you change `prisma/schema.prisma` and see stale Prisma field errors during local development, regenerate Prisma Client and restart the dev server. If the issue persists, remove `.next` and start `npm run dev` again.
 
 Start the development server:
 

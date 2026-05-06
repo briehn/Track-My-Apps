@@ -12,7 +12,7 @@ export async function getProfileForCurrentUser() {
       id: true,
       targetTitle: true,
       locationPreference: true,
-      workPreference: true,
+      workPreferences: true,
       yearsOfExperience: true,
       skills: true,
       experienceSummary: true,

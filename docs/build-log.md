@@ -34,10 +34,17 @@ It should document what changed, why it mattered, and what the next step is. It 
 - Added Zod-based profile validation plus skills normalization from comma/newline input into a deduped string array.
 - Added focused Vitest coverage for profile schema normalization and validation behavior.
 - Updated schema, roadmap, and README documentation to reflect the new profile foundation milestone.
+- Refined the profile UX to use predefined target-title options, categorical experience ranges, suggested location phrases, and multi-select work preferences backed by schema changes.
+- Reverted custom Prisma dev singleton schema-signature invalidation and returned to the standard Prisma singleton pattern to keep setup simple and avoid reliance on generated metadata internals.
+- Added a short README recovery note for stale local Prisma Client issues after schema changes (`prisma generate`, restart dev server, clear `.next` if needed).
+- Fixed a profile-save regression caused by conditionally missing `targetTitleOther` form data failing optional-string validation (`null` vs `undefined` handling).
+- Replaced the bottom-only profile submit path with a dirty-state floating save/discard action bar that stays accessible while scrolling.
+- Added profile schema coverage for the missing `targetTitleOther` path when a predefined target title is selected.
 
 ### Notes
 - The milestone intentionally stops at profile storage and validation; no resume uploads, parsing, matching, or public sharing were added.
 - Resume text remains private account data and is not logged or accepted with a client-supplied `userId`.
+- Location preference intentionally remains a text field with suggestions so the app stays globally usable instead of forcing a brittle hard-coded geography list.
 
 ### Next Step
 - Add the next profile-foundation slice only after deciding how repeatable project entries should be modeled without overcomplicating the canonical profile.
