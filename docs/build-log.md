@@ -14,6 +14,8 @@ It should document what changed, why it mattered, and what the next step is. It 
 - Added a defensive render-time URL check on the job detail page so previously saved unsafe URLs are not emitted into an anchor tag.
 - Tightened job-analysis persistence failure logging to emit structured diagnostics instead of a raw error object.
 - Added regression coverage for unsafe URL rejection in job/profile validation and AI profile suggestion normalization.
+- Added app-level and authenticated-dashboard not-found pages so invalid URLs now resolve to a branded recovery experience instead of the browser default 404.
+- Updated the README to document the new not-found experience as an implemented feature.
 
 ### Notes
 - The review found no raw SQL usage, no dangerous HTML rendering, and no missing user-ownership scoping in the current jobs, notes, profile, or AI action paths.

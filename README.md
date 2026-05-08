@@ -32,6 +32,7 @@ The goal is to ship a useful tracker first and add AI features that are grounded
 - Manual AI job description analysis with structured saved results
 - Structured analysis stored in `JobAnalysis`
 - AI usage protections for 10,000-character input max and production-only per-user daily limits
+- Polished app-level not-found pages for public and authenticated dashboard routes
 - Focused Vitest unit tests for core validation and helper logic
 - User-owned data access enforced server-side through `requireUser()`
 - Prisma schema for job analysis and usage tracking
