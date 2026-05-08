@@ -6,6 +6,22 @@ It should document what changed, why it mattered, and what the next step is. It 
 
 ---
 
+## 2026-05-07
+
+### Changes
+- Ran a focused security review across Next.js route handlers, server actions, Prisma access patterns, rendering sinks, URL handling, auth scoping, and logging.
+- Hardened external URL validation so job and profile URLs only accept `http://` or `https://`, closing the click-through `javascript:` URL risk that Zod's generic URL validator would otherwise allow.
+- Added a defensive render-time URL check on the job detail page so previously saved unsafe URLs are not emitted into an anchor tag.
+- Tightened job-analysis persistence failure logging to emit structured diagnostics instead of a raw error object.
+- Added regression coverage for unsafe URL rejection in job/profile validation and AI profile suggestion normalization.
+
+### Notes
+- The review found no raw SQL usage, no dangerous HTML rendering, and no missing user-ownership scoping in the current jobs, notes, profile, or AI action paths.
+- React text rendering continues to protect saved notes, job descriptions, resume text, and AI-generated summaries from direct HTML/script injection as long as the app does not introduce raw HTML rendering later.
+
+### Next Step
+- Keep the same review bar when adding URL importing, richer AI output, or any new public API routes, because those features would materially expand the attack surface.
+
 ## 2026-05-05
 
 ### Changes
@@ -40,6 +56,8 @@ It should document what changed, why it mattered, and what the next step is. It 
 - Fixed a profile-save regression caused by conditionally missing `targetTitleOther` form data failing optional-string validation (`null` vs `undefined` handling).
 - Replaced the bottom-only profile submit path with a dirty-state floating save/discard action bar that stays accessible while scrolling.
 - Added profile schema coverage for the missing `targetTitleOther` path when a predefined target title is selected.
+- Added AI profile extraction from saved resume text with OpenAI-backed structured suggestions, server-side validation/normalization, and a manual review/apply step that does not write directly to `UserProfile`.
+- Kept extraction action-only for MVP so AI suggestions stay transient until the user applies them and explicitly saves through the existing profile form flow.
 
 ### Notes
 - The milestone intentionally stops at profile storage and validation; no resume uploads, parsing, matching, or public sharing were added.

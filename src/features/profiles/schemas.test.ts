@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  hasAnyProfileExtractionSuggestions,
+  hasExtractableResumeText,
+  isResumeTextTooLongForProfileExtraction,
+  MAX_PROFILE_RESUME_EXTRACTION_CHARS,
+  MIN_PROFILE_RESUME_EXTRACTION_CHARS,
+  normalizeProfileExtractionSuggestion,
   getProfileFormFieldErrors,
   normalizeSkillsInput,
   profileFormInputSchema,
@@ -18,6 +24,47 @@ describe("normalizeSkillsInput", () => {
     expect(normalizeSkillsInput(undefined)).toEqual([]);
     expect(normalizeSkillsInput(null)).toEqual([]);
     expect(normalizeSkillsInput("  \n , ")).toEqual([]);
+  });
+});
+
+describe("profile extraction helpers", () => {
+  it("checks resume text extraction length boundaries", () => {
+    expect(hasExtractableResumeText("a".repeat(MIN_PROFILE_RESUME_EXTRACTION_CHARS - 1))).toBe(
+      false,
+    );
+    expect(hasExtractableResumeText("a".repeat(MIN_PROFILE_RESUME_EXTRACTION_CHARS))).toBe(
+      true,
+    );
+    expect(
+      isResumeTextTooLongForProfileExtraction(
+        "a".repeat(MAX_PROFILE_RESUME_EXTRACTION_CHARS + 1),
+      ),
+    ).toBe(true);
+  });
+
+  it("normalizes extracted suggestions safely", () => {
+    const result = normalizeProfileExtractionSuggestion({
+      targetTitle: "  Operations Manager  ",
+      yearsOfExperience: "SIX_TO_NINE",
+      skills: [" Leadership ", "Excel", "excel", "  ", "Operations"],
+      experienceSummary: "  Led regional operations teams.  ",
+      portfolioUrl: "javascript:alert(1)",
+      githubUrl: "https://github.com/example",
+      linkedinUrl: " https://www.linkedin.com/in/example ",
+      workPreferences: ["REMOTE", "HYBRID", "REMOTE"],
+    });
+
+    expect(result).toEqual({
+      targetTitle: "Operations Manager",
+      yearsOfExperience: "SIX_TO_NINE",
+      skills: ["Leadership", "Excel", "Operations"],
+      experienceSummary: "Led regional operations teams.",
+      portfolioUrl: null,
+      githubUrl: "https://github.com/example",
+      linkedinUrl: "https://www.linkedin.com/in/example",
+      workPreferences: ["REMOTE", "HYBRID"],
+    });
+    expect(hasAnyProfileExtractionSuggestions(result)).toBe(true);
   });
 });
 
@@ -90,7 +137,7 @@ describe("profileFormSchema", () => {
       yearsOfExperience: "7",
       workPreferences: ["REMOTE"],
       skills: "TypeScript",
-      portfolioUrl: "not-a-url",
+      portfolioUrl: "javascript:alert(1)",
     });
 
     expect(result.success).toBe(false);
@@ -99,6 +146,24 @@ describe("profileFormSchema", () => {
     }
 
     expect(result.error.flatten().fieldErrors.yearsOfExperience).toBeDefined();
+    expect(result.error.flatten().fieldErrors.portfolioUrl).toContain(
+      "Enter a valid http:// or https:// URL.",
+    );
+  });
+
+  it("still rejects malformed profile urls", () => {
+    const result = profileFormInputSchema.safeParse({
+      targetTitleOption: "Software Engineer",
+      workPreferences: ["REMOTE"],
+      skills: "TypeScript",
+      portfolioUrl: "not-a-url",
+    });
+
+    expect(result.success).toBe(false);
+    if (result.success) {
+      return;
+    }
+
     expect(result.error.flatten().fieldErrors.portfolioUrl).toContain(
       "Enter a valid URL.",
     );

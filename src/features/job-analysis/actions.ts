@@ -44,6 +44,12 @@ type ProviderErrorDiagnostics = {
   requestId: string | null;
 };
 
+type PersistenceErrorDiagnostics = {
+  code: string | null;
+  message: string | null;
+  name: string | null;
+};
+
 const JOB_ANALYSIS_USAGE_FIELDS = [
   "model",
   "inputTokens",
@@ -111,6 +117,25 @@ function getProviderErrorDiagnostics(error: unknown): ProviderErrorDiagnostics {
       "requestID" in error && typeof error.requestID === "string"
         ? error.requestID
         : null,
+  };
+}
+
+function getPersistenceErrorDiagnostics(error: unknown): PersistenceErrorDiagnostics {
+  if (!error || typeof error !== "object") {
+    return {
+      code: null,
+      message: null,
+      name: null,
+    };
+  }
+
+  return {
+    code: "code" in error && typeof error.code === "string" ? error.code : null,
+    message:
+      "message" in error && typeof error.message === "string"
+        ? error.message
+        : null,
+    name: "name" in error && typeof error.name === "string" ? error.name : null,
   };
 }
 
@@ -287,10 +312,14 @@ export async function analyzeJobDescription(
       }),
     ]);
   } catch (error) {
+    const persistenceErrorDiagnostics = getPersistenceErrorDiagnostics(error);
+
     console.error("Job analysis save failed", {
       jobId: job.id,
       userId: user.id,
-      error,
+      code: persistenceErrorDiagnostics.code,
+      name: persistenceErrorDiagnostics.name,
+      message: persistenceErrorDiagnostics.message,
     });
 
     return {

@@ -76,11 +76,11 @@ describe("createJobSchema", () => {
     );
   });
 
-  it("rejects invalid URLs and salaryMin greater than salaryMax", () => {
+  it("rejects invalid or unsafe URLs and salaryMin greater than salaryMax", () => {
     const result = createJobSchema.safeParse({
       company: "Acme",
       title: "Platform Engineer",
-      url: "not-a-url",
+      url: "javascript:alert(1)",
       salaryMin: "150000",
       salaryMax: "100000",
     });
@@ -90,10 +90,27 @@ describe("createJobSchema", () => {
       return;
     }
 
-    expect(result.error.flatten().fieldErrors.url).toContain("Enter a valid URL.");
+    expect(result.error.flatten().fieldErrors.url).toContain(
+      "Enter a valid http:// or https:// URL.",
+    );
     expect(result.error.flatten().fieldErrors.salaryMax).toContain(
       "Minimum salary must be less than or equal to maximum salary.",
     );
+  });
+
+  it("rejects malformed URLs", () => {
+    const result = createJobSchema.safeParse({
+      company: "Acme",
+      title: "Platform Engineer",
+      url: "not-a-url",
+    });
+
+    expect(result.success).toBe(false);
+    if (result.success) {
+      return;
+    }
+
+    expect(result.error.flatten().fieldErrors.url).toContain("Enter a valid URL.");
   });
 });
 

@@ -21,6 +21,7 @@ import { statusBadgeVariants, statusLabels } from "@/features/jobs/status";
 import { NoteForm } from "@/features/notes/components/note-form";
 import { NotesList } from "@/features/notes/components/notes-list";
 import { getNotesForJobForCurrentUser } from "@/features/notes/queries";
+import { isSafeExternalUrl } from "@/lib/url";
 
 type JobDetailPageProps = {
   params: Promise<{
@@ -95,6 +96,8 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
     notFound();
   }
 
+  const safeJobUrl = job.url && isSafeExternalUrl(job.url) ? job.url : null;
+
   return (
     <div className="mx-auto max-w-6xl space-y-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -144,9 +147,9 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
                   Job URL
                 </dt>
                 <dd className="mt-1 text-sm leading-6 text-slate-700">
-                  {job.url ? (
+                  {safeJobUrl ? (
                     <a
-                      href={job.url}
+                      href={safeJobUrl}
                       target="_blank"
                       rel="noreferrer"
                       className="break-all text-slate-950 underline underline-offset-4 hover:text-slate-700"

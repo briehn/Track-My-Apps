@@ -18,6 +18,7 @@ The goal is to ship a useful tracker first and add AI features that are grounded
 - Deployed custom domain at `trackmyapps.dev`
 - Protected application shell for authenticated routes
 - Private canonical career profile page with structured target titles, experience ranges, and multi-select work preferences
+- AI-assisted profile extraction suggestions from saved resume text with explicit review/apply before saving
 - Dashboard summary for active jobs, status counts, recent jobs, and upcoming dates
 - Manual job creation with server-side Zod validation
 - Authenticated active jobs list at `/jobs`

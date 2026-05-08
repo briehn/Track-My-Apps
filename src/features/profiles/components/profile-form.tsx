@@ -4,6 +4,7 @@ import { useActionState, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
+import { ProfileExtractionPanel } from "@/features/profiles/components/profile-extraction-panel";
 import {
   ProfileFormFields,
   type ProfileFormValues,
@@ -13,6 +14,7 @@ import {
   type UpsertProfileActionState,
 } from "@/features/profiles/actions";
 import { isPredefinedTargetTitle, TARGET_TITLE_OTHER_OPTION } from "@/features/profiles/options";
+import type { ProfileExtractionSuggestion } from "@/features/profiles/schemas";
 import type { UserProfileDetail } from "@/features/profiles/queries";
 
 type ProfileFormProps = {
@@ -83,17 +85,67 @@ function toCurrentFormValues(form: HTMLFormElement): ProfileFormValues {
   };
 }
 
+function mergeProfileExtractionSuggestionsIntoFormValues(
+  currentValues: ProfileFormValues,
+  suggestions: ProfileExtractionSuggestion,
+): ProfileFormValues {
+  const nextValues: ProfileFormValues = {
+    ...currentValues,
+  };
+
+  if (suggestions.targetTitle) {
+    if (isPredefinedTargetTitle(suggestions.targetTitle)) {
+      nextValues.targetTitleOption = suggestions.targetTitle;
+      nextValues.targetTitleOther = "";
+    } else {
+      nextValues.targetTitleOption = TARGET_TITLE_OTHER_OPTION;
+      nextValues.targetTitleOther = suggestions.targetTitle;
+    }
+  }
+
+  if (suggestions.yearsOfExperience) {
+    nextValues.yearsOfExperience = suggestions.yearsOfExperience;
+  }
+
+  if (suggestions.skills.length > 0) {
+    nextValues.skills = suggestions.skills.join("\n");
+  }
+
+  if (suggestions.experienceSummary) {
+    nextValues.experienceSummary = suggestions.experienceSummary;
+  }
+
+  if (suggestions.portfolioUrl) {
+    nextValues.portfolioUrl = suggestions.portfolioUrl;
+  }
+
+  if (suggestions.githubUrl) {
+    nextValues.githubUrl = suggestions.githubUrl;
+  }
+
+  if (suggestions.linkedinUrl) {
+    nextValues.linkedinUrl = suggestions.linkedinUrl;
+  }
+
+  if (suggestions.workPreferences.length > 0) {
+    nextValues.workPreferences = suggestions.workPreferences;
+  }
+
+  return nextValues;
+}
+
 export function ProfileForm({ profile }: ProfileFormProps) {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
-  const defaultValues = useMemo(() => toProfileFormValues(profile), [profile]);
+  const initialValues = useMemo(() => toProfileFormValues(profile), [profile]);
+  const [draftValues, setDraftValues] = useState(initialValues);
   const [resetKey, setResetKey] = useState(0);
   const [isDirty, setIsDirty] = useState(false);
   const [state, formAction, isPending] = useActionState(
     upsertProfile,
     initialState,
   );
-  const defaultSnapshot = useMemo(() => toSnapshot(defaultValues), [defaultValues]);
+  const initialSnapshot = useMemo(() => toSnapshot(initialValues), [initialValues]);
 
   useEffect(() => {
     if (!state.successMessage) {
@@ -109,17 +161,27 @@ export function ProfileForm({ profile }: ProfileFormProps) {
     }
 
     const currentSnapshot = toSnapshot(toCurrentFormValues(formRef.current));
-    setIsDirty(currentSnapshot !== defaultSnapshot);
+    setIsDirty(currentSnapshot !== initialSnapshot);
   }
 
   function handleDiscardChanges() {
-    if (!formRef.current) {
-      return;
-    }
-
-    formRef.current.reset();
+    setDraftValues(initialValues);
     setResetKey((value) => value + 1);
     setIsDirty(false);
+  }
+
+  function handleApplySuggestions(suggestions: ProfileExtractionSuggestion) {
+    const currentValues = formRef.current
+      ? toCurrentFormValues(formRef.current)
+      : draftValues;
+    const nextValues = mergeProfileExtractionSuggestionsIntoFormValues(
+      currentValues,
+      suggestions,
+    );
+
+    setDraftValues(nextValues);
+    setResetKey((value) => value + 1);
+    setIsDirty(toSnapshot(nextValues) !== initialSnapshot);
   }
 
   return (
@@ -141,10 +203,18 @@ export function ProfileForm({ profile }: ProfileFormProps) {
         </div>
       ) : null}
 
+      <ProfileExtractionPanel
+        hasSavedResumeText={Boolean(profile?.resumeText?.trim())}
+        savedResumeTextLength={profile?.resumeText?.length ?? 0}
+        isProfileDirty={isDirty}
+        isProfileSaving={isPending}
+        onApplySuggestions={handleApplySuggestions}
+      />
+
       <ProfileFormFields
         key={resetKey}
         errors={state.fieldErrors}
-        defaultValues={defaultValues}
+        defaultValues={draftValues}
       />
 
       {isDirty ? (

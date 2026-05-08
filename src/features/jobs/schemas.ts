@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { safeExternalUrlSchema } from "@/lib/url";
+
 const containsLetter = /[A-Za-z]/;
 
 const humanReadableRequiredString = (requiredMessage: string, letterMessage: string) =>
@@ -12,7 +14,7 @@ const optionalTrimmedString = z.preprocess(
 
 const optionalUrl = z.preprocess(
   (value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
-  z.string().trim().url("Enter a valid URL.").optional(),
+  safeExternalUrlSchema.optional(),
 );
 
 const optionalInteger = z.preprocess((value) => {
