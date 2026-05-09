@@ -39,6 +39,10 @@ It should document what changed, why it mattered, and what the next step is. It 
 - Moved the saved job description into the main top job-information card to reduce page length and keep core role context visible before AI/notes sections.
 - Improved job management UX by promoting archive as the primary quick action and moving permanent delete behind a compact "Danger zone" disclosure while keeping checkbox confirmation safety.
 - Simplified the app-shell navigation by removing `Add Job` and `Profile` from the left rail, and moving `Profile` into the top-right header near `Sign out` for a cleaner primary nav.
+- Ran a focused SaaS-style visual polish pass across the authenticated shell and key dashboard/job pages: upgraded card surfaces, strengthened shell branding/hierarchy, improved active nav treatment, restored `Profile` visibility in primary sidebar navigation, and refined dashboard pipeline widgets for screenshot readiness.
+- Added app-wide light/dark mode support with a client-side theme toggle in the app-shell header and mobile menu, persisted theme preference (`localStorage`), pre-hydration theme bootstrap to avoid flash/mismatch, and dark-surface/readability updates across shared UI primitives and key authenticated screens.
+- Fixed dark-mode toggle state drift and refresh flash by unifying theme semantics (`theme` key with `light`/`dark`), switching initial theme application to server-side cookie-backed `<html>` class/data attributes, and adding a polished icon-only toggle with synced aria/title labels.
+- Fixed a React/Next hydration mismatch in the theme toggle by removing render-time `window`/`document` branching, passing server-derived initial theme preference into the app shell, and using a hydration-safe external-store toggle state that stays in sync with cookie/localStorage/DOM theme attributes.
 - Revalidated with `npm run test`, `npm run lint`, and `npm run build`.
 
 ### Notes

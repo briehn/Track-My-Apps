@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 :root {
   color-scheme: light;
@@ -20,6 +21,16 @@ body {
   background: #f8fafc;
   font-family: Arial, Helvetica, sans-serif;
   cursor: default;
+  color: #020617;
+}
+
+.dark {
+  color-scheme: dark;
+}
+
+.dark body {
+  background: #0b1220;
+  color: #e2e8f0;
 }
 
 a[href],
@@ -33,4 +44,121 @@ input[type="radio"] {
 input:not([type="checkbox"]):not([type="radio"]),
 textarea {
   cursor: text;
+}
+
+.dark .bg-white {
+  background-color: #0f172a;
+}
+
+.dark .bg-slate-50 {
+  background-color: #111b2e;
+}
+
+.dark .bg-slate-100 {
+  background-color: #1e293b;
+}
+
+.dark .border-slate-200 {
+  border-color: #334155;
+}
+
+.dark .border-slate-300 {
+  border-color: #475569;
+}
+
+.dark .text-slate-950 {
+  color: #f8fafc;
+}
+
+.dark .text-slate-900 {
+  color: #e2e8f0;
+}
+
+.dark .text-slate-800 {
+  color: #dbeafe;
+}
+
+.dark .text-slate-700 {
+  color: #cbd5e1;
+}
+
+.dark .text-slate-600 {
+  color: #94a3b8;
+}
+
+.dark .text-slate-500 {
+  color: #94a3b8;
+}
+
+.dark .text-slate-400 {
+  color: #64748b;
+}
+
+.dark .hover\:bg-slate-50:hover,
+.dark .hover\:bg-slate-100:hover {
+  background-color: #1e293b;
+}
+
+@media (prefers-color-scheme: dark) {
+  .theme-system {
+    color-scheme: dark;
+  }
+
+  .theme-system body {
+    background: #0b1220;
+    color: #e2e8f0;
+  }
+
+  .theme-system .bg-white {
+    background-color: #0f172a;
+  }
+
+  .theme-system .bg-slate-50 {
+    background-color: #111b2e;
+  }
+
+  .theme-system .bg-slate-100 {
+    background-color: #1e293b;
+  }
+
+  .theme-system .border-slate-200 {
+    border-color: #334155;
+  }
+
+  .theme-system .border-slate-300 {
+    border-color: #475569;
+  }
+
+  .theme-system .text-slate-950 {
+    color: #f8fafc;
+  }
+
+  .theme-system .text-slate-900 {
+    color: #e2e8f0;
+  }
+
+  .theme-system .text-slate-800 {
+    color: #dbeafe;
+  }
+
+  .theme-system .text-slate-700 {
+    color: #cbd5e1;
+  }
+
+  .theme-system .text-slate-600 {
+    color: #94a3b8;
+  }
+
+  .theme-system .text-slate-500 {
+    color: #94a3b8;
+  }
+
+  .theme-system .text-slate-400 {
+    color: #64748b;
+  }
+
+  .theme-system .hover\:bg-slate-50:hover,
+  .theme-system .hover\:bg-slate-100:hover {
+    background-color: #1e293b;
+  }
 }

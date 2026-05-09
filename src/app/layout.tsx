@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -15,10 +16,27 @@ type RootLayoutProps = Readonly<{
   children: React.ReactNode;
 }>;
 
-export default function RootLayout({ children }: RootLayoutProps) {
+export default async function RootLayout({ children }: RootLayoutProps) {
+  const cookieStore = await cookies();
+  const savedTheme = cookieStore.get("theme")?.value;
+  const hasManualTheme = savedTheme === "light" || savedTheme === "dark";
+  const rootClassName = hasManualTheme
+    ? savedTheme === "dark"
+      ? "dark"
+      : ""
+    : "theme-system";
+  const rootTheme = hasManualTheme ? savedTheme : "system";
+
   return (
-    <html lang="en">
-      <body>{children}</body>
+    <html
+      lang="en"
+      className={rootClassName}
+      data-theme={rootTheme}
+      suppressHydrationWarning
+    >
+      <body>
+        {children}
+      </body>
     </html>
   );
 }

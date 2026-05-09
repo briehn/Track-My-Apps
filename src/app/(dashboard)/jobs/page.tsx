@@ -22,7 +22,10 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-950">Jobs</h1>
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            Job tracker
+          </p>
+          <h1 className="mt-1 text-2xl font-semibold text-slate-950">Jobs</h1>
           <p className="mt-1 text-sm text-slate-600">
             {isArchivedView
               ? "Review jobs you have moved out of your active workflow."
@@ -45,7 +48,7 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-2" aria-label="Job list views">
+      <div className="inline-flex w-fit flex-wrap gap-2 rounded-lg border border-slate-200 bg-white p-1" aria-label="Job list views">
         <Link
           href="/jobs"
           aria-current={!isArchivedView ? "page" : undefined}

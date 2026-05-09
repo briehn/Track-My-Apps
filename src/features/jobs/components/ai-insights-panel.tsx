@@ -34,7 +34,7 @@ export function AIInsightsPanel({
           ].join(" ")}
           onClick={() => setActiveTab("analysis")}
         >
-          Job analysis
+          Job Analysis
         </button>
         <button
           type="button"
@@ -48,7 +48,7 @@ export function AIInsightsPanel({
           ].join(" ")}
           onClick={() => setActiveTab("match")}
         >
-          Profile match
+          Profile Match
         </button>
       </div>
 

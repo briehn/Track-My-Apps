@@ -34,7 +34,10 @@ export default async function DashboardPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-950">Dashboard</h1>
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            Workspace Overview
+          </p>
+          <h1 className="mt-1 text-2xl font-semibold text-slate-950">Dashboard</h1>
           <p className="mt-1 text-sm text-slate-600">
             A focused overview of your active job search.
           </p>
@@ -48,48 +51,47 @@ export default async function DashboardPage() {
       </div>
 
       <Card>
-        <div className="grid gap-5 lg:grid-cols-[12rem_1fr_8rem] lg:items-center">
-          <div>
-            <p className="text-sm font-medium text-slate-500">Active jobs</p>
-            <p className="mt-2 text-4xl font-semibold text-slate-950">
-              {summary.activeTotal}
-            </p>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm font-medium text-slate-700">Pipeline Overview</p>
+            <Link
+              href="/jobs?status=archived"
+              className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
+            >
+              Archived: {summary.statusCounts.ARCHIVED}
+            </Link>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 xl:col-span-1">
+              <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Active Jobs</p>
+              <p className="mt-2 text-3xl font-semibold text-slate-950">
+                {summary.activeTotal}
+              </p>
+            </div>
             {pipelineStatuses.map((status) => (
               <div
                 key={status}
-                className="rounded-md border border-slate-200 bg-slate-50 p-3"
+                className="rounded-xl border border-slate-200 bg-white p-4"
               >
-                <div className="flex items-center justify-between gap-3">
+                <div className="space-y-3">
                   <Badge variant={statusBadgeVariants[status]}>
                     {statusLabels[status]}
                   </Badge>
-                  <span className="text-xl font-semibold text-slate-950">
+                  <span className="block text-2xl font-semibold text-slate-950">
                     {summary.statusCounts[status]}
                   </span>
                 </div>
               </div>
             ))}
           </div>
-
-          <Link
-            href="/jobs?status=archived"
-            className="rounded-md border border-slate-200 p-3 text-sm transition hover:border-slate-300 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
-          >
-            <span className="block font-medium text-slate-950">
-              {summary.statusCounts.ARCHIVED}
-            </span>
-            <span className="text-slate-500">Archived</span>
-          </Link>
         </div>
       </Card>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Recent jobs</CardTitle>
+            <CardTitle>Recent Jobs</CardTitle>
             <CardDescription>Newest active jobs saved to your tracker.</CardDescription>
           </CardHeader>
           {summary.recentJobs.length > 0 ? (
@@ -98,7 +100,7 @@ export default async function DashboardPage() {
                 <Link
                   key={job.id}
                   href={`/jobs/${job.id}`}
-                  className="block rounded-md border border-slate-200 p-3 transition hover:border-slate-300 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
+                  className="block rounded-xl border border-slate-200 p-3 transition hover:border-slate-300 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
                 >
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                     <div>
@@ -132,7 +134,7 @@ export default async function DashboardPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Upcoming dates</CardTitle>
+            <CardTitle>Upcoming Dates</CardTitle>
             <CardDescription>Deadlines and follow-ups for active jobs.</CardDescription>
           </CardHeader>
           {summary.upcomingJobs.length > 0 ? (
@@ -142,11 +144,11 @@ export default async function DashboardPage() {
                 const label = job.deadline ? "Deadline" : "Follow-up";
 
                 return (
-                  <Link
-                    key={job.id}
-                    href={`/jobs/${job.id}`}
-                    className="block rounded-md border border-slate-200 p-3 transition hover:border-slate-300 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
-                  >
+                <Link
+                  key={job.id}
+                  href={`/jobs/${job.id}`}
+                  className="block rounded-xl border border-slate-200 p-3 transition hover:border-slate-300 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
+                >
                     <p className="text-sm font-medium text-slate-950">
                       {job.title}
                     </p>

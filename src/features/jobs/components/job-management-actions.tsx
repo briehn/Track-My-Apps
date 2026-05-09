@@ -38,7 +38,7 @@ export function JobManagementActions({
       >
         <input type="hidden" name="jobId" value={jobId} />
         <div className="space-y-1">
-          <p className="text-sm font-medium text-slate-950">Archive job</p>
+          <p className="text-sm font-medium text-slate-950">Archive Job</p>
           <p className="text-sm text-slate-600">
             Archived jobs leave the active list but remain available from the archived view.
           </p>
@@ -54,14 +54,14 @@ export function JobManagementActions({
           </p>
         ) : (
           <Button type="submit" disabled={isArchiving} className="w-full sm:w-auto">
-            {isArchiving ? "Archiving..." : "Archive job"}
+            {isArchiving ? "Archiving..." : "Archive Job"}
           </Button>
         )}
       </form>
 
       <details className="rounded-md border border-red-200 bg-red-50/50 p-4">
         <summary className="cursor-pointer text-sm font-medium text-red-800">
-          Danger zone: permanent delete
+          Danger Zone: Permanent Delete
         </summary>
         <form action={deleteAction} className="mt-4 space-y-3">
           <input type="hidden" name="jobId" value={jobId} />
@@ -87,7 +87,7 @@ export function JobManagementActions({
             disabled={isDeleting}
             className="w-full border-red-200 text-red-700 hover:bg-red-100 sm:w-auto"
           >
-            {isDeleting ? "Deleting..." : "Delete permanently"}
+            {isDeleting ? "Deleting..." : "Permanent Delete"}
           </Button>
         </form>
       </details>

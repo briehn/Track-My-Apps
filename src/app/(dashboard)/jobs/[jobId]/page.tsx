@@ -168,7 +168,7 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
             </dl>
 
             <div className="mt-5 space-y-2 border-t border-slate-200 pt-5">
-              <h2 className="text-sm font-medium text-slate-950">Description</h2>
+              <h2 className="text-sm font-medium text-slate-950">Job Description</h2>
               {job.description ? (
                 <div className="max-h-80 overflow-auto rounded-md border border-slate-200 bg-slate-50 p-4">
                   <p className="whitespace-pre-wrap text-sm leading-7 text-slate-700">
@@ -198,7 +198,7 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>AI insights</CardTitle>
+              <CardTitle>AI Insights</CardTitle>
               <CardDescription>
                 Run job analysis and profile matching without letting AI details dominate the page.
               </CardDescription>
@@ -254,7 +254,7 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Manage job</CardTitle>
+              <CardTitle>Manage Job</CardTitle>
               <CardDescription>
                 Archive this role or permanently remove it from your tracker.
               </CardDescription>

@@ -14,6 +14,7 @@ Job searching spreads context across job posts, notes, status updates, and resum
 
 - Google OAuth sign-in and a protected authenticated workspace
 - Job tracking with statuses, notes, archive/delete, and dashboard summaries
+- Polished light/dark mode with a persistent user toggle across the app shell and dashboard/job/profile/import workflows
 - CSV export for saved jobs with user-scoped data access
 - CSV import for saved jobs with upload, column mapping, validation preview, duplicate warnings, and explicit confirm import
 - Private profile and resume foundation for a single user-owned canonical profile
