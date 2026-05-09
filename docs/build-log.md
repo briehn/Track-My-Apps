@@ -29,15 +29,19 @@ It should document what changed, why it mattered, and what the next step is. It 
 - Added the first CSV job import workflow for authenticated users, with a dedicated `/jobs/import` page, upload step, column mapping, server-side preview validation, duplicate warnings, and explicit confirm import.
 - Kept the first import milestone CSV-only and synchronous, with a 2 MB file limit, 500-row limit, required company/title mapping, and user-scoped duplicate detection based on URL or normalized company+title.
 - Added focused unit coverage for CSV parsing, import header auto-mapping, and row validation/duplicate handling.
+- Ran a focused QA/security/polish pass on CSV import and fixed two gaps: server-side CSV text parsing now enforces the 2 MB size cap (including confirm/import revalidation), and duplicate detection now also flags repeated rows within the same CSV upload.
+- Expanded CSV import tests to cover CRLF parsing, oversized CSV text rejection, and same-file duplicate classification.
 - Revalidated with `npm run test`, `npm run lint`, and `npm run build`.
 
 ### Notes
 - Match reports remain transient and are still not saved to the database; only successful comparison runs are tracked for daily limiting.
 - This pass introduced a Prisma schema change and migration for durable job-match usage tracking.
 - No new dependencies, environment variables, or persistence paths were added.
+- CSV import remains user-scoped and transient at preview-time; no import session history or raw CSV storage was added.
 
 ### Next Step
 - Run a quick manual dashboard smoke test covering the three prerequisite states, the production daily-limit message, and one full compare flow in desktop + mobile viewport sizes.
+
 
 ## 2026-05-08
 

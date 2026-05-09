@@ -82,6 +82,10 @@ function normalizeCsvText(csvText: string) {
   return csvText.replace(/^\uFEFF/, "");
 }
 
+function getCsvTextByteLength(csvText: string) {
+  return new TextEncoder().encode(csvText).length;
+}
+
 function isEmptyRow(row: string[]) {
   return row.every((value) => value.trim().length === 0);
 }
@@ -133,6 +137,11 @@ export async function parseJobImportCsvFile(file: File): Promise<ParsedJobImport
 
 export function parseJobImportCsvText(csvText: string): ParsedJobImportCsv {
   const normalizedCsvText = normalizeCsvText(csvText);
+
+  if (getCsvTextByteLength(normalizedCsvText) > JOB_IMPORT_MAX_FILE_BYTES) {
+    throw new Error("CSV files must be 2 MB or smaller.");
+  }
+
   const parsedRows = parseCsvRows(normalizedCsvText);
   const nonEmptyRows = parsedRows.filter((row, index) => index === 0 || !isEmptyRow(row));
 
@@ -167,4 +176,3 @@ export function parseJobImportCsvText(csvText: string): ParsedJobImportCsv {
     rows,
   };
 }
-

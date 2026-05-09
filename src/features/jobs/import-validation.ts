@@ -60,8 +60,10 @@ export type JobImportPreviewResult = {
 };
 
 export type ExistingJobDuplicateSignals = {
-  normalizedCompanyTitlePairs: Set<string>;
-  normalizedUrls: Set<string>;
+  existingNormalizedCompanyTitlePairs: Set<string>;
+  existingNormalizedUrls: Set<string>;
+  importNormalizedCompanyTitlePairs: Set<string>;
+  importNormalizedUrls: Set<string>;
 };
 
 export type ImportableJobRecord = {
@@ -216,15 +218,17 @@ function buildDuplicateSignals(
   existingJobs: Array<{ company: string; title: string; url: string | null }>,
 ): ExistingJobDuplicateSignals {
   return {
-    normalizedCompanyTitlePairs: new Set(
+    existingNormalizedCompanyTitlePairs: new Set(
       existingJobs.map((job) => normalizeDuplicateCompanyTitle(job.company, job.title)),
     ),
-    normalizedUrls: new Set(
+    existingNormalizedUrls: new Set(
       existingJobs
         .map((job) => job.url)
         .filter((url): url is string => Boolean(url))
         .map((url) => normalizeDuplicateUrl(url)),
     ),
+    importNormalizedCompanyTitlePairs: new Set<string>(),
+    importNormalizedUrls: new Set<string>(),
   };
 }
 
@@ -235,7 +239,11 @@ function detectDuplicateReason(
   if (jobRecord.url) {
     const normalizedUrl = normalizeDuplicateUrl(jobRecord.url);
 
-    if (duplicateSignals.normalizedUrls.has(normalizedUrl)) {
+    if (duplicateSignals.importNormalizedUrls.has(normalizedUrl)) {
+      return "Matches another import row by URL.";
+    }
+
+    if (duplicateSignals.existingNormalizedUrls.has(normalizedUrl)) {
       return "Matches an existing job by URL.";
     }
   }
@@ -245,11 +253,30 @@ function detectDuplicateReason(
     jobRecord.title,
   );
 
-  if (duplicateSignals.normalizedCompanyTitlePairs.has(normalizedCompanyTitle)) {
+  if (duplicateSignals.importNormalizedCompanyTitlePairs.has(normalizedCompanyTitle)) {
+    return "Matches another import row by company and title.";
+  }
+
+  if (duplicateSignals.existingNormalizedCompanyTitlePairs.has(normalizedCompanyTitle)) {
     return "Matches an existing job by company and title.";
   }
 
   return null;
+}
+
+function registerDuplicateSignals(
+  jobRecord: ImportableJobRecord,
+  duplicateSignals: ExistingJobDuplicateSignals,
+) {
+  const normalizedCompanyTitle = normalizeDuplicateCompanyTitle(
+    jobRecord.company,
+    jobRecord.title,
+  );
+  duplicateSignals.importNormalizedCompanyTitlePairs.add(normalizedCompanyTitle);
+
+  if (jobRecord.url) {
+    duplicateSignals.importNormalizedUrls.add(normalizeDuplicateUrl(jobRecord.url));
+  }
 }
 
 export function validateJobImportPreview(options: {
@@ -427,6 +454,7 @@ export function validateJobImportPreview(options: {
     }
 
     validRowCount += 1;
+    registerDuplicateSignals(importableJob, duplicateSignals);
     importableJobs.push(importableJob);
     previewRows.push({
       duplicateReason: null,

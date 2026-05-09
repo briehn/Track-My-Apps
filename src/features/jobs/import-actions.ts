@@ -8,6 +8,7 @@ import {
   parseJobImportCsvText,
 } from "@/features/jobs/import-csv";
 import {
+  JOB_IMPORT_MAX_FILE_BYTES,
   parseJobImportColumnMappingFromFormData,
   suggestJobImportColumnMapping,
   type JobImportColumn,
@@ -74,7 +75,7 @@ export async function previewJobImport(
       };
     }
 
-    if (getCsvTextByteLength(parsedCsv.csvText) > 2 * 1024 * 1024) {
+    if (getCsvTextByteLength(parsedCsv.csvText) > JOB_IMPORT_MAX_FILE_BYTES) {
       return {
         formError: "CSV files must be 2 MB or smaller.",
       };
@@ -183,4 +184,3 @@ export async function confirmJobImport(
     };
   }
 }
-

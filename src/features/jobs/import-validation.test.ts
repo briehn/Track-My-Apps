@@ -88,5 +88,38 @@ describe("validateJobImportPreview", () => {
     expect(result.preview).toBeNull();
     expect(result.formErrors[0]).toBe("Job title must be mapped before previewing the import.");
   });
-});
 
+  it("marks repeated rows in the same csv as likely duplicates", () => {
+    const columns = buildJobImportColumns(["company", "title", "url"]);
+    const mapping: JobImportColumnMapping = {
+      company: "col_0",
+      title: "col_1",
+      url: "col_2",
+    };
+
+    const result = validateJobImportPreview({
+      columns,
+      existingJobs: [],
+      mapping,
+      rows: [
+        {
+          col_0: "Acme",
+          col_1: "Frontend Engineer",
+          col_2: "https://example.com/jobs/acme-frontend",
+        },
+        {
+          col_0: "Acme",
+          col_1: "Frontend Engineer",
+          col_2: "https://example.com/jobs/acme-frontend",
+        },
+      ],
+    });
+
+    expect(result.formErrors).toEqual([]);
+    expect(result.preview?.validRowCount).toBe(1);
+    expect(result.preview?.likelyDuplicateCount).toBe(1);
+    expect(result.importableJobs).toHaveLength(1);
+    expect(result.preview?.rows[1].outcome).toBe("duplicate");
+    expect(result.preview?.rows[1].duplicateReason).toBe("Matches another import row by URL.");
+  });
+});

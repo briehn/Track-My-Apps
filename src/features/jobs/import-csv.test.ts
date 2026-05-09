@@ -3,6 +3,17 @@ import { describe, expect, it } from "vitest";
 import { parseJobImportCsvText } from "@/features/jobs/import-csv";
 
 describe("parseJobImportCsvText", () => {
+  it("parses CRLF line endings", () => {
+    const parsed = parseJobImportCsvText("company,title\r\nAcme,Engineer\r\n");
+
+    expect(parsed.rows).toEqual([
+      {
+        col_0: "Acme",
+        col_1: "Engineer",
+      },
+    ]);
+  });
+
   it("parses quoted commas, quotes, and newlines", () => {
     const parsed = parseJobImportCsvText(
       [
@@ -36,5 +47,13 @@ describe("parseJobImportCsvText", () => {
       "CSV imports are limited to 500 rows.",
     );
   });
-});
 
+  it("rejects csv text above 2 MB", () => {
+    const oversizedCompanyName = "A".repeat(2 * 1024 * 1024 + 1);
+    const csvText = `company,title\n${oversizedCompanyName},Engineer`;
+
+    expect(() => parseJobImportCsvText(csvText)).toThrow(
+      "CSV files must be 2 MB or smaller.",
+    );
+  });
+});
