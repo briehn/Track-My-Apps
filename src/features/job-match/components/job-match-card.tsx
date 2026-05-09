@@ -113,7 +113,7 @@ export function JobMatchCard({
 
   return (
     <div className="space-y-5">
-      <form action={formAction} className="space-y-3">
+      <form action={formAction} className="space-y-4 rounded-md border border-slate-200 bg-slate-50 p-4">
         <input type="hidden" name="jobId" value={jobId} />
         <div className="space-y-1 text-xs text-slate-600">
           <p>
@@ -129,7 +129,7 @@ export function JobMatchCard({
           </p>
         ) : null}
 
-        <Button type="submit" disabled={isPending}>
+        <Button type="submit" disabled={isPending} className="w-full sm:w-auto">
           {isPending ? "Comparing profile..." : "Compare my profile"}
         </Button>
 
@@ -156,7 +156,7 @@ export function JobMatchCard({
 
       {state.report ? (
         <div className="space-y-5">
-          <div className="space-y-3 rounded-md border border-slate-200 bg-white p-4">
+          <div className="space-y-3 rounded-md border border-slate-200 bg-slate-50 p-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h3 className="text-sm font-medium text-slate-950">Match report</h3>

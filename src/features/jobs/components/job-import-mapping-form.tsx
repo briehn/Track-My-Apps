@@ -23,7 +23,7 @@ export function JobImportMappingForm({
   mapping,
 }: JobImportMappingFormProps) {
   return (
-    <form action={action} className="space-y-4 rounded-md border border-slate-200 bg-white p-4">
+    <form action={action} className="space-y-4 rounded-md border border-slate-200 bg-white p-5">
       <div className="space-y-1">
         <h2 className="text-base font-semibold text-slate-950">2. Map columns</h2>
         <p className="text-sm text-slate-600">
@@ -60,10 +60,9 @@ export function JobImportMappingForm({
         ))}
       </div>
 
-      <Button type="submit" variant="secondary" disabled={isPending}>
+      <Button type="submit" variant="secondary" disabled={isPending} className="w-full sm:w-auto">
         {isPending ? "Refreshing preview..." : "Refresh preview"}
       </Button>
     </form>
   );
 }
-

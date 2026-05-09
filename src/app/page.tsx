@@ -25,9 +25,9 @@ const featureCards = [
       "Use the dashboard to review recent jobs, status counts, and upcoming dates without digging through the list.",
   },
   {
-    title: "Prepare for future AI workflows",
+    title: "Use grounded AI where it helps",
     description:
-      "The schema is ready for later job analysis, resume matching, and interview prep once the tracker is in place.",
+      "Run manual AI job analysis, profile extraction, and profile-to-job matching tied to your saved data.",
   },
 ];
 
@@ -52,9 +52,9 @@ export default async function HomePage() {
                 place.
               </h1>
               <p className="max-w-2xl text-base leading-7 text-slate-700 sm:text-lg">
-                Save jobs, manage statuses and deadlines, keep notes, and stay
-                organized with a tracker built for a real job search. AI
-                features come later on top of that foundation.
+                Save jobs, manage statuses and deadlines, keep notes, and use
+                grounded AI analysis and matching features tied to your saved
+                data.
               </p>
             </div>
           </div>
@@ -77,12 +77,11 @@ export default async function HomePage() {
               Built for the current search
             </p>
             <h2 className="text-2xl font-semibold text-slate-950">
-              A clean tracker now, AI-ready later
+              A clean tracker with careful AI support
             </h2>
             <p className="text-sm leading-6 text-slate-600">
-              The app focuses on the workflows job seekers use every day, then
-              leaves room for analysis and matching features once the core data
-              is in place.
+              The app keeps the tracker workflow primary, then layers AI on top
+              only where it is grounded in saved jobs and profile data.
             </p>
           </div>
 
@@ -91,7 +90,7 @@ export default async function HomePage() {
               "Google OAuth sign-in",
               "Protected dashboard and jobs",
               "Job detail pages and notes",
-              "Archived jobs stay separate",
+              "AI analysis and profile match",
             ].map((item) => (
               <div
                 key={item}
@@ -117,8 +116,8 @@ export default async function HomePage() {
               Focused workflows for an organized search
             </h2>
             <p className="text-sm leading-6 text-slate-600 sm:text-base">
-              The homepage keeps the scope clear: the tracker is live now, and
-              the AI layer is intentionally still planned.
+              The tracker is live, and the current AI features stay deliberately
+              narrow, manual, and grounded in user-owned data.
             </p>
           </div>
 
@@ -138,11 +137,11 @@ export default async function HomePage() {
           <div className="grid gap-4 md:grid-cols-[1fr_auto] md:items-center">
             <div className="space-y-2">
               <p className="text-sm font-semibold text-slate-950">
-                Planned AI features
+                Planned next layer
               </p>
               <p className="text-sm leading-6 text-slate-600">
-                Job analysis, resume matching, and interview prep are reserved
-                for later milestones. The current product is a tracker first.
+                Deeper resume tailoring, interview prep, and richer automation
+                are still planned. The current product remains tracker-first.
               </p>
             </div>
             <Link

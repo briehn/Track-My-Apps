@@ -144,29 +144,23 @@ For job analysis and profile matching, AI requests are manual and production-lim
 
 ## Screenshots
 
-### Sign In
-
-![Sign in screen](public/screenshots/sign-in.png)
-
-Clean entry point for Google OAuth access to the tracker.
-
 ### Dashboard
 
 ![Dashboard summary](public/screenshots/dashboard.png)
 
-High-level view of active jobs, status counts, recent jobs, and upcoming dates.
+High-level view of active jobs, status counts, recent jobs, and upcoming dates in the authenticated workspace.
 
-### Jobs List
+### CSV Import Preview
 
-![Jobs list](public/screenshots/jobs-list.png)
+![CSV import preview](public/screenshots/csv_import.png)
 
-Scannable list of saved jobs with status, company, and key metadata.
+Server-side CSV import preview with validation, duplicate detection, and explicit confirm before writing jobs to the account.
 
-### Job Detail
+### AI Profile Extraction
 
-![Job detail page](public/screenshots/job-detail.png)
+![AI profile extraction suggestions](public/screenshots/profile_extraction.png)
 
-Saved posting view with status controls, notes, management actions, and AI panels.
+AI-assisted profile extraction suggestions grounded in saved resume text, with manual review before apply/save.
 
 ## Project Status
 

@@ -16,11 +16,11 @@ export default async function ProfilePage() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-slate-950">Profile</h1>
-          <p className="mt-1 text-sm text-slate-600">
+          <p className="mt-1 max-w-2xl text-sm text-slate-600">
             Keep one private canonical career profile for future resume matching and tailoring.
           </p>
         </div>
-        <div className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
+        <div className="w-fit rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
           {profile
             ? `Last updated ${dateFormatter.format(profile.updatedAt)}`
             : "No profile saved yet"}

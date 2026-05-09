@@ -102,7 +102,7 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
   const safeJobUrl = job.url && isSafeExternalUrl(job.url) ? job.url : null;
 
   return (
-    <div className="mx-auto max-w-6xl space-y-5">
+    <div className="mx-auto max-w-6xl space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Link
           href="/jobs"
@@ -116,7 +116,7 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
       </div>
 
       <Card>
-        <div className="grid gap-5 lg:grid-cols-[1fr_18rem]">
+        <div className="grid gap-6 lg:grid-cols-[1fr_18rem]">
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <p className="text-sm font-medium uppercase tracking-wide text-slate-500">
@@ -180,8 +180,8 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
         </div>
       </Card>
 
-      <div className="grid gap-5 xl:grid-cols-[1fr_24rem]">
-        <div className="space-y-5">
+      <div className="grid gap-6 xl:grid-cols-[1fr_24rem]">
+        <div className="space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Description</CardTitle>
@@ -223,7 +223,7 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
           </Card>
         </div>
 
-        <div className="space-y-5">
+        <div className="space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Manage job</CardTitle>
@@ -231,34 +231,31 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
                 Archive this role or permanently remove it from your tracker.
               </CardDescription>
             </CardHeader>
-            <JobManagementActions
-              jobId={job.id}
-              isArchived={job.status === "ARCHIVED"}
-            />
-          </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Analysis</CardTitle>
-                <CardDescription>
-                  Extract a structured summary and key requirements from the
-                  saved job description.
-                </CardDescription>
-              </CardHeader>
-              <JobAnalysisCard
-                analysis={job.analysis}
-                hasAnalyzableDescription={hasAnalyzableJobDescription(job.description)}
-                isDescriptionTooLong={
-                  job.description ? isJobDescriptionTooLong(job.description) : false
-                }
-                descriptionLength={job.description?.length ?? 0}
-                jobId={job.id}
-              />
+            <JobManagementActions jobId={job.id} isArchived={job.status === "ARCHIVED"} />
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle>Profile match</CardTitle>
+              <CardTitle>AI analysis</CardTitle>
+              <CardDescription>
+                Extract a structured summary and key requirements from the saved
+                job description.
+              </CardDescription>
+            </CardHeader>
+            <JobAnalysisCard
+              analysis={job.analysis}
+              hasAnalyzableDescription={hasAnalyzableJobDescription(job.description)}
+              isDescriptionTooLong={
+                job.description ? isJobDescriptionTooLong(job.description) : false
+              }
+              descriptionLength={job.description?.length ?? 0}
+              jobId={job.id}
+            />
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Profile-to-job match</CardTitle>
               <CardDescription>
                 Compare your saved profile against this job&apos;s analysis.
               </CardDescription>

@@ -8,7 +8,7 @@ const highlights = [
   "Track applications in one place",
   "Save job descriptions, statuses, deadlines, and notes",
   "Review your search progress from a dashboard",
-  "Keep your search organized for future AI workflows",
+  "Use grounded AI analysis and profile matching",
 ];
 
 export default async function SignInPage() {
@@ -30,9 +30,8 @@ export default async function SignInPage() {
               Track your job search in one focused workspace.
             </h1>
             <p className="max-w-2xl text-base leading-7 text-slate-700 sm:text-lg">
-              Save roles, manage application status, keep notes, and prepare
-              for future AI-assisted workflows without losing sight of the
-              current search.
+              Save roles, manage application status, keep notes, and use
+              focused AI helpers without losing sight of the current search.
             </p>
           </div>
 

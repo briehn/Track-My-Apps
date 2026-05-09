@@ -5,9 +5,9 @@ Track My Apps now has a complete, deployed MVP. The remaining roadmap shifts fro
 ## Status Summary
 
 - Core MVP is complete and deployed.
-- The first AI feature, job description analysis, is implemented.
-- Resume/profile matching, interview prep, and job importing are still planned.
-- Automated tests, advanced filtering, and broader accessibility polish remain useful future improvements.
+- AI job analysis, AI profile extraction, and transient profile-to-job matching are implemented.
+- CSV export and CSV import with preview, mapping, and validation are implemented.
+- Interview prep, deeper resume tailoring, XLSX support, advanced filtering, and broader automated coverage remain future improvements.
 
 ## Completed MVP Phases
 
@@ -89,7 +89,8 @@ Track My Apps now has a complete, deployed MVP. The remaining roadmap shifts fro
 
 - Partially complete.
 - Lint and build checks are in place.
-- A broader automated test suite remains a useful future improvement.
+- Focused Vitest coverage is in place for core schemas and helper logic.
+- Broader automated coverage remains a useful future improvement.
 
 ### Phase 14: Portfolio Finish
 
@@ -99,7 +100,7 @@ Track My Apps now has a complete, deployed MVP. The remaining roadmap shifts fro
 
 ## Remaining MVP-Adjacent Improvements
 
-- Add automated tests if the project grows enough to justify them.
+- Expand automated tests if the project grows enough to justify broader coverage.
 - Add title/company search if it becomes useful beyond the current list views.
 - Add advanced filtering and sorting only if the tracker workflow starts to feel crowded.
 - Continue accessibility polish over time as specific issues surface.
@@ -122,19 +123,18 @@ Track My Apps now has a complete, deployed MVP. The remaining roadmap shifts fro
 
 ### Phase 17: Resume/Profile Foundation
 
-- In progress.
+- Implemented.
 - Added a private canonical user profile page with resume text, skills, structured target titles, structured experience ranges, multi-select work preferences, and career links.
 - Added AI-assisted profile extraction suggestions from saved resume text with manual review/apply before profile save.
-- Add user profile and resume text storage.
-- Store skills, projects, and experience in a user-owned profile model.
-- Keep ownership and privacy boundaries explicit.
-- Do not add AI matching until profile data exists.
+- User profile and resume text storage are now in place behind authenticated ownership checks.
+- Skills, experience, and preferences are stored in a user-owned profile model.
+- Ownership and privacy boundaries remain explicit.
 
 ### Phase 18: Resume-to-Job Matching
 
-- Compare saved profile data against job analysis.
-- Add fit scores, matching skills, and missing skills.
-- Suggest keywords and resume bullets without fabricating experience.
+- Implemented as a transient manual comparison on the job detail page.
+- Current reports use fit levels, matching evidence, missing areas, prep topics, and safe resume guidance without fabricating experience.
+- Future improvements can refine report quality, invalidation rules, and optional saved history only if the transient workflow proves worth keeping.
 
 ### Phase 19: Interview Prep
 
@@ -158,8 +158,8 @@ Track My Apps now has a complete, deployed MVP. The remaining roadmap shifts fro
 
 ## Phase 22: Import / Export
 
-- Export saved jobs to CSV.
-- Import saved jobs from CSV with preview, mapping, validation, and explicit confirm.
+- CSV export for saved jobs is implemented.
+- CSV import for saved jobs with preview, mapping, validation, and explicit confirm is implemented.
 - Add formatted XLSX export for saved jobs with preserved readability features.
 - Keep CSV export for compatibility with existing workflows.
 - Make exports authenticated and user-scoped, without including profile/resume data or transient AI match reports.

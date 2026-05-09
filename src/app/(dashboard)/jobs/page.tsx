@@ -29,7 +29,7 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
               : "View active roles you have manually saved."}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <LinkButton href="/jobs/import" variant="secondary">
             Import jobs
           </LinkButton>

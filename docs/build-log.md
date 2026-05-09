@@ -31,6 +31,10 @@ It should document what changed, why it mattered, and what the next step is. It 
 - Added focused unit coverage for CSV parsing, import header auto-mapping, and row validation/duplicate handling.
 - Ran a focused QA/security/polish pass on CSV import and fixed two gaps: server-side CSV text parsing now enforces the 2 MB size cap (including confirm/import revalidation), and duplicate detection now also flags repeated rows within the same CSV upload.
 - Expanded CSV import tests to cover CRLF parsing, oversized CSV text rejection, and same-file duplicate classification.
+- Ran a final project-readiness review across public docs, package metadata, key routes, and screenshots; updated stale homepage/sign-in copy, corrected roadmap status drift, and renamed the package metadata from the old prototype name to `track-my-apps`.
+- Refreshed the README screenshot section to highlight the strongest current recruiter-facing views: dashboard, CSV import preview, and AI profile extraction.
+- Ran a focused visual/demo polish pass across homepage, sign-in, dashboard shell, jobs, job detail AI sections, profile, and CSV import screens to improve spacing, section hierarchy, and mobile button behavior without changing product logic.
+- Updated key screenshot-facing UI details, including cleaner AI section framing, improved import-step card readability, better action-button wrapping on narrow widths, and a clearer mobile nav trigger label.
 - Revalidated with `npm run test`, `npm run lint`, and `npm run build`.
 
 ### Notes
@@ -38,6 +42,7 @@ It should document what changed, why it mattered, and what the next step is. It 
 - This pass introduced a Prisma schema change and migration for durable job-match usage tracking.
 - No new dependencies, environment variables, or persistence paths were added.
 - CSV import remains user-scoped and transient at preview-time; no import session history or raw CSV storage was added.
+- The screenshot set is now the main remaining presentation gap because it still reflects the old name and pre-AI/import UI.
 
 ### Next Step
 - Run a quick manual dashboard smoke test covering the three prerequisite states, the production daily-limit message, and one full compare flow in desktop + mobile viewport sizes.

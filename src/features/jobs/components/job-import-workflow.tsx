@@ -51,7 +51,7 @@ export function JobImportWorkflow() {
 
           <form
             action={confirmAction}
-            className="space-y-4 rounded-md border border-slate-200 bg-white p-4"
+            className="space-y-4 rounded-md border border-slate-200 bg-white p-5"
           >
             <input type="hidden" name="csvText" value={previewState.csvText} />
             {JOB_IMPORT_FIELDS.map((fieldConfig) => (
@@ -83,7 +83,7 @@ export function JobImportWorkflow() {
               <p className="text-sm text-slate-600">
                 Confirm import to add only valid, non-duplicate rows to your account.
               </p>
-              <Button type="submit" disabled={isConfirmPending}>
+              <Button type="submit" disabled={isConfirmPending} className="w-full sm:w-auto">
                 {isConfirmPending ? "Importing..." : "Confirm import"}
               </Button>
             </div>
@@ -93,4 +93,3 @@ export function JobImportWorkflow() {
     </div>
   );
 }
-

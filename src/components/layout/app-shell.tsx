@@ -46,9 +46,9 @@ export function AppShell({ children, user }: AppShellProps) {
             aria-label={isMobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
             aria-expanded={isMobileMenuOpen}
             aria-controls="mobile-nav-menu"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-slate-300 text-slate-900 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 md:hidden"
+            className="inline-flex h-10 items-center justify-center rounded-md border border-slate-300 px-3 text-sm font-medium text-slate-900 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 md:hidden"
           >
-            <span className="text-lg leading-none">{isMobileMenuOpen ? "x" : "="}</span>
+            {isMobileMenuOpen ? "Close" : "Menu"}
           </button>
         </div>
       </header>

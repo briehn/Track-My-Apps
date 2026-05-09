@@ -101,7 +101,7 @@ export function JobAnalysisCard({
 
   return (
     <div className="space-y-5">
-      <form action={formAction} className="space-y-3">
+      <form action={formAction} className="space-y-4 rounded-md border border-slate-200 bg-slate-50 p-4">
         <input type="hidden" name="jobId" value={jobId} />
         <div className="space-y-1 text-xs text-slate-600">
           <p>
@@ -113,7 +113,7 @@ export function JobAnalysisCard({
           <p>Analysis may take a few seconds.</p>
         </div>
         {hasAnalyzableDescription ? (
-          <Button type="submit" disabled={isActionDisabled}>
+          <Button type="submit" disabled={isActionDisabled} className="w-full sm:w-auto">
             {isPending ? "Analyzing job description..." : actionLabel}
           </Button>
         ) : (
@@ -154,7 +154,7 @@ export function JobAnalysisCard({
           {analysis.summary ? (
             <div className="space-y-2">
               <h3 className="text-sm font-medium text-slate-950">Summary</h3>
-              <div className="max-h-40 overflow-auto rounded-md border border-slate-200 bg-slate-50 px-3 py-2">
+              <div className="max-h-40 overflow-auto rounded-md border border-slate-200 bg-slate-50 p-3">
                 <p className="text-sm leading-6 text-slate-700">{analysis.summary}</p>
               </div>
             </div>

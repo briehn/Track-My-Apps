@@ -7,7 +7,7 @@ export default function JobImportPage() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-slate-950">Import jobs</h1>
-          <p className="mt-1 text-sm text-slate-600">
+          <p className="mt-1 max-w-3xl text-sm text-slate-600">
             Upload a CSV tracker, map its columns, review validation results, and confirm the import into your account.
           </p>
         </div>
@@ -20,4 +20,3 @@ export default function JobImportPage() {
     </div>
   );
 }
-
