@@ -155,8 +155,8 @@ export function JobMatchCard({
       </form>
 
       {state.report ? (
-        <div className="space-y-5">
-          <div className="space-y-3 rounded-md border border-slate-200 bg-slate-50 p-4">
+        <div className="space-y-4">
+          <div className="space-y-3 rounded-md border border-slate-200 bg-white p-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h3 className="text-sm font-medium text-slate-950">Match report</h3>
@@ -186,23 +186,30 @@ export function JobMatchCard({
             </div>
           ) : null}
 
-          <SectionList items={state.report.matchingSkills} title="Matching skills" />
-          <SectionList
-            items={state.report.missingOrWeakSkills}
-            title="Missing or weak skills"
-          />
-          <SectionList
-            items={state.report.relevantProfileEvidence}
-            title="Relevant profile evidence"
-          />
-          <SectionList
-            items={state.report.resumeImprovementSuggestions}
-            title="Resume improvement suggestions"
-          />
-          <SectionList
-            items={state.report.interviewPrepFocusAreas}
-            title="Interview prep focus areas"
-          />
+          <details className="rounded-md border border-slate-200 bg-white p-4">
+            <summary className="cursor-pointer text-sm font-medium text-slate-950">
+              View detailed match breakdown
+            </summary>
+            <div className="mt-4 space-y-5">
+              <SectionList items={state.report.matchingSkills} title="Matching skills" />
+              <SectionList
+                items={state.report.missingOrWeakSkills}
+                title="Missing or weak skills"
+              />
+              <SectionList
+                items={state.report.relevantProfileEvidence}
+                title="Relevant profile evidence"
+              />
+              <SectionList
+                items={state.report.resumeImprovementSuggestions}
+                title="Resume improvement suggestions"
+              />
+              <SectionList
+                items={state.report.interviewPrepFocusAreas}
+                title="Interview prep focus areas"
+              />
+            </div>
+          </details>
         </div>
       ) : null}
     </div>

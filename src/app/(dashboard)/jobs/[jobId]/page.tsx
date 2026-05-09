@@ -16,6 +16,7 @@ import {
 } from "@/features/job-analysis/schemas";
 import { JobMatchCard } from "@/features/job-match/components/job-match-card";
 import { JobManagementActions } from "@/features/jobs/components/job-management-actions";
+import { AIInsightsPanel } from "@/features/jobs/components/ai-insights-panel";
 import { JobStatusForm } from "@/features/jobs/components/job-status-form";
 import { getJobForCurrentUser, type JobDetail } from "@/features/jobs/queries";
 import { statusBadgeVariants, statusLabels } from "@/features/jobs/status";
@@ -165,6 +166,19 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
                 </dd>
               </div>
             </dl>
+
+            <div className="mt-5 space-y-2 border-t border-slate-200 pt-5">
+              <h2 className="text-sm font-medium text-slate-950">Description</h2>
+              {job.description ? (
+                <div className="max-h-80 overflow-auto rounded-md border border-slate-200 bg-slate-50 p-4">
+                  <p className="whitespace-pre-wrap text-sm leading-7 text-slate-700">
+                    {job.description}
+                  </p>
+                </div>
+              ) : (
+                <p className="text-sm text-slate-600">Not provided</p>
+              )}
+            </div>
           </div>
 
           <div className="space-y-4 rounded-md border border-slate-200 bg-slate-50 p-4">
@@ -184,18 +198,32 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Description</CardTitle>
-              <CardDescription>The saved job description text.</CardDescription>
+              <CardTitle>AI insights</CardTitle>
+              <CardDescription>
+                Run job analysis and profile matching without letting AI details dominate the page.
+              </CardDescription>
             </CardHeader>
-            {job.description ? (
-              <div className="max-h-[32rem] overflow-auto rounded-md border border-slate-200 bg-slate-50 p-4">
-                <p className="whitespace-pre-wrap text-sm leading-7 text-slate-700">
-                  {job.description}
-                </p>
-              </div>
-            ) : (
-              <p className="text-sm text-slate-600">Not provided</p>
-            )}
+            <AIInsightsPanel
+              analysisContent={
+                <JobAnalysisCard
+                  analysis={job.analysis}
+                  hasAnalyzableDescription={hasAnalyzableJobDescription(job.description)}
+                  isDescriptionTooLong={
+                    job.description ? isJobDescriptionTooLong(job.description) : false
+                  }
+                  descriptionLength={job.description?.length ?? 0}
+                  jobId={job.id}
+                />
+              }
+              matchContent={
+                <JobMatchCard
+                  hasJobAnalysis={Boolean(job.analysis)}
+                  hasProfile={Boolean(profile)}
+                  hasResumeText={Boolean(profile?.resumeText?.trim())}
+                  jobId={job.id}
+                />
+              }
+            />
           </Card>
 
           <Card>
@@ -232,40 +260,6 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
               </CardDescription>
             </CardHeader>
             <JobManagementActions jobId={job.id} isArchived={job.status === "ARCHIVED"} />
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>AI analysis</CardTitle>
-              <CardDescription>
-                Extract a structured summary and key requirements from the saved
-                job description.
-              </CardDescription>
-            </CardHeader>
-            <JobAnalysisCard
-              analysis={job.analysis}
-              hasAnalyzableDescription={hasAnalyzableJobDescription(job.description)}
-              isDescriptionTooLong={
-                job.description ? isJobDescriptionTooLong(job.description) : false
-              }
-              descriptionLength={job.description?.length ?? 0}
-              jobId={job.id}
-            />
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Profile-to-job match</CardTitle>
-              <CardDescription>
-                Compare your saved profile against this job&apos;s analysis.
-              </CardDescription>
-            </CardHeader>
-            <JobMatchCard
-              hasJobAnalysis={Boolean(job.analysis)}
-              hasProfile={Boolean(profile)}
-              hasResumeText={Boolean(profile?.resumeText?.trim())}
-              jobId={job.id}
-            />
           </Card>
         </div>
       </div>

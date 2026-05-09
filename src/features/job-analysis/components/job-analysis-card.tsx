@@ -150,29 +150,36 @@ export function JobAnalysisCard({
       </form>
 
       {hasAnalysis && analysis ? (
-        <div className="space-y-5">
-          {analysis.summary ? (
-            <div className="space-y-2">
-              <h3 className="text-sm font-medium text-slate-950">Summary</h3>
-              <div className="max-h-40 overflow-auto rounded-md border border-slate-200 bg-slate-50 p-3">
-                <p className="text-sm leading-6 text-slate-700">{analysis.summary}</p>
-              </div>
+        <div className="space-y-4">
+          <div className="space-y-3 rounded-md border border-slate-200 bg-white p-4">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <h3 className="text-sm font-medium text-slate-950">Latest analysis</h3>
+              {analysis.seniorityLevel ? (
+                <p className="rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-xs font-medium text-slate-700">
+                  {analysis.seniorityLevel}
+                </p>
+              ) : null}
             </div>
-          ) : null}
-
-          {analysis.seniorityLevel ? (
-            <div className="space-y-2">
-              <h3 className="text-sm font-medium text-slate-950">Seniority level</h3>
-              <p className="text-sm leading-6 text-slate-700">
-                {analysis.seniorityLevel}
+            {analysis.summary ? (
+              <p className="text-sm leading-6 text-slate-700">{analysis.summary}</p>
+            ) : (
+              <p className="text-sm text-slate-600">
+                No summary was extracted from this analysis run.
               </p>
-            </div>
-          ) : null}
+            )}
+          </div>
 
-          <AnalysisList items={analysis.requiredSkills} title="Required skills" />
-          <AnalysisList items={analysis.preferredSkills} title="Preferred skills" />
-          <AnalysisList items={analysis.responsibilities} title="Responsibilities" />
-          <AnalysisList items={analysis.keywords} title="Keywords" />
+          <details className="rounded-md border border-slate-200 bg-white p-4">
+            <summary className="cursor-pointer text-sm font-medium text-slate-950">
+              View extracted skills and requirement details
+            </summary>
+            <div className="mt-4 space-y-5">
+              <AnalysisList items={analysis.requiredSkills} title="Required skills" />
+              <AnalysisList items={analysis.preferredSkills} title="Preferred skills" />
+              <AnalysisList items={analysis.responsibilities} title="Responsibilities" />
+              <AnalysisList items={analysis.keywords} title="Keywords" />
+            </div>
+          </details>
 
           <p className="text-xs text-slate-500">
             Last analyzed {analysis.updatedAt.toLocaleDateString()}

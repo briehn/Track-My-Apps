@@ -35,6 +35,10 @@ It should document what changed, why it mattered, and what the next step is. It 
 - Refreshed the README screenshot section to highlight the strongest current recruiter-facing views: dashboard, CSV import preview, and AI profile extraction.
 - Ran a focused visual/demo polish pass across homepage, sign-in, dashboard shell, jobs, job detail AI sections, profile, and CSV import screens to improve spacing, section hierarchy, and mobile button behavior without changing product logic.
 - Updated key screenshot-facing UI details, including cleaner AI section framing, improved import-step card readability, better action-button wrapping on narrow widths, and a clearer mobile nav trigger label.
+- Refactored job detail AI presentation into one compact `AI insights` area with in-place tabs (`Job analysis` / `Profile match`) and collapsible deep-detail sections to reduce clutter and scrolling after analysis/matching is complete.
+- Moved the saved job description into the main top job-information card to reduce page length and keep core role context visible before AI/notes sections.
+- Improved job management UX by promoting archive as the primary quick action and moving permanent delete behind a compact "Danger zone" disclosure while keeping checkbox confirmation safety.
+- Simplified the app-shell navigation by removing `Add Job` and `Profile` from the left rail, and moving `Profile` into the top-right header near `Sign out` for a cleaner primary nav.
 - Revalidated with `npm run test`, `npm run lint`, and `npm run build`.
 
 ### Notes

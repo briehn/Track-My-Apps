@@ -24,7 +24,6 @@ export function AppShell({ children, user }: AppShellProps) {
   const isArchivedView = pathname === "/jobs" && statusQuery === "archived";
   const isActiveJobsView = pathname === "/jobs" && !isArchivedView;
   const showArchivedNav = isJobsRoute || isMobileMenuOpen;
-  const isAddJobView = pathname === "/jobs/new";
   const isProfileView = pathname === "/profile";
 
   return (
@@ -37,7 +36,19 @@ export function AppShell({ children, user }: AppShellProps) {
             </p>
             <p className="text-xs text-slate-500">{displayName}</p>
           </div>
-          <div className="hidden md:block">
+          <div className="hidden items-center gap-2 md:flex">
+            <Link
+              href="/profile"
+              aria-current={isProfileView ? "page" : undefined}
+              className={[
+                "rounded-md px-3 py-2 text-sm font-medium transition",
+                isProfileView
+                  ? "bg-slate-950 text-white"
+                  : "text-slate-700 hover:bg-slate-100 hover:text-slate-950",
+              ].join(" ")}
+            >
+              Profile
+            </Link>
             <SignOutButton />
           </div>
           <button
@@ -117,20 +128,6 @@ export function AppShell({ children, user }: AppShellProps) {
               </div>
 
               <Link
-                href="/jobs/new"
-                onClick={() => setIsMobileMenuOpen(false)}
-                aria-current={isAddJobView ? "page" : undefined}
-                className={[
-                  "block rounded-md px-3 py-2 text-sm font-medium transition",
-                  isAddJobView
-                    ? "bg-slate-950 text-white"
-                    : "text-slate-700 hover:bg-slate-100 hover:text-slate-950",
-                ].join(" ")}
-              >
-                Add Job
-              </Link>
-
-              <Link
                 href="/profile"
                 onClick={() => setIsMobileMenuOpen(false)}
                 aria-current={isProfileView ? "page" : undefined}
@@ -203,31 +200,6 @@ export function AppShell({ children, user }: AppShellProps) {
               ) : null}
             </div>
 
-            <Link
-              href="/jobs/new"
-              aria-current={isAddJobView ? "page" : undefined}
-              className={[
-                "mt-2 block rounded-md px-3 py-2 text-sm font-medium transition",
-                isAddJobView
-                  ? "bg-slate-950 text-white"
-                  : "text-slate-700 hover:bg-slate-100 hover:text-slate-950",
-              ].join(" ")}
-            >
-              Add Job
-            </Link>
-
-            <Link
-              href="/profile"
-              aria-current={isProfileView ? "page" : undefined}
-              className={[
-                "mt-2 block rounded-md px-3 py-2 text-sm font-medium transition",
-                isProfileView
-                  ? "bg-slate-950 text-white"
-                  : "text-slate-700 hover:bg-slate-100 hover:text-slate-950",
-              ].join(" ")}
-            >
-              Profile
-            </Link>
           </nav>
         </aside>
         <main className="p-4 sm:p-6">{children}</main>
