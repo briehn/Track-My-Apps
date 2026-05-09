@@ -6,6 +6,22 @@ It should document what changed, why it mattered, and what the next step is. It 
 
 ---
 
+## 2026-05-09
+
+### Changes
+- Ran a focused QA/polish pass on the transient profile-to-job match flow across schema normalization, server action ownership/scoping, service error handling, and job-detail UI integration.
+- Hardened job-match summary normalization so reports are always explicitly framed as grounded in the saved profile plus this job's analysis, reducing overclaim risk if model wording drifts.
+- Improved match report readability on narrow screens by enabling long-text wrapping in summary, warnings, and list-card content.
+- Extended job-match schema tests to cover grounded summary normalization behavior while preserving existing dedupe/trim validation.
+- Revalidated with `npm run test`, `npm run lint`, and `npm run build`.
+
+### Notes
+- No Prisma schema or migration changes were introduced in this pass.
+- No new dependencies, environment variables, or persistence paths were added.
+
+### Next Step
+- Run a quick manual dashboard smoke test covering the three prerequisite states and one full compare flow in desktop + mobile viewport sizes.
+
 ## 2026-05-08
 
 ### Changes

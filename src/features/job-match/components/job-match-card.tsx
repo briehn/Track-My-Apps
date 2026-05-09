@@ -42,7 +42,10 @@ function SectionList({
       <h3 className="text-sm font-medium text-slate-950">{title}</h3>
       <ul className="space-y-2 text-sm leading-6 text-slate-700">
         {items.map((item) => (
-          <li key={item} className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2">
+          <li
+            key={item}
+            className="break-words rounded-md border border-slate-200 bg-slate-50 px-3 py-2"
+          >
             {item}
           </li>
         ))}
@@ -165,7 +168,7 @@ export function JobMatchCard({
                 {state.report.fitLevel} fit
               </Badge>
             </div>
-            <p className="text-sm leading-6 text-slate-700">
+            <p className="break-words text-sm leading-6 text-slate-700">
               {state.report.overallFitSummary}
             </p>
           </div>
@@ -175,7 +178,9 @@ export function JobMatchCard({
               <h3 className="text-sm font-medium text-amber-900">Warnings</h3>
               <ul className="mt-2 space-y-2 text-sm leading-6 text-amber-900">
                 {state.report.warnings.map((warning) => (
-                  <li key={warning}>{warning}</li>
+                  <li key={warning} className="break-words">
+                    {warning}
+                  </li>
                 ))}
               </ul>
             </div>

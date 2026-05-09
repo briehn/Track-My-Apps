@@ -42,7 +42,8 @@ describe("normalizeJobMatchReport", () => {
     });
 
     expect(report).toEqual({
-      overallFitSummary: "Strong overlap in operations and reporting work.",
+      overallFitSummary:
+        "Based on your saved profile and this job's analysis, strong overlap in operations and reporting work.",
       fitLevel: "MODERATE",
       matchingSkills: ["Excel", "Operations"],
       missingOrWeakSkills: ["SQL", "Stakeholder management"],
@@ -51,6 +52,24 @@ describe("normalizeJobMatchReport", () => {
       interviewPrepFocusAreas: ["Cross-functional planning"],
       warnings: ["Resume text is missing"],
     });
+  });
+
+  it("keeps grounded summary wording when already present", () => {
+    const report = normalizeJobMatchReport({
+      overallFitSummary:
+        "Based on your saved profile and this job's analysis, the fit is moderate because SQL evidence is limited.",
+      fitLevel: "MODERATE",
+      matchingSkills: ["Excel"],
+      missingOrWeakSkills: ["SQL"],
+      relevantProfileEvidence: ["Saved profile lists Excel."],
+      resumeImprovementSuggestions: ["Clarify SQL exposure if true."],
+      interviewPrepFocusAreas: ["Reporting workflows"],
+      warnings: [],
+    });
+
+    expect(report.overallFitSummary).toBe(
+      "Based on your saved profile and this job's analysis, the fit is moderate because SQL evidence is limited.",
+    );
   });
 });
 

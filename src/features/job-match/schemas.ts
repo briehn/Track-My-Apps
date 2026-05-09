@@ -44,6 +44,21 @@ export const normalizedJobMatchReportSchema = z
 export type AIJobMatchResponse = z.infer<typeof aiJobMatchResponseSchema>;
 export type JobMatchFitLevel = z.infer<typeof jobMatchFitLevelSchema>;
 export type JobMatchReport = z.infer<typeof normalizedJobMatchReportSchema>;
+const JOB_MATCH_SUMMARY_PREFIX =
+  "Based on your saved profile and this job's analysis, ";
+
+function normalizeOverallFitSummary(summary: string) {
+  const normalizedSummary = summary.trim();
+  const hasProfileReference = /saved profile/i.test(normalizedSummary);
+  const hasJobReference =
+    /job(?:'s)? analysis|job analysis|this job|role/i.test(normalizedSummary);
+
+  if (hasProfileReference && hasJobReference) {
+    return normalizedSummary;
+  }
+
+  return `${JOB_MATCH_SUMMARY_PREFIX}${normalizedSummary.charAt(0).toLowerCase()}${normalizedSummary.slice(1)}`;
+}
 
 function normalizeList(values: string[]) {
   const seen = new Set<string>();
@@ -93,7 +108,7 @@ export function normalizeJobMatchReport(
   input: AIJobMatchResponse,
 ): JobMatchReport {
   return normalizedJobMatchReportSchema.parse({
-    overallFitSummary: input.overallFitSummary.trim(),
+    overallFitSummary: normalizeOverallFitSummary(input.overallFitSummary),
     fitLevel: input.fitLevel,
     matchingSkills: normalizeList(input.matchingSkills),
     missingOrWeakSkills: normalizeList(input.missingOrWeakSkills),
