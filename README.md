@@ -14,6 +14,7 @@ Job searching spreads context across job posts, notes, status updates, and resum
 
 - Google OAuth sign-in and a protected authenticated workspace
 - Job tracking with statuses, notes, archive/delete, and dashboard summaries
+- CSV export for saved jobs with user-scoped data access
 - Private profile and resume foundation for a single user-owned canonical profile
 - AI job description analysis with structured saved output
 - AI profile extraction suggestions from saved resume text with review before apply
@@ -179,6 +180,7 @@ Completed:
 - Google OAuth authentication with Prisma-backed sessions
 - Protected dashboard and jobs workspace
 - Job tracking workflow with status changes, notes, archive/delete, and summaries
+- CSV export for authenticated users across current job-list views
 - Private profile foundation with AI-assisted extraction suggestions
 - Manual AI job analysis saved to `JobAnalysis`
 - Transient AI profile-to-job matching on job detail pages

@@ -22,6 +22,9 @@ It should document what changed, why it mattered, and what the next step is. It 
 - Moved extraction suggestion apply-merging into a pure helper and added regression tests to ensure valid low experience ranges (including `ZERO_TO_ONE`) are applied over existing higher saved values.
 - Ran a focused post-fix QA/polish pass for profile extraction mapping reliability and hardened edge handling for Front End/Frontend and Back End/Backend title variants.
 - Added test coverage for those additional title variants and tightened enum-like years signal normalization to avoid missing valid values due to casing/spacing drift.
+- Added authenticated CSV export for saved jobs with safe CSV escaping and view-aware filtering (`active` vs `archived`) from the jobs page.
+- Added a protected `/jobs/export` route handler that enforces `requireUser()` ownership scoping and exports only the current user's job fields (plus notes count) without profile/resume or transient AI report data.
+- Added focused unit coverage for CSV formatting and escaping behavior.
 - Revalidated with `npm run test`, `npm run lint`, and `npm run build`.
 
 ### Notes

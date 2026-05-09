@@ -29,9 +29,17 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
               : "View active roles you have manually saved."}
           </p>
         </div>
-        <LinkButton href="/jobs/new">
-          Add job
-        </LinkButton>
+        <div className="flex gap-2">
+          <LinkButton
+            href={isArchivedView ? "/jobs/export?status=archived" : "/jobs/export?status=active"}
+            variant="secondary"
+          >
+            Export CSV
+          </LinkButton>
+          <LinkButton href="/jobs/new">
+            Add job
+          </LinkButton>
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-2" aria-label="Job list views">
