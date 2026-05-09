@@ -15,6 +15,7 @@ Job searching spreads context across job posts, notes, status updates, and resum
 - Google OAuth sign-in and a protected authenticated workspace
 - Job tracking with statuses, notes, archive/delete, and dashboard summaries
 - CSV export for saved jobs with user-scoped data access
+- CSV import for saved jobs with upload, column mapping, validation preview, duplicate warnings, and explicit confirm import
 - Private profile and resume foundation for a single user-owned canonical profile
 - AI job description analysis with structured saved output
 - AI profile extraction suggestions from saved resume text with review before apply
@@ -26,7 +27,7 @@ Job searching spreads context across job posts, notes, status updates, and resum
 
 ## Planned Features
 
-Future scope includes resume upload/parsing, saved match history, skill-gap detection, tailored resume bullets, cover letters, interview prep, importing, richer filtering, and analytics.
+Future scope includes resume upload/parsing, saved match history, skill-gap detection, tailored resume bullets, cover letters, interview prep, richer filtering, and analytics.
 
 ## Tech Stack
 
@@ -181,6 +182,7 @@ Completed:
 - Protected dashboard and jobs workspace
 - Job tracking workflow with status changes, notes, archive/delete, and summaries
 - CSV export for authenticated users across current job-list views
+- CSV import for authenticated users with preview, column mapping, validation, and duplicate warnings
 - Private profile foundation with AI-assisted extraction suggestions
 - Manual AI job analysis saved to `JobAnalysis`
 - Transient AI profile-to-job matching on job detail pages
@@ -193,6 +195,7 @@ Not yet implemented:
 - Resume upload and parsing
 - Saved match history and deeper scoring
 - URL-based job importing
+- XLSX import and richer spreadsheet migration support
 - Advanced filtering/search
 - Dashboard charts and analytics
 - Browser-level and integration test coverage

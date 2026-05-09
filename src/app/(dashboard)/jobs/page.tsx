@@ -30,6 +30,9 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
           </p>
         </div>
         <div className="flex gap-2">
+          <LinkButton href="/jobs/import" variant="secondary">
+            Import jobs
+          </LinkButton>
           <LinkButton
             href={isArchivedView ? "/jobs/export?status=archived" : "/jobs/export?status=active"}
             variant="secondary"

@@ -25,6 +25,10 @@ It should document what changed, why it mattered, and what the next step is. It 
 - Added authenticated CSV export for saved jobs with safe CSV escaping and view-aware filtering (`active` vs `archived`) from the jobs page.
 - Added a protected `/jobs/export` route handler that enforces `requireUser()` ownership scoping and exports only the current user's job fields (plus notes count) without profile/resume or transient AI report data.
 - Added focused unit coverage for CSV formatting and escaping behavior.
+- Updated the roadmap to add formatted XLSX export as a future import/export refinement, with CSV preserved for compatibility and exports kept user-scoped.
+- Added the first CSV job import workflow for authenticated users, with a dedicated `/jobs/import` page, upload step, column mapping, server-side preview validation, duplicate warnings, and explicit confirm import.
+- Kept the first import milestone CSV-only and synchronous, with a 2 MB file limit, 500-row limit, required company/title mapping, and user-scoped duplicate detection based on URL or normalized company+title.
+- Added focused unit coverage for CSV parsing, import header auto-mapping, and row validation/duplicate handling.
 - Revalidated with `npm run test`, `npm run lint`, and `npm run build`.
 
 ### Notes
