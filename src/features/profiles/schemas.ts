@@ -1,6 +1,7 @@
 import { ZodError, z } from "zod";
 
 import {
+  normalizeTargetTitleToPredefinedOption,
   TARGET_TITLE_OPTIONS,
   TARGET_TITLE_OTHER_OPTION,
   YEARS_OF_EXPERIENCE_OPTIONS,
@@ -66,6 +67,92 @@ function dedupeWorkPreferences(values: WorkPreferenceOption[]) {
 function normalizeNullableText(value: string | null) {
   const trimmedValue = value?.trim() ?? "";
   return trimmedValue.length > 0 ? trimmedValue : null;
+}
+
+function normalizeYearsOfExperienceSignal(
+  value: string | null | undefined,
+): (typeof YEARS_OF_EXPERIENCE_OPTIONS)[number] | null {
+  if (!value) {
+    return null;
+  }
+
+  const normalizedValue = value.trim().toLocaleLowerCase();
+
+  if (!normalizedValue) {
+    return null;
+  }
+
+  if (YEARS_OF_EXPERIENCE_OPTIONS.includes(value as (typeof YEARS_OF_EXPERIENCE_OPTIONS)[number])) {
+    return value as (typeof YEARS_OF_EXPERIENCE_OPTIONS)[number];
+  }
+
+  const noExperienceSignals = [
+    "entry level",
+    "entry-level",
+    "recent graduate",
+    "new graduate",
+    "bootcamp graduate",
+    "internship only",
+    "internship-only",
+    "no professional experience",
+    "no field experience",
+    "no industry experience",
+    "career changer with no experience",
+  ];
+
+  if (noExperienceSignals.some((signal) => normalizedValue.includes(signal))) {
+    return "ZERO_TO_ONE";
+  }
+
+  if (/\b0(\.0+)?\s*(\+)?\s*(years?|yrs?)\b/.test(normalizedValue)) {
+    return "ZERO_TO_ONE";
+  }
+
+  if (/\b(less than|under)\s*1\s*(year|yr)\b/.test(normalizedValue)) {
+    return "ZERO_TO_ONE";
+  }
+
+  if (/\b0\s*-\s*1\s*(years?|yrs?)\b/.test(normalizedValue)) {
+    return "ZERO_TO_ONE";
+  }
+
+  if (/\b1\s*-\s*2\s*(years?|yrs?)\b/.test(normalizedValue)) {
+    return "ONE_TO_TWO";
+  }
+
+  if (/\b3\s*-\s*5\s*(years?|yrs?)\b/.test(normalizedValue)) {
+    return "THREE_TO_FIVE";
+  }
+
+  if (/\b6\s*-\s*9\s*(years?|yrs?)\b/.test(normalizedValue)) {
+    return "SIX_TO_NINE";
+  }
+
+  if (/\b10\s*(\+|plus)\s*(years?|yrs?)\b/.test(normalizedValue)) {
+    return "TEN_PLUS";
+  }
+
+  if (/\b(1|one)\s*(to|-)\s*(2|two)\s*(years?|yrs?)\b/.test(normalizedValue)) {
+    return "ONE_TO_TWO";
+  }
+
+  if (/\b(3|three)\s*(to|-)\s*(5|five)\s*(years?|yrs?)\b/.test(normalizedValue)) {
+    return "THREE_TO_FIVE";
+  }
+
+  if (/\b(6|six)\s*(to|-)\s*(9|nine)\s*(years?|yrs?)\b/.test(normalizedValue)) {
+    return "SIX_TO_NINE";
+  }
+
+  if (/\b(10|ten)\s*(\+|plus|or more)\b/.test(normalizedValue)) {
+    return "TEN_PLUS";
+  }
+
+  if (/\b3\+?\s*(years?|yrs?)\b/.test(normalizedValue)) {
+    return "THREE_TO_FIVE";
+  }
+
+  return null;
 }
 
 function normalizeUrlOrNull(value: string | null) {
@@ -172,7 +259,7 @@ export type ProfileInput = ReturnType<typeof toProfileInput>;
 export const aiProfileExtractionResponseSchema = z
   .object({
     targetTitle: z.string().trim().nullable(),
-    yearsOfExperience: z.enum(YEARS_OF_EXPERIENCE_OPTIONS).nullable(),
+    yearsOfExperience: z.string().trim().nullable(),
     skills: z.array(z.string().trim()),
     experienceSummary: z.string().trim().nullable(),
     portfolioUrl: z.string().trim().nullable(),
@@ -213,9 +300,12 @@ export function isResumeTextTooLongForProfileExtraction(resumeText: string) {
 export function normalizeProfileExtractionSuggestion(
   input: AIProfileExtractionResponse,
 ): ProfileExtractionSuggestion {
+  const normalizedTargetTitle = normalizeNullableText(input.targetTitle);
+  const mappedTargetTitle = normalizeTargetTitleToPredefinedOption(normalizedTargetTitle);
+
   return normalizedProfileExtractionSuggestionSchema.parse({
-    targetTitle: normalizeNullableText(input.targetTitle),
-    yearsOfExperience: input.yearsOfExperience,
+    targetTitle: mappedTargetTitle ?? normalizedTargetTitle,
+    yearsOfExperience: normalizeYearsOfExperienceSignal(input.yearsOfExperience),
     skills: dedupeStringsCaseInsensitive(input.skills.map((skill) => skill.trim()))
       .filter((skill) => skill.length > 0)
       .slice(0, MAX_PROFILE_SUGGESTED_SKILLS),

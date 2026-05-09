@@ -17,6 +17,9 @@ It should document what changed, why it mattered, and what the next step is. It 
 - Reused the existing UTC-day helper pattern so job matching now blocks before OpenAI when a production user has already reached the daily comparison cap, while development remains unrestricted.
 - Updated the README to document the new job-match usage tracking model and production limit behavior.
 - Condensed the README into a recruiter-friendly overview that keeps the live app, setup, deployment, screenshots, and core architecture links while removing changelog-style detail.
+- Fixed AI profile extraction normalization so common title variants (for example, Full Stack/Fullstack and Front End/Back End wording) map to predefined target-title options instead of incorrectly defaulting to Other.
+- Added stronger years-of-experience normalization for extraction suggestions, including explicit handling for entry-level/no-professional-experience signals and clear range mapping (0-1, 1-2, 3-5, 6-9, 10+).
+- Moved extraction suggestion apply-merging into a pure helper and added regression tests to ensure valid low experience ranges (including `ZERO_TO_ONE`) are applied over existing higher saved values.
 - Revalidated with `npm run test`, `npm run lint`, and `npm run build`.
 
 ### Notes

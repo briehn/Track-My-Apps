@@ -66,6 +66,50 @@ describe("profile extraction helpers", () => {
     });
     expect(hasAnyProfileExtractionSuggestions(result)).toBe(true);
   });
+
+  it("maps years signals for entry-level and explicit ranges", () => {
+    const entryLevelSuggestion = normalizeProfileExtractionSuggestion({
+      targetTitle: "Full Stack Developer",
+      yearsOfExperience: "recent graduate, internship only",
+      skills: [],
+      experienceSummary: null,
+      portfolioUrl: null,
+      githubUrl: null,
+      linkedinUrl: null,
+      workPreferences: [],
+    });
+
+    expect(entryLevelSuggestion.targetTitle).toBe("Full-Stack Engineer");
+    expect(entryLevelSuggestion.yearsOfExperience).toBe("ZERO_TO_ONE");
+
+    const explicitRangeSuggestion = normalizeProfileExtractionSuggestion({
+      targetTitle: "Backend Engineer",
+      yearsOfExperience: "3+ years of experience",
+      skills: [],
+      experienceSummary: null,
+      portfolioUrl: null,
+      githubUrl: null,
+      linkedinUrl: null,
+      workPreferences: [],
+    });
+
+    expect(explicitRangeSuggestion.yearsOfExperience).toBe("THREE_TO_FIVE");
+  });
+
+  it("keeps yearsOfExperience null when signal is missing or unclear", () => {
+    const result = normalizeProfileExtractionSuggestion({
+      targetTitle: "Platform Engineer",
+      yearsOfExperience: "experienced",
+      skills: [],
+      experienceSummary: null,
+      portfolioUrl: null,
+      githubUrl: null,
+      linkedinUrl: null,
+      workPreferences: [],
+    });
+
+    expect(result.yearsOfExperience).toBeNull();
+  });
 });
 
 describe("profileFormSchema", () => {

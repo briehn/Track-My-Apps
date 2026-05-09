@@ -14,6 +14,7 @@ import {
   type UpsertProfileActionState,
 } from "@/features/profiles/actions";
 import { isPredefinedTargetTitle, TARGET_TITLE_OTHER_OPTION } from "@/features/profiles/options";
+import { mergeProfileExtractionSuggestionsIntoFormValues } from "@/features/profiles/suggestion-apply";
 import type { ProfileExtractionSuggestion } from "@/features/profiles/schemas";
 import type { UserProfileDetail } from "@/features/profiles/queries";
 
@@ -83,55 +84,6 @@ function toCurrentFormValues(form: HTMLFormElement): ProfileFormValues {
     githubUrl: formData.get("githubUrl")?.toString() ?? "",
     linkedinUrl: formData.get("linkedinUrl")?.toString() ?? "",
   };
-}
-
-function mergeProfileExtractionSuggestionsIntoFormValues(
-  currentValues: ProfileFormValues,
-  suggestions: ProfileExtractionSuggestion,
-): ProfileFormValues {
-  const nextValues: ProfileFormValues = {
-    ...currentValues,
-  };
-
-  if (suggestions.targetTitle) {
-    if (isPredefinedTargetTitle(suggestions.targetTitle)) {
-      nextValues.targetTitleOption = suggestions.targetTitle;
-      nextValues.targetTitleOther = "";
-    } else {
-      nextValues.targetTitleOption = TARGET_TITLE_OTHER_OPTION;
-      nextValues.targetTitleOther = suggestions.targetTitle;
-    }
-  }
-
-  if (suggestions.yearsOfExperience) {
-    nextValues.yearsOfExperience = suggestions.yearsOfExperience;
-  }
-
-  if (suggestions.skills.length > 0) {
-    nextValues.skills = suggestions.skills.join("\n");
-  }
-
-  if (suggestions.experienceSummary) {
-    nextValues.experienceSummary = suggestions.experienceSummary;
-  }
-
-  if (suggestions.portfolioUrl) {
-    nextValues.portfolioUrl = suggestions.portfolioUrl;
-  }
-
-  if (suggestions.githubUrl) {
-    nextValues.githubUrl = suggestions.githubUrl;
-  }
-
-  if (suggestions.linkedinUrl) {
-    nextValues.linkedinUrl = suggestions.linkedinUrl;
-  }
-
-  if (suggestions.workPreferences.length > 0) {
-    nextValues.workPreferences = suggestions.workPreferences;
-  }
-
-  return nextValues;
 }
 
 export function ProfileForm({ profile }: ProfileFormProps) {

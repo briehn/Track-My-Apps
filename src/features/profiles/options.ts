@@ -12,6 +12,7 @@ export const TARGET_TITLE_OPTIONS = [
 ] as const;
 
 export const TARGET_TITLE_OTHER_OPTION = "OTHER" as const;
+export type PredefinedTargetTitle = (typeof TARGET_TITLE_OPTIONS)[number];
 
 export const YEARS_OF_EXPERIENCE_OPTIONS = [
   "ZERO_TO_ONE",
@@ -62,10 +63,69 @@ export type YearsOfExperienceOption = (typeof YEARS_OF_EXPERIENCE_OPTIONS)[numbe
 
 export type WorkPreferenceOption = (typeof workPreferenceOptions)[number]["value"];
 
-export function isPredefinedTargetTitle(value: string | null | undefined) {
+function normalizeTitleKey(value: string) {
+  return value
+    .toLocaleLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim()
+    .replace(/\s+/g, " ");
+}
+
+const TARGET_TITLE_NORMALIZATION_ALIASES: Record<string, (typeof TARGET_TITLE_OPTIONS)[number]> =
+  {
+    "software developer": "Software Engineer",
+    "software engineer": "Software Engineer",
+    "frontend developer": "Frontend Engineer",
+    "front end developer": "Frontend Engineer",
+    "front end engineer": "Frontend Engineer",
+    "frontend engineer": "Frontend Engineer",
+    "backend developer": "Backend Engineer",
+    "back end developer": "Backend Engineer",
+    "back end engineer": "Backend Engineer",
+    "backend engineer": "Backend Engineer",
+    "full stack developer": "Full-Stack Engineer",
+    "full stack engineer": "Full-Stack Engineer",
+    "fullstack developer": "Full-Stack Engineer",
+    "fullstack engineer": "Full-Stack Engineer",
+  };
+
+export function isPredefinedTargetTitle(
+  value: string | null | undefined,
+): value is PredefinedTargetTitle {
   if (!value) {
     return false;
   }
 
   return TARGET_TITLE_OPTIONS.some((option) => option === value);
+}
+
+export function normalizeTargetTitleToPredefinedOption(
+  value: string | null | undefined,
+): PredefinedTargetTitle | null {
+  if (!value) {
+    return null;
+  }
+
+  const trimmedValue = value.trim();
+
+  if (!trimmedValue) {
+    return null;
+  }
+
+  if (isPredefinedTargetTitle(trimmedValue)) {
+    return trimmedValue;
+  }
+
+  const normalizedKey = normalizeTitleKey(trimmedValue);
+  const mappedAlias = TARGET_TITLE_NORMALIZATION_ALIASES[normalizedKey];
+
+  if (mappedAlias) {
+    return mappedAlias;
+  }
+
+  const exactNormalizedMatch = TARGET_TITLE_OPTIONS.find(
+    (option) => normalizeTitleKey(option) === normalizedKey,
+  );
+
+  return exactNormalizedMatch ?? null;
 }
