@@ -4,7 +4,7 @@ Track My Apps is a deployed full-stack job application tracker with AI-powered j
 
 Live app: [trackmyapps.dev](https://trackmyapps.dev)
 
-The current MVP is intentionally a polished tracker first, with grounded AI features layered on top of real saved job data. The core workflow is complete, while resume matching, interview prep, importing, and deeper analytics remain planned.
+The current MVP is intentionally a polished tracker first, with grounded AI features layered on top of real saved job data. The core workflow is complete, while deeper match history, interview prep, importing, and broader analytics remain planned.
 
 ## Why This Project Exists
 
@@ -31,6 +31,7 @@ The goal is to ship a useful tracker first and add AI features that are grounded
 - Timestamped job notes with create, list, and delete behavior
 - Manual AI job description analysis with structured saved results
 - Structured analysis stored in `JobAnalysis`
+- Transient AI profile-to-job match reports on job detail pages, based on the saved profile and saved job analysis
 - AI usage protections for 10,000-character input max and production-only per-user daily limits
 - Polished app-level not-found pages for public and authenticated dashboard routes
 - Focused Vitest unit tests for core validation and helper logic
@@ -43,7 +44,7 @@ The goal is to ship a useful tracker first and add AI features that are grounded
 These are future scope and are not currently implemented:
 
 - Resume upload and parsing
-- Resume-to-job match scoring
+- Saved match history and deeper resume-to-job scoring
 - Skill gap detection
 - Tailored resume bullet suggestions
 - Cover letter generation
@@ -98,6 +99,7 @@ src/
 
   features/
     auth/
+    job-match/
     jobs/
     profiles/
     notes/
@@ -191,8 +193,8 @@ npm run dev
 
 The app runs at `http://localhost:3000` by default. Visit `http://localhost:3000/sign-in` to sign in with Google.
 
-For AI job analysis, set `OPENAI_API_KEY` and choose a model in `OPENAI_MODEL`. The default placeholder uses `gpt-4o-mini` to keep MVP analysis costs lower.
-AI analysis is manually triggered only. In production, the app also enforces a small per-user daily analysis limit and blocks descriptions longer than 10,000 characters before calling OpenAI.
+For AI job analysis, profile extraction, and profile-to-job matching, set `OPENAI_API_KEY` and choose a model in `OPENAI_MODEL`. The default placeholder uses `gpt-4o-mini` to keep MVP analysis costs lower.
+AI analysis and matching are manually triggered only. In production, the app enforces a small per-user daily limit for saved job-description analysis and blocks oversized job descriptions before calling OpenAI.
 
 ## Development Commands
 
@@ -274,6 +276,7 @@ Completed:
 - Protected dashboard and jobs app shell
 - Manual job creation, listing, detail, editing, status updates, archive/delete, and notes
 - Manual AI job description analysis saved to `JobAnalysis`
+- Transient AI profile-to-job match reports on the job detail page
 - AI usage protections and usage tracking for analysis runs
 - Vitest unit tests for core validation and helper logic
 - Dashboard summaries and focused MVP polish pass
@@ -282,7 +285,7 @@ Completed:
 Not yet implemented:
 
 - Resume upload and parsing
-- Resume-to-job matching
+- Saved match history and deeper resume-to-job scoring
 - URL-based job importing
 - Advanced filtering/search
 - Dashboard charts and advanced analytics

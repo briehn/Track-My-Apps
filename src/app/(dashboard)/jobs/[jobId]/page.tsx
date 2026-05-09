@@ -14,6 +14,7 @@ import {
   hasAnalyzableJobDescription,
   isJobDescriptionTooLong,
 } from "@/features/job-analysis/schemas";
+import { JobMatchCard } from "@/features/job-match/components/job-match-card";
 import { JobManagementActions } from "@/features/jobs/components/job-management-actions";
 import { JobStatusForm } from "@/features/jobs/components/job-status-form";
 import { getJobForCurrentUser, type JobDetail } from "@/features/jobs/queries";
@@ -21,6 +22,7 @@ import { statusBadgeVariants, statusLabels } from "@/features/jobs/status";
 import { NoteForm } from "@/features/notes/components/note-form";
 import { NotesList } from "@/features/notes/components/notes-list";
 import { getNotesForJobForCurrentUser } from "@/features/notes/queries";
+import { getProfileForCurrentUser } from "@/features/profiles/queries";
 import { isSafeExternalUrl } from "@/lib/url";
 
 type JobDetailPageProps = {
@@ -87,9 +89,10 @@ function DetailItem({ label, value }: { label: string; value: string }) {
 
 export default async function JobDetailPage({ params }: JobDetailPageProps) {
   const { jobId } = await params;
-  const [job, notes] = await Promise.all([
+  const [job, notes, profile] = await Promise.all([
     getJobForCurrentUser(jobId),
     getNotesForJobForCurrentUser(jobId),
+    getProfileForCurrentUser(),
   ]);
 
   if (!job) {
@@ -251,6 +254,21 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
                 descriptionLength={job.description?.length ?? 0}
                 jobId={job.id}
               />
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Profile match</CardTitle>
+              <CardDescription>
+                Compare your saved profile against this job&apos;s analysis.
+              </CardDescription>
+            </CardHeader>
+            <JobMatchCard
+              hasJobAnalysis={Boolean(job.analysis)}
+              hasProfile={Boolean(profile)}
+              hasResumeText={Boolean(profile?.resumeText?.trim())}
+              jobId={job.id}
+            />
           </Card>
         </div>
       </div>

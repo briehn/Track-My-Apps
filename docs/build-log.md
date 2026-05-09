@@ -6,6 +6,24 @@ It should document what changed, why it mattered, and what the next step is. It 
 
 ---
 
+## 2026-05-08
+
+### Changes
+- Added the first transient profile-to-job matching slice on the job detail page, with a manual `Compare my profile` action beside the existing job analysis panel.
+- Introduced a new `job-match` feature folder with a structured OpenAI service, read-only server action, and Zod normalization for fit summaries, fit levels, evidence, missing skills, suggestions, prep topics, and warnings.
+- Kept match reports out of the database in this MVP so the comparison stays derived, cheap to iterate on, and clearly separate from canonical user/job data.
+- Added prerequisite states for missing `JobAnalysis` and missing `UserProfile`, while still allowing matching without saved `resumeText` and surfacing a completeness warning instead.
+- Added focused tests for job-match schema normalization, warning merging, and resume-text input capping.
+- Updated the README to reflect the new transient profile-to-job match capability and current source organization.
+
+### Notes
+- The match prompt is explicitly constrained to avoid fabricating skills, years, certifications, projects, or achievements and to treat missing evidence as missing evidence.
+- Resume improvement suggestions are intentionally framed as safe guidance such as clarifying or highlighting existing experience if true, rather than inventing resume content.
+- This slice does not add saved match history, durable usage limits, or one-click resume edits.
+
+### Next Step
+- Decide whether the next iteration should improve report quality first or introduce saved match history and invalidation rules after the transient flow proves useful.
+
 ## 2026-05-07
 
 ### Changes
