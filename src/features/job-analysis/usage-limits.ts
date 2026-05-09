@@ -11,9 +11,16 @@ export function getUtcDayRange(now: Date) {
   };
 }
 
-export function hasReachedDailyAnalysisLimit(
+export function hasReachedDailyUsageLimit(
   runsToday: number,
   dailyLimit: number,
 ): boolean {
   return runsToday >= dailyLimit;
+}
+
+export function hasReachedDailyAnalysisLimit(
+  runsToday: number,
+  dailyLimit: number,
+): boolean {
+  return hasReachedDailyUsageLimit(runsToday, dailyLimit);
 }

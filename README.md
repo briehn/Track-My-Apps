@@ -1,57 +1,31 @@
 # Track My Apps
 
-Track My Apps is a deployed full-stack job application tracker with AI-powered job description analysis.
+Track My Apps is a deployed full-stack job application tracker with AI features grounded in real user data.
 
 Live app: [trackmyapps.dev](https://trackmyapps.dev)
 
-The current MVP is intentionally a polished tracker first, with grounded AI features layered on top of real saved job data. The core workflow is complete, while deeper match history, interview prep, importing, and broader analytics remain planned.
+The app is built as a polished tracker first: users save jobs, track status, store notes, maintain a private profile, and use AI only where it is tied to that saved data.
 
 ## Why This Project Exists
 
-Job searching creates scattered information: job descriptions, company details, statuses, follow-up dates, recruiter notes, interview notes, and resume tailoring decisions. This project brings that workflow into one authenticated app while demonstrating production-minded full-stack engineering.
-
-The goal is to ship a useful tracker first and add AI features that are grounded in real user data rather than speculative prompts. That keeps the product practical today and gives future AI features a structured foundation.
+Job searching spreads context across job posts, notes, status updates, and resume decisions. This project keeps that workflow in one authenticated workspace and shows how to ship AI features without losing user ownership, validation, or production discipline.
 
 ## Implemented Features
 
-- Google OAuth sign-in with Prisma-backed NextAuth sessions
-- Deployed custom domain at `trackmyapps.dev`
-- Protected application shell for authenticated routes
-- Private canonical career profile page with structured target titles, experience ranges, and multi-select work preferences
-- AI-assisted profile extraction suggestions from saved resume text with explicit review/apply before saving
-- Dashboard summary for active jobs, status counts, recent jobs, and upcoming dates
-- Manual job creation with server-side Zod validation
-- Authenticated active jobs list at `/jobs`
-- Archived jobs view at `/jobs?status=archived`
-- Job detail pages with posting metadata, dates, description, and management actions
-- Full-card job navigation from list and dashboard views
-- Status updates from the job detail page with auto-save feedback
-- Job editing from `/jobs/[jobId]/edit`
-- Archive and permanent delete actions
-- Timestamped job notes with create, list, and delete behavior
-- Manual AI job description analysis with structured saved results
-- Structured analysis stored in `JobAnalysis`
-- Transient AI profile-to-job match reports on job detail pages, based on the saved profile and saved job analysis
-- AI usage protections for 10,000-character input max and production-only per-user daily limits
-- Polished app-level not-found pages for public and authenticated dashboard routes
-- Focused Vitest unit tests for core validation and helper logic
-- User-owned data access enforced server-side through `requireUser()`
-- Prisma schema for job analysis and usage tracking
-- Reusable UI primitives for buttons, inputs, textareas, badges, cards, and empty states
+- Google OAuth sign-in and a protected authenticated workspace
+- Job tracking with statuses, notes, archive/delete, and dashboard summaries
+- Private profile and resume foundation for a single user-owned canonical profile
+- AI job description analysis with structured saved output
+- AI profile extraction suggestions from saved resume text with review before apply
+- Transient profile-to-job matching on job detail pages
+- Production-only AI usage limits for job analysis and profile matching
+- Server-side ownership checks, validation, and normalized persistence boundaries
+- Focused Vitest coverage for core schemas and helper logic
+- Deployed custom domain and production-ready app shell
 
 ## Planned Features
 
-These are future scope and are not currently implemented:
-
-- Resume upload and parsing
-- Saved match history and deeper resume-to-job scoring
-- Skill gap detection
-- Tailored resume bullet suggestions
-- Cover letter generation
-- Interview prep based on saved job descriptions
-- Browser extension or URL-based job importing
-- Advanced search, filtering, charts, and analytics
-- Note editing
+Future scope includes resume upload/parsing, saved match history, skill-gap detection, tailored resume bullets, cover letters, interview prep, importing, richer filtering, and analytics.
 
 ## Tech Stack
 
@@ -65,76 +39,13 @@ These are future scope and are not currently implemented:
 - OpenAI
 - Zod
 
-This stack was chosen to demonstrate modern full-stack TypeScript architecture, server-side data access, explicit validation, and clear user ownership boundaries.
-
 ## Architecture Overview
 
-The app uses the Next.js App Router with Server Components for protected data views and Server Actions for form mutations.
-
-Key architecture decisions:
-
-- Route groups separate public auth screens from authenticated app routes.
-- Pages stay focused on route-level composition.
-- Feature folders own domain-specific actions, queries, schemas, and components.
-- Database access remains server-side.
-- Server Actions validate input, check ownership, mutate data, and revalidate or redirect.
-- Client Components are used only where browser interactivity is needed.
-
-Current source organization:
-
-```text
-src/
-  app/
-    (auth)/
-    (dashboard)/
-    api/
-    layout.tsx
-    page.tsx
-    globals.css
-
-  components/
-    ui/
-    layout/
-    empty-states/
-
-  features/
-    auth/
-    job-match/
-    jobs/
-    profiles/
-    notes/
-
-  server/
-    db/
-```
-
-See [docs/architecture.md](docs/architecture.md) for the full architecture notes.
+The app uses Next.js Server Components for protected reads and Server Actions for mutations. Feature folders own their own actions, queries, schemas, and components, which keeps the data flow explicit and the codebase easier to explain in an interview. See [docs/architecture.md](docs/architecture.md) for the full notes.
 
 ## Database Overview
 
-The implemented database model is centered on authenticated, user-owned job search data and saved AI analysis.
-
-Core models:
-
-- `User`: authenticated user and owner of product data
-- `UserProfile`: one private canonical profile per user, including target role, suggested location preference text, multi-select work preferences, experience range, skills, resume text, and career links
-- `Job`: saved job posting, application status, dates, salary range, source, URL, and description
-- `Note`: timestamped notes attached to a job
-- `JobAnalysis`: structured AI analysis fields linked to a job, including summary, skills, responsibilities, keywords, and seniority
-- `JobAnalysisRun`: usage tracking for AI analysis runs, including optional model and token metadata
-- `Account`, `Session`, and `VerificationToken`: NextAuth Prisma adapter models
-
-Primary enums:
-
-- `ApplicationStatus`: `SAVED`, `APPLIED`, `INTERVIEWING`, `OFFER`, `REJECTED`, `ARCHIVED`
-- `RemoteType`: `ONSITE`, `HYBRID`, `REMOTE`
-- `ExperienceRange`: `ZERO_TO_ONE`, `ONE_TO_TWO`, `THREE_TO_FIVE`, `SIX_TO_NINE`, `TEN_PLUS`
-- `EmploymentType`: `FULL_TIME`, `PART_TIME`, `CONTRACT`, `INTERNSHIP`, `TEMPORARY`
-
-Jobs, notes, and the canonical profile are scoped to the authenticated user. Job analysis is owned through its required job relation.
-AI usage tracking is scoped to the authenticated user and job through `JobAnalysisRun`.
-
-See [docs/schema.md](docs/schema.md) and [prisma/schema.prisma](prisma/schema.prisma) for schema details.
+The schema centers on authenticated, user-owned data: `UserProfile`, `Job`, `Note`, `JobAnalysis`, and AI usage tracking. Job analysis and profile matching stay transient in the UI, while usage tracking records only what is needed for rate limiting. See [docs/schema.md](docs/schema.md) for the full schema reference.
 
 ## Local Setup
 
@@ -163,7 +74,7 @@ OPENAI_API_KEY=
 OPENAI_MODEL=
 ```
 
-For Neon, use the pooled connection string for `DATABASE_URL` and the direct, non-pooled connection string for `DIRECT_URL`. Prisma CLI commands use `DIRECT_URL` through `prisma.config.ts` so migrations do not run through the connection pooler.
+For Neon, use the pooled connection string for `DATABASE_URL` and the direct, non-pooled connection string for `DIRECT_URL`. Prisma CLI commands use `DIRECT_URL` through `prisma.config.ts`.
 
 Generate a strong `NEXTAUTH_SECRET`, then create a Google OAuth client and add this local callback URL:
 
@@ -193,9 +104,6 @@ npm run dev
 
 The app runs at `http://localhost:3000` by default. Visit `http://localhost:3000/sign-in` to sign in with Google.
 
-For AI job analysis, profile extraction, and profile-to-job matching, set `OPENAI_API_KEY` and choose a model in `OPENAI_MODEL`. The default placeholder uses `gpt-4o-mini` to keep MVP analysis costs lower.
-AI analysis and matching are manually triggered only. In production, the app enforces a small per-user daily limit for saved job-description analysis and blocks oversized job descriptions before calling OpenAI.
-
 ## Development Commands
 
 ```bash
@@ -208,33 +116,29 @@ npm run prisma:generate
 npm run prisma:migrate
 ```
 
-`npm run prisma:migrate` requires a reachable PostgreSQL database configured through `DIRECT_URL`.
-
 ## Deployment Notes
 
 This app is suitable for deployment on Vercel with a hosted PostgreSQL database such as Neon.
 
 Deployment checklist:
 
-- Use Node.js `22.x` locally and in Vercel for consistent builds.
+- Use Node.js `22.x` locally and in Vercel.
 - Set all environment variables from `.env.example` in the deployment platform.
-- This project uses a NextAuth v4-style config, so production auth settings should use `NEXTAUTH_SECRET` and `NEXTAUTH_URL`.
 - Use a pooled Neon URL for `DATABASE_URL`.
 - Use a direct Neon URL for `DIRECT_URL`.
 - Set `NEXTAUTH_URL` to the production domain.
-- Set `NEXTAUTH_SECRET` to a strong random value that is stable across deployments.
-- Set `OPENAI_API_KEY` for server-side AI analysis requests.
-- Set `OPENAI_MODEL` to the model you want the analysis action to use.
-- Production AI analysis is limited per authenticated user per day and skips descriptions longer than 10,000 characters.
+- Set `NEXTAUTH_SECRET` to a strong stable value.
+- Set `OPENAI_API_KEY` and `OPENAI_MODEL` for server-side AI requests.
+- Run Prisma migrations against the production database before using the app.
 - Add the production Google OAuth callback URL in Google Cloud Console:
 
 ```text
 https://your-domain.com/api/auth/callback/google
 ```
 
-- Run Prisma migrations against the production database before using the app.
-- Prisma Client is generated during install via `postinstall`, which helps keep Vercel builds aligned with the checked-in schema.
 - Do not commit real `.env` values.
+
+For job analysis and profile matching, AI requests are manual and production-limited per authenticated user.
 
 ## Screenshots
 
@@ -260,37 +164,36 @@ Scannable list of saved jobs with status, company, and key metadata.
 
 ![Job detail page](public/screenshots/job-detail.png)
 
-Full saved posting view with status controls, notes, management actions, and job metadata.
+Saved posting view with status controls, notes, management actions, and AI panels.
 
 ## Project Status
 
-Status: Deployed MVP is complete; post-MVP AI and product expansion work is underway.
+Status: deployed MVP complete, with AI features and production safeguards in place.
 
 Completed:
 
-- Product scope, architecture notes, schema notes, roadmap, and decision record
+- Product scope, architecture notes, schema notes, roadmap, and decision records
 - Next.js App Router foundation
 - TypeScript, Tailwind, and ESLint setup
-- Prisma schema, Prisma 7 config, and initial PostgreSQL migration
+- Prisma schema, Prisma config, and PostgreSQL migrations
 - Google OAuth authentication with Prisma-backed sessions
-- Protected dashboard and jobs app shell
-- Manual job creation, listing, detail, editing, status updates, archive/delete, and notes
-- Manual AI job description analysis saved to `JobAnalysis`
-- Transient AI profile-to-job match reports on the job detail page
-- AI usage protections and usage tracking for analysis runs
-- Vitest unit tests for core validation and helper logic
-- Dashboard summaries and focused MVP polish pass
+- Protected dashboard and jobs workspace
+- Job tracking workflow with status changes, notes, archive/delete, and summaries
+- Private profile foundation with AI-assisted extraction suggestions
+- Manual AI job analysis saved to `JobAnalysis`
+- Transient AI profile-to-job matching on job detail pages
+- Production AI usage protections and usage tracking
+- Vitest coverage for core validation and helper logic
 - Deployed custom domain and production release
 
 Not yet implemented:
 
 - Resume upload and parsing
-- Saved match history and deeper resume-to-job scoring
+- Saved match history and deeper scoring
 - URL-based job importing
 - Advanced filtering/search
-- Dashboard charts and advanced analytics
+- Dashboard charts and analytics
 - Browser-level and integration test coverage
-- Production deployment
 
 ## Roadmap
 
@@ -298,32 +201,25 @@ The implementation roadmap is documented in [docs/roadmap.md](docs/roadmap.md).
 
 Current focus:
 
-- Maintain the deployed MVP tracker workflow.
-- Improve AI analysis quality, reliability, and observability.
-- Add resume/profile foundations before any matching features.
-- Expand the profile foundation before adding any resume-to-job matching logic.
+- Keep the deployed tracker workflow stable.
+- Improve AI quality, reliability, and observability.
+- Expand profile and resume foundations before adding more AI generation.
 - Add importing, search, filtering, and analytics only when they serve the workflow.
-- Expand testing and reliability around the highest-value pure logic first.
+- Expand testing around the highest-value pure logic first.
 
 ## What This Project Demonstrates
-
-This project is intended to demonstrate more than basic CRUD.
-
-Engineering priorities:
 
 - Product-first scoping
 - Modern Next.js App Router architecture
 - Clear server/client boundaries
 - Type-safe full-stack development
 - Prisma data modeling
-- User data ownership and authorization checks
+- User ownership and authorization checks
 - Schema-based validation with Zod
-- Maintainable feature-oriented folder structure
-- Practical UX for repeated workflows
-- Implemented AI integration with structured output validation and normalization
-- AI usage limits and save-path tracking
-- Focused automated testing for core validation and helper logic
-- Deployed production readiness with a live custom domain
-- AI-ready product design without premature AI complexity
+- Feature-oriented folder structure
+- Practical AI integration with structured output validation
+- Production AI usage limits and transient reports
+- Focused automated testing
+- Deployed production readiness with a custom domain
 
-The main technical decision is to build a strong tracker before adding AI generation. That keeps the MVP useful on its own and gives future AI features real structured data to work with.
+The main technical choice is to keep AI grounded in saved user data instead of turning it into speculative generation. That keeps the app useful now and leaves room for future features without sacrificing maintainability.

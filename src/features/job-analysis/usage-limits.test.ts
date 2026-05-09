@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   getUtcDayRange,
   hasReachedDailyAnalysisLimit,
+  hasReachedDailyUsageLimit,
 } from "@/features/job-analysis/usage-limits";
 
 describe("getUtcDayRange", () => {
@@ -21,5 +22,14 @@ describe("hasReachedDailyAnalysisLimit", () => {
     expect(hasReachedDailyAnalysisLimit(2, 3)).toBe(false);
     expect(hasReachedDailyAnalysisLimit(3, 3)).toBe(true);
     expect(hasReachedDailyAnalysisLimit(4, 3)).toBe(true);
+  });
+});
+
+describe("hasReachedDailyUsageLimit", () => {
+  it("returns true only when the count reaches or exceeds the limit", () => {
+    expect(hasReachedDailyUsageLimit(0, 5)).toBe(false);
+    expect(hasReachedDailyUsageLimit(4, 5)).toBe(false);
+    expect(hasReachedDailyUsageLimit(5, 5)).toBe(true);
+    expect(hasReachedDailyUsageLimit(6, 5)).toBe(true);
   });
 });

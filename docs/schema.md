@@ -17,6 +17,8 @@ model User {
   profile       UserProfile?
   jobs          Job[]
   notes         Note[]
+  analysisRuns  JobAnalysisRun[]
+  matchRuns     JobMatchRun[]
 }
 
 model UserProfile {
@@ -62,6 +64,8 @@ model Job {
   user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   notes           Note[]
   analysis        JobAnalysis?
+  analysisRuns    JobAnalysisRun[]
+  matchRuns       JobMatchRun[]
 
   @@index([userId])
   @@index([userId, status])
@@ -96,6 +100,36 @@ model JobAnalysis {
   updatedAt        DateTime @updatedAt
 
   job              Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+}
+
+model JobAnalysisRun {
+  id           String   @id @default(cuid())
+  userId       String
+  jobId        String
+  model        String?
+  inputTokens  Int?
+  outputTokens Int?
+  totalTokens  Int?
+  createdAt    DateTime @default(now())
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job          Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([jobId])
+}
+
+model JobMatchRun {
+  id        String   @id @default(cuid())
+  userId    String
+  jobId     String
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([jobId])
 }
 
 enum ApplicationStatus {
@@ -144,6 +178,7 @@ User-owned data is the central security boundary.
 - `UserProfile.userId` defines the owner of the canonical profile and enforces one profile per user.
 - `Note.userId` defines the owner of a note and should match the owner of the related job.
 - `JobAnalysis` is owned through its required one-to-one `Job` relation.
+- `JobAnalysisRun` and `JobMatchRun` are owned through both `userId` and the related `jobId`, and should only ever be created from authenticated server-side flows.
 - Every query that reads or mutates profiles, jobs, notes, or analysis must be scoped by the authenticated user's id.
 - Authentication proves who the user is. Authorization still needs explicit ownership checks in queries and server actions.
 
@@ -151,7 +186,7 @@ For note creation, validate both `jobId` and ownership before inserting the note
 
 ## Cascades
 
-The schema uses cascade deletes from `User` to `UserProfile`, `Job`, and `Note`, and from `Job` to `Note` and `JobAnalysis`.
+The schema uses cascade deletes from `User` to `UserProfile`, `Job`, `Note`, `JobAnalysisRun`, and `JobMatchRun`, and from `Job` to `Note`, `JobAnalysis`, `JobAnalysisRun`, and `JobMatchRun`.
 
 This is appropriate for MVP because the data is personal workspace data. If the product later adds team accounts, audit logs, or shared jobs, deletion rules should be revisited before shipping those features.
 
@@ -163,6 +198,8 @@ The MVP indexes support the first expected access patterns:
 - `@@index([userId, status])` for dashboard counts and status filtering.
 - `@@index([userId, createdAt])` for recent jobs.
 - `@@index([jobId])` on notes for loading the job detail page.
+- `@@index([userId, createdAt])` on AI usage-run tables for efficient daily per-user limit checks.
+- `@@index([jobId])` on AI usage-run tables for job-scoped drill-in or cleanup operations.
 - `@unique` on `UserProfile.userId` for one canonical profile lookup per authenticated user.
 
 Avoid adding speculative indexes until real queries require them.

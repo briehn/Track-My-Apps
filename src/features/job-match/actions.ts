@@ -4,12 +4,17 @@ import type { EmploymentType, ExperienceRange, RemoteType } from "@prisma/client
 
 import { requireUser } from "@/features/auth/require-user";
 import {
+  getUtcDayRange,
+  hasReachedDailyUsageLimit,
+} from "@/features/job-analysis/usage-limits";
+import {
   analyzeProfileJobMatchWithOpenAI,
   JobMatchServiceError,
 } from "@/features/job-match/service";
 import {
   analyzeJobMatchSchema,
   mergeJobMatchWarnings,
+  PRODUCTION_DAILY_JOB_MATCH_LIMIT,
   type JobMatchReport,
 } from "@/features/job-match/schemas";
 import { prisma } from "@/server/db/prisma";
@@ -45,6 +50,12 @@ type JobForJobMatch = {
   title: string;
 };
 
+type PersistenceErrorDiagnostics = {
+  code: string | null;
+  message: string | null;
+  name: string | null;
+};
+
 function normalizeNullableText(value: string | null) {
   const trimmedValue = value?.trim() ?? "";
   return trimmedValue.length > 0 ? trimmedValue : null;
@@ -72,6 +83,25 @@ function normalizeStringList(values: string[]) {
   }
 
   return normalizedValues;
+}
+
+function getPersistenceErrorDiagnostics(error: unknown): PersistenceErrorDiagnostics {
+  if (!error || typeof error !== "object") {
+    return {
+      code: null,
+      message: null,
+      name: null,
+    };
+  }
+
+  return {
+    code: "code" in error && typeof error.code === "string" ? error.code : null,
+    message:
+      "message" in error && typeof error.message === "string"
+        ? error.message
+        : null,
+    name: "name" in error && typeof error.name === "string" ? error.name : null,
+  };
 }
 
 function getDeterministicWarnings(
@@ -194,6 +224,27 @@ export async function analyzeJobMatch(
     };
   }
 
+  if (process.env.NODE_ENV === "production") {
+    const { dayStart, nextDayStart } = getUtcDayRange(new Date());
+
+    const runsToday = await prisma.jobMatchRun.count({
+      where: {
+        userId: user.id,
+        createdAt: {
+          gte: dayStart,
+          lt: nextDayStart,
+        },
+      },
+    });
+
+    if (hasReachedDailyUsageLimit(runsToday, PRODUCTION_DAILY_JOB_MATCH_LIMIT)) {
+      return {
+        canRetry: false,
+        formError: "You have reached today's profile comparison limit. Try again tomorrow.",
+      };
+    }
+  }
+
   const normalizedProfile: ProfileForJobMatch = {
     targetTitle: normalizeNullableText(profile.targetTitle),
     yearsOfExperience: profile.yearsOfExperience,
@@ -235,6 +286,33 @@ export async function analyzeJobMatch(
       },
       analysis: normalizedJob.analysis,
     });
+
+    if (process.env.NODE_ENV === "production") {
+      try {
+        await prisma.jobMatchRun.create({
+          data: {
+            jobId: normalizedJob.id,
+            userId: user.id,
+          },
+        });
+      } catch (error) {
+        const persistenceErrorDiagnostics = getPersistenceErrorDiagnostics(error);
+
+        console.error("Job match usage tracking save failed", {
+          jobId: normalizedJob.id,
+          userId: user.id,
+          code: persistenceErrorDiagnostics.code,
+          name: persistenceErrorDiagnostics.name,
+          message: persistenceErrorDiagnostics.message,
+        });
+
+        return {
+          canRetry: true,
+          formError:
+            "The comparison completed, but saving usage tracking failed. Please try again in a moment.",
+        };
+      }
+    }
 
     return {
       canRetry: true,

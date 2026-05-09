@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 export const MAX_JOB_MATCH_RESUME_TEXT_CHARS = 6_000;
+export const PRODUCTION_DAILY_JOB_MATCH_LIMIT = 5;
 const MAX_JOB_MATCH_LIST_ITEMS = 8;
 
 export const analyzeJobMatchSchema = z.object({

@@ -21,6 +21,7 @@ model User {
   jobs          Job[]
   notes         Note[]
   analysisRuns  JobAnalysisRun[]
+  matchRuns     JobMatchRun[]
 }
 
 model UserProfile {
@@ -106,6 +107,7 @@ model Job {
   notes          Note[]
   analysis       JobAnalysis?
   analysisRuns   JobAnalysisRun[]
+  matchRuns      JobMatchRun[]
 
   @@index([userId])
   @@index([userId, status])
@@ -150,6 +152,19 @@ model JobAnalysisRun {
   inputTokens Int?
   outputTokens Int?
   totalTokens Int?
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([jobId])
+}
+
+model JobMatchRun {
+  id        String   @id @default(cuid())
+  userId    String
+  jobId     String
   createdAt DateTime @default(now())
 
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)

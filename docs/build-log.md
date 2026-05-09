@@ -13,14 +13,19 @@ It should document what changed, why it mattered, and what the next step is. It 
 - Hardened job-match summary normalization so reports are always explicitly framed as grounded in the saved profile plus this job's analysis, reducing overclaim risk if model wording drifts.
 - Improved match report readability on narrow screens by enabling long-text wrapping in summary, warnings, and list-card content.
 - Extended job-match schema tests to cover grounded summary normalization behavior while preserving existing dedupe/trim validation.
+- Added production-only per-user daily usage protection for profile-to-job matching, with a durable `JobMatchRun` table that stores only `userId`, `jobId`, and `createdAt`.
+- Reused the existing UTC-day helper pattern so job matching now blocks before OpenAI when a production user has already reached the daily comparison cap, while development remains unrestricted.
+- Updated the README to document the new job-match usage tracking model and production limit behavior.
+- Condensed the README into a recruiter-friendly overview that keeps the live app, setup, deployment, screenshots, and core architecture links while removing changelog-style detail.
 - Revalidated with `npm run test`, `npm run lint`, and `npm run build`.
 
 ### Notes
-- No Prisma schema or migration changes were introduced in this pass.
+- Match reports remain transient and are still not saved to the database; only successful comparison runs are tracked for daily limiting.
+- This pass introduced a Prisma schema change and migration for durable job-match usage tracking.
 - No new dependencies, environment variables, or persistence paths were added.
 
 ### Next Step
-- Run a quick manual dashboard smoke test covering the three prerequisite states and one full compare flow in desktop + mobile viewport sizes.
+- Run a quick manual dashboard smoke test covering the three prerequisite states, the production daily-limit message, and one full compare flow in desktop + mobile viewport sizes.
 
 ## 2026-05-08
 
