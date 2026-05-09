@@ -20,4 +20,22 @@ describe("normalizeTargetTitleToPredefinedOption", () => {
       null,
     );
   });
+
+  it("maps Front End and Frontend variants to Frontend Engineer", () => {
+    expect(normalizeTargetTitleToPredefinedOption("Front End Developer")).toBe(
+      "Frontend Engineer",
+    );
+    expect(normalizeTargetTitleToPredefinedOption("Frontend Developer")).toBe(
+      "Frontend Engineer",
+    );
+  });
+
+  it("maps Back End and Backend variants to Backend Engineer", () => {
+    expect(normalizeTargetTitleToPredefinedOption("Back End Developer")).toBe(
+      "Backend Engineer",
+    );
+    expect(normalizeTargetTitleToPredefinedOption("Backend Developer")).toBe(
+      "Backend Engineer",
+    );
+  });
 });

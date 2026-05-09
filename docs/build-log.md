@@ -20,6 +20,8 @@ It should document what changed, why it mattered, and what the next step is. It 
 - Fixed AI profile extraction normalization so common title variants (for example, Full Stack/Fullstack and Front End/Back End wording) map to predefined target-title options instead of incorrectly defaulting to Other.
 - Added stronger years-of-experience normalization for extraction suggestions, including explicit handling for entry-level/no-professional-experience signals and clear range mapping (0-1, 1-2, 3-5, 6-9, 10+).
 - Moved extraction suggestion apply-merging into a pure helper and added regression tests to ensure valid low experience ranges (including `ZERO_TO_ONE`) are applied over existing higher saved values.
+- Ran a focused post-fix QA/polish pass for profile extraction mapping reliability and hardened edge handling for Front End/Frontend and Back End/Backend title variants.
+- Added test coverage for those additional title variants and tightened enum-like years signal normalization to avoid missing valid values due to casing/spacing drift.
 - Revalidated with `npm run test`, `npm run lint`, and `npm run build`.
 
 ### Notes

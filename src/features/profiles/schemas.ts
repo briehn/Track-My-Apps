@@ -82,8 +82,14 @@ function normalizeYearsOfExperienceSignal(
     return null;
   }
 
-  if (YEARS_OF_EXPERIENCE_OPTIONS.includes(value as (typeof YEARS_OF_EXPERIENCE_OPTIONS)[number])) {
-    return value as (typeof YEARS_OF_EXPERIENCE_OPTIONS)[number];
+  const canonicalEnumValue = normalizedValue.toUpperCase().replace(/\s+/g, "_");
+
+  if (
+    YEARS_OF_EXPERIENCE_OPTIONS.includes(
+      canonicalEnumValue as (typeof YEARS_OF_EXPERIENCE_OPTIONS)[number],
+    )
+  ) {
+    return canonicalEnumValue as (typeof YEARS_OF_EXPERIENCE_OPTIONS)[number];
   }
 
   const noExperienceSignals = [
