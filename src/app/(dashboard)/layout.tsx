@@ -6,7 +6,7 @@ type DashboardLayoutProps = Readonly<{
   children: React.ReactNode;
 }>;
 
-type ThemePreference = "light" | "dark" | "system";
+type ThemePreference = "light" | "dark";
 
 export default async function DashboardLayout({
   children,
@@ -15,7 +15,7 @@ export default async function DashboardLayout({
   const cookieStore = await cookies();
   const savedTheme = cookieStore.get("theme")?.value;
   const initialThemePreference: ThemePreference =
-    savedTheme === "light" || savedTheme === "dark" ? savedTheme : "system";
+    savedTheme === "light" || savedTheme === "dark" ? savedTheme : "dark";
 
   return (
     <AppShell user={user} initialThemePreference={initialThemePreference}>

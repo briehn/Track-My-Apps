@@ -19,13 +19,8 @@ type RootLayoutProps = Readonly<{
 export default async function RootLayout({ children }: RootLayoutProps) {
   const cookieStore = await cookies();
   const savedTheme = cookieStore.get("theme")?.value;
-  const hasManualTheme = savedTheme === "light" || savedTheme === "dark";
-  const rootClassName = hasManualTheme
-    ? savedTheme === "dark"
-      ? "dark"
-      : ""
-    : "theme-system";
-  const rootTheme = hasManualTheme ? savedTheme : "system";
+  const rootTheme = savedTheme === "light" || savedTheme === "dark" ? savedTheme : "dark";
+  const rootClassName = rootTheme === "dark" ? "dark" : "";
 
   return (
     <html

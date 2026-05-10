@@ -3,24 +3,11 @@
 import { useEffect, useSyncExternalStore } from "react";
 
 type Theme = "light" | "dark";
-type ThemePreference = Theme | "system";
 const THEME_STORAGE_KEY = "theme";
 const THEME_COOKIE_KEY = "theme";
 const THEME_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
 
-function resolveSystemTheme(): Theme {
-  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-}
-
-function applyThemePreference(preference: ThemePreference) {
-  if (preference === "system") {
-    document.documentElement.classList.add("theme-system");
-    document.documentElement.classList.remove("dark");
-    document.documentElement.dataset.theme = "system";
-    return;
-  }
-
-  document.documentElement.classList.remove("theme-system");
+function applyThemePreference(preference: Theme) {
   document.documentElement.classList.toggle("dark", preference === "dark");
   document.documentElement.dataset.theme = preference;
 }
@@ -28,11 +15,6 @@ function applyThemePreference(preference: ThemePreference) {
 function persistManualTheme(theme: Theme) {
   localStorage.setItem(THEME_STORAGE_KEY, theme);
   document.cookie = `${THEME_COOKIE_KEY}=${theme}; path=/; max-age=${THEME_COOKIE_MAX_AGE_SECONDS}; samesite=lax`;
-}
-
-function clearManualThemePersistence() {
-  localStorage.removeItem(THEME_STORAGE_KEY);
-  document.cookie = `${THEME_COOKIE_KEY}=; path=/; max-age=0; samesite=lax`;
 }
 
 function getResolvedThemeFromDocument(): Theme {
@@ -46,7 +28,7 @@ function getResolvedThemeFromDocument(): Theme {
     return "light";
   }
 
-  return resolveSystemTheme();
+  return document.documentElement.classList.contains("dark") ? "dark" : "light";
 }
 
 function emitThemeChange() {
@@ -80,24 +62,16 @@ function SunIcon() {
 
 export function ThemeToggle({
   initialThemePreference,
-}: Readonly<{ initialThemePreference: ThemePreference }>) {
+}: Readonly<{ initialThemePreference: Theme }>) {
   const resolvedTheme = useSyncExternalStore(
     (onStoreChange) => {
-      const mediaQueryList = window.matchMedia("(prefers-color-scheme: dark)");
-      const handleSystemThemeChange = () => {
-        if (document.documentElement.dataset.theme === "system") {
-          onStoreChange();
-        }
-      };
       const handleThemeChange = () => {
         onStoreChange();
       };
 
-      mediaQueryList.addEventListener("change", handleSystemThemeChange);
       window.addEventListener("themechange", handleThemeChange);
 
       return () => {
-        mediaQueryList.removeEventListener("change", handleSystemThemeChange);
         window.removeEventListener("themechange", handleThemeChange);
       };
     },
@@ -107,12 +81,7 @@ export function ThemeToggle({
 
   useEffect(() => {
     applyThemePreference(initialThemePreference);
-
-    if (initialThemePreference === "system") {
-      clearManualThemePersistence();
-    } else {
-      persistManualTheme(initialThemePreference);
-    }
+    persistManualTheme(initialThemePreference);
     emitThemeChange();
   }, [initialThemePreference]);
 

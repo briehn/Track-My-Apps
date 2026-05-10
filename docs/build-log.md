@@ -30,6 +30,7 @@ It should document what changed, why it mattered, and what the next step is. It 
 - Repositioned `Rejected` under `Applied` for a clearer lower-lane balance, removed the hard horizontal separator between the main and side-path lanes, and kept `Archived` as a muted unconnected end-status card.
 - Corrected the desktop lower-lane semantics by reconnecting `Rejected` from `Saved` and removed the in-chart `Side paths` label/pill so the chart reads cleaner while preserving the same overall styling and layout.
 - Added a persisted `Chart / Cards` view toggle to the `Application Pipeline` card so users can switch between the SVG pipeline visualization and a compact status-cards breakdown without changing dashboard data or status logic.
+- Changed theme fallback behavior so users with no saved preference now default to dark mode (SSR + client), while existing saved light/dark preferences continue to persist across sessions.
 
 ### Notes
 - This was a navigation-UX and hierarchy improvement only; routes, query semantics, filtering logic, auth, database, and AI behavior were unchanged.
@@ -38,6 +39,7 @@ It should document what changed, why it mattered, and what the next step is. It 
 - The chart weights are visual emphasis only, derived from current status counts; the app still does not store status history or true conversion transitions.
 - The current desktop chart now scales as one unit, so flow bands, labels, and stage nodes stay aligned together instead of drifting independently as the dashboard card resizes.
 - The pipeline view preference now saves to `localStorage` (`application-pipeline-view`) and hydrates on the client with a stable default (`Chart`) to avoid server/client mismatch.
+- Removed the old `system` theme fallback path to eliminate OS-driven defaults and keep first paint deterministic, preventing light-theme flashes before dark mode is applied.
 
 ### Next Step
 - Retake the dashboard screenshot so the public README reflects the new pipeline card and current visual polish.

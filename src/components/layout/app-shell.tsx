@@ -9,7 +9,7 @@ import { SignOutButton } from "@/features/auth/components/auth-buttons";
 
 type AppShellProps = Readonly<{
   children: React.ReactNode;
-  initialThemePreference: "light" | "dark" | "system";
+  initialThemePreference: "light" | "dark";
   user: {
     email?: string | null;
     name?: string | null;
