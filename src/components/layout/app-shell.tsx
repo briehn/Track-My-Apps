@@ -25,14 +25,18 @@ export function AppShell({ children, initialThemePreference, user }: AppShellPro
   const isJobsRoute = pathname === "/jobs" || pathname.startsWith("/jobs/");
   const isArchivedView = pathname === "/jobs" && statusQuery === "archived";
   const isActiveJobsView = pathname === "/jobs" && !isArchivedView;
-  const showArchivedNav = isJobsRoute || isMobileMenuOpen;
+  const showJobsSubNav = isJobsRoute || isMobileMenuOpen;
   const isProfileView = pathname === "/profile";
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-950 dark:bg-slate-950 dark:text-slate-100">
       <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur dark:border-slate-700 dark:bg-slate-950/90">
         <div className="flex min-h-16 items-center justify-between gap-4 px-4 sm:px-6">
-          <div className="flex items-center gap-3">
+          <Link
+            href="/dashboard"
+            className="flex items-center gap-3 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 dark:focus:ring-slate-500"
+            aria-label="Go to dashboard"
+          >
             <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 text-xs font-semibold text-white dark:bg-slate-100 dark:text-slate-950">
               TM
             </span>
@@ -42,7 +46,7 @@ export function AppShell({ children, initialThemePreference, user }: AppShellPro
               </p>
               <p className="max-w-[12rem] truncate text-xs text-slate-500 dark:text-slate-400 sm:max-w-none">{displayName}</p>
             </div>
-          </div>
+          </Link>
           <div className="hidden items-center gap-3 md:flex">
             <ThemeToggle initialThemePreference={initialThemePreference} />
             <div className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
@@ -94,21 +98,32 @@ export function AppShell({ children, initialThemePreference, user }: AppShellPro
                 <Link
                   href="/jobs"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  aria-current={isActiveJobsView ? "page" : undefined}
                   className={[
                     "block rounded-md px-3 py-2 text-sm font-medium transition",
-                    isActiveJobsView
-                      ? "bg-slate-950 text-white dark:bg-slate-100 dark:text-slate-950"
-                      : isJobsRoute
-                        ? "text-slate-950 dark:text-slate-100"
-                        : "text-slate-700 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100",
+                    isJobsRoute
+                      ? "text-slate-950 dark:text-slate-100"
+                      : "text-slate-700 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100",
                   ].join(" ")}
                 >
                   Jobs
                 </Link>
 
-                {showArchivedNav ? (
+                {showJobsSubNav ? (
                   <div className="ml-3 border-l border-slate-200 pl-3 dark:border-slate-700">
+                    <Link
+                      href="/jobs"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      aria-current={isActiveJobsView ? "page" : undefined}
+                      className={[
+                        "block rounded-md px-3 py-2 text-sm font-medium transition",
+                        isActiveJobsView
+                          ? "bg-slate-950 text-white dark:bg-slate-100 dark:text-slate-950"
+                          : "text-slate-700 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100",
+                      ].join(" ")}
+                    >
+                      Active
+                    </Link>
+
                     <Link
                       href="/jobs?status=archived"
                       onClick={() => setIsMobileMenuOpen(false)}
@@ -172,21 +187,31 @@ export function AppShell({ children, initialThemePreference, user }: AppShellPro
             <div className="mt-2 space-y-1">
               <Link
                 href="/jobs"
-                aria-current={isActiveJobsView ? "page" : undefined}
                 className={[
-                    "block rounded-lg px-3 py-2 text-sm font-medium transition",
-                  isActiveJobsView
-                    ? "bg-slate-900 text-white shadow-sm dark:bg-slate-100 dark:text-slate-950"
-                    : isJobsRoute
-                      ? "text-slate-950 dark:text-slate-100"
-                      : "text-slate-700 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100",
+                  "block rounded-lg px-3 py-2 text-sm font-medium transition",
+                  isJobsRoute
+                    ? "text-slate-950 dark:text-slate-100"
+                    : "text-slate-700 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100",
                 ].join(" ")}
               >
                 Jobs
               </Link>
 
-              {showArchivedNav ? (
+              {showJobsSubNav ? (
                 <div className="ml-3 border-l border-slate-200 pl-3 dark:border-slate-700">
+                  <Link
+                    href="/jobs"
+                    aria-current={isActiveJobsView ? "page" : undefined}
+                    className={[
+                      "block rounded-lg px-3 py-2 text-sm font-medium transition",
+                      isActiveJobsView
+                        ? "bg-slate-900 text-white shadow-sm dark:bg-slate-100 dark:text-slate-950"
+                        : "text-slate-700 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100",
+                    ].join(" ")}
+                  >
+                    Active
+                  </Link>
+
                   <Link
                     href="/jobs?status=archived"
                     aria-current={isArchivedView ? "page" : undefined}

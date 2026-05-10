@@ -13,7 +13,7 @@ Job searching spreads context across job posts, notes, status updates, and resum
 ## Implemented Features
 
 - Google OAuth sign-in and a protected authenticated workspace
-- Job tracking with statuses, notes, archive/delete, and dashboard summaries
+- Job tracking with statuses, notes, archive/delete, dashboard summaries, and an application pipeline visualization
 - Polished light/dark mode with a persistent user toggle across the app shell and dashboard/job/profile/import workflows
 - CSV export for saved jobs with user-scoped data access
 - CSV import for saved jobs with upload, column mapping, validation preview, duplicate warnings, and explicit confirm import
@@ -192,7 +192,7 @@ Not yet implemented:
 - URL-based job importing
 - XLSX import and richer spreadsheet migration support
 - Advanced filtering/search
-- Dashboard charts and analytics
+- Richer dashboard analytics and trends
 - Browser-level and integration test coverage
 
 ## Roadmap

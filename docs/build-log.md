@@ -6,6 +6,25 @@ It should document what changed, why it mattered, and what the next step is. It 
 
 ---
 
+## 2026-05-10
+
+### Changes
+- Refined sidebar information architecture so `Archived` is no longer treated as a top-level destination and now lives under `Jobs` as a nested view.
+- Added explicit nested jobs sub-navigation in both desktop and mobile menus: `Active` (`/jobs`) and `Archived` (`/jobs?status=archived`).
+- Kept `Dashboard`, `Jobs`, and `Profile` as top-level sidebar items while preserving existing dark-mode styling, spacing, and interaction patterns.
+- Updated active-state behavior so jobs context remains clearly active on any jobs route, while the correct nested view is highlighted for active vs archived list state.
+- Restored `Jobs` parent clickability in desktop and mobile navigation so the top-level `Jobs` item navigates to `/jobs` while preserving nested `Active`/`Archived` links.
+- Added a new dashboard `Application Pipeline` visualization that uses existing authenticated job status counts to show the current funnel across `Saved`, `Applied`, `Interviewing`, `Offer`, `Rejected`, and `Archived`.
+- Implemented the pipeline as a custom responsive dashboard component instead of adding a charting dependency, with a horizontal connected flow on desktop and a simplified stacked version on mobile.
+
+### Notes
+- This was a navigation-UX and hierarchy improvement only; routes, query semantics, filtering logic, auth, database, and AI behavior were unchanged.
+- `Import jobs` remains an in-page action from the Jobs screen rather than a sidebar destination to keep primary navigation focused on persistent views.
+- The pipeline visualization is a snapshot of current status distribution, not a historical conversion chart, and it reuses the existing dashboard summary query without schema changes.
+
+### Next Step
+- Retake the dashboard screenshot so the public README reflects the new pipeline card and current visual polish.
+
 ## 2026-05-09
 
 ### Changes

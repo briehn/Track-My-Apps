@@ -9,13 +9,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { LinkButton } from "@/components/ui/link-button";
+import { ApplicationPipeline } from "@/features/jobs/components/application-pipeline";
 import {
   type DashboardSummary,
   getDashboardSummaryForCurrentUser,
 } from "@/features/jobs/dashboard-queries";
 import { statusBadgeVariants, statusLabels } from "@/features/jobs/status";
-
-const pipelineStatuses = ["SAVED", "APPLIED", "INTERVIEWING", "OFFER"] as const;
 
 const dateFormatter = new Intl.DateTimeFormat("en", {
   month: "short",
@@ -50,43 +49,10 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      <Card>
-        <div className="space-y-4">
-          <div className="flex items-center justify-between gap-3">
-            <p className="text-sm font-medium text-slate-700">Pipeline Overview</p>
-            <Link
-              href="/jobs?status=archived"
-              className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
-            >
-              Archived: {summary.statusCounts.ARCHIVED}
-            </Link>
-          </div>
-
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 xl:col-span-1">
-              <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Active Jobs</p>
-              <p className="mt-2 text-3xl font-semibold text-slate-950">
-                {summary.activeTotal}
-              </p>
-            </div>
-            {pipelineStatuses.map((status) => (
-              <div
-                key={status}
-                className="rounded-xl border border-slate-200 bg-white p-4"
-              >
-                <div className="space-y-3">
-                  <Badge variant={statusBadgeVariants[status]}>
-                    {statusLabels[status]}
-                  </Badge>
-                  <span className="block text-2xl font-semibold text-slate-950">
-                    {summary.statusCounts[status]}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </Card>
+      <ApplicationPipeline
+        activeTotal={summary.activeTotal}
+        statusCounts={summary.statusCounts}
+      />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
