@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
 import { LinkButton } from "@/components/ui/link-button";
 import {
   Card,
@@ -12,82 +15,78 @@ import {
 
 const primaryStages = ["SAVED", "APPLIED", "INTERVIEWING", "OFFER"] as const;
 const secondaryStages = ["REJECTED", "ARCHIVED"] as const;
+const chartWidth = 1240;
+const chartHeight = 520;
+const PIPELINE_VIEW_STORAGE_KEY = "application-pipeline-view";
 
-const primaryNodePositions: Record<
-  (typeof primaryStages)[number],
-  {
-    x: number;
-    y: number;
-  }
-> = {
-  SAVED: { x: 12, y: 42 },
-  APPLIED: { x: 36, y: 28 },
-  INTERVIEWING: { x: 60, y: 42 },
-  OFFER: { x: 84, y: 26 },
+type PipelineView = "chart" | "cards";
+
+type SvgNodeLayout = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
 };
 
-const secondaryNodePositions: Record<
+const primaryNodeLayouts: Record<(typeof primaryStages)[number], SvgNodeLayout> = {
+  SAVED: { x: 0, y: 124, width: 166, height: 96 },
+  APPLIED: { x: 322, y: 48, width: 166, height: 96 },
+  INTERVIEWING: { x: 674, y: 124, width: 180, height: 96 },
+  OFFER: { x: 1070, y: 46, width: 166, height: 96 },
+};
+
+const secondaryNodeLayouts: Record<
   (typeof secondaryStages)[number],
-  {
-    x: number;
-    y: number;
-  }
+  SvgNodeLayout
 > = {
-  REJECTED: { x: 68, y: 74 },
-  ARCHIVED: { x: 86, y: 74 },
+  REJECTED: { x: 338, y: 356, width: 166, height: 96 },
+  ARCHIVED: { x: 1070, y: 356, width: 166, height: 96 },
 };
 
-const stageAccentClasses: Record<
+const stageClasses: Record<
   ApplicationStatus,
   {
     dot: string;
     meter: string;
     path: string;
-    surface: string;
-    ring: string;
+    accentFill: string;
   }
 > = {
   SAVED: {
     dot: "bg-slate-500 dark:bg-slate-300",
     meter: "bg-slate-500 dark:bg-slate-300",
     path: "stroke-slate-500/80 dark:stroke-slate-300/75",
-    surface: "bg-slate-500/10 dark:bg-slate-300/10",
-    ring: "ring-slate-300/70 dark:ring-slate-600/70",
+    accentFill: "fill-slate-500 dark:fill-slate-300",
   },
   APPLIED: {
     dot: "bg-sky-500 dark:bg-sky-400",
     meter: "bg-sky-500 dark:bg-sky-400",
     path: "stroke-sky-500/75 dark:stroke-sky-400/70",
-    surface: "bg-sky-500/10 dark:bg-sky-400/10",
-    ring: "ring-sky-200/80 dark:ring-sky-900/60",
+    accentFill: "fill-sky-500 dark:fill-sky-400",
   },
   INTERVIEWING: {
     dot: "bg-amber-500 dark:bg-amber-400",
     meter: "bg-amber-500 dark:bg-amber-400",
     path: "stroke-amber-500/80 dark:stroke-amber-400/75",
-    surface: "bg-amber-500/10 dark:bg-amber-400/10",
-    ring: "ring-amber-200/80 dark:ring-amber-900/60",
+    accentFill: "fill-amber-500 dark:fill-amber-400",
   },
   OFFER: {
     dot: "bg-emerald-500 dark:bg-emerald-400",
     meter: "bg-emerald-500 dark:bg-emerald-400",
     path: "stroke-emerald-500/80 dark:stroke-emerald-400/75",
-    surface: "bg-emerald-500/10 dark:bg-emerald-400/10",
-    ring: "ring-emerald-200/80 dark:ring-emerald-900/60",
+    accentFill: "fill-emerald-500 dark:fill-emerald-400",
   },
   REJECTED: {
     dot: "bg-rose-500 dark:bg-rose-400",
     meter: "bg-rose-500 dark:bg-rose-400",
     path: "stroke-rose-500/60 dark:stroke-rose-400/60",
-    surface: "bg-rose-500/10 dark:bg-rose-400/10",
-    ring: "ring-rose-200/80 dark:ring-rose-900/50",
+    accentFill: "fill-rose-500 dark:fill-rose-400",
   },
   ARCHIVED: {
     dot: "bg-slate-400 dark:bg-slate-500",
     meter: "bg-slate-400 dark:bg-slate-500",
-    path: "stroke-slate-400/65 dark:stroke-slate-500/70",
-    surface: "bg-slate-400/10 dark:bg-slate-500/10",
-    ring: "ring-slate-200/80 dark:ring-slate-700/70",
+    path: "stroke-slate-400/70 dark:stroke-slate-500/75",
+    accentFill: "fill-slate-400 dark:fill-slate-500",
   },
 };
 
@@ -104,16 +103,6 @@ type StageCardProps = {
   compact?: boolean;
 };
 
-type DesktopStageNodeProps = {
-  status: ApplicationStatus;
-  count: number;
-  maxCount: number;
-  totalTracked: number;
-  x: number;
-  y: number;
-  secondary?: boolean;
-};
-
 function getStageMeterWidth(count: number, maxCount: number) {
   if (count === 0 || maxCount === 0) {
     return "0%";
@@ -122,14 +111,26 @@ function getStageMeterWidth(count: number, maxCount: number) {
   return `${Math.max((count / maxCount) * 100, 12)}%`;
 }
 
-function getFlowStrokeWidth(startCount: number, endCount: number, maxCount: number) {
+function getSvgMeterWidth(count: number, maxCount: number, totalWidth: number) {
+  if (count === 0 || maxCount === 0) {
+    return 0;
+  }
+
+  return Math.max((count / maxCount) * totalWidth, 18);
+}
+
+function getFlowStrokeWidth(
+  startCount: number,
+  endCount: number,
+  maxCount: number,
+) {
   if (maxCount === 0) {
     return 10;
   }
 
   const averageCount = (startCount + endCount) / 2;
 
-  return 12 + (averageCount / maxCount) * 24;
+  return 12 + (averageCount / maxCount) * 22;
 }
 
 function getBranchStrokeWidth(count: number, maxCount: number) {
@@ -137,7 +138,7 @@ function getBranchStrokeWidth(count: number, maxCount: number) {
     return 6;
   }
 
-  return 8 + (count / maxCount) * 18;
+  return 8 + (count / maxCount) * 16;
 }
 
 function formatShare(count: number, totalTracked: number) {
@@ -150,6 +151,34 @@ function formatShare(count: number, totalTracked: number) {
   return `${percentage}% of tracked roles`;
 }
 
+function getNodeRightAnchor(layout: SvgNodeLayout) {
+  return {
+    x: layout.x + layout.width,
+    y: layout.y + layout.height / 2,
+  };
+}
+
+function getNodeLeftAnchor(layout: SvgNodeLayout) {
+  return {
+    x: layout.x,
+    y: layout.y + layout.height / 2,
+  };
+}
+
+function getNodeBottomBranchAnchor(layout: SvgNodeLayout) {
+  return {
+    x: layout.x + layout.width * 0.5,
+    y: layout.y + layout.height,
+  };
+}
+
+function buildBandPath(start: { x: number; y: number }, end: { x: number; y: number }) {
+  const horizontalDistance = end.x - start.x;
+  const controlOffset = Math.min(horizontalDistance * 0.42, 86);
+
+  return `M ${start.x} ${start.y} C ${start.x + controlOffset} ${start.y}, ${end.x - controlOffset} ${end.y}, ${end.x} ${end.y}`;
+}
+
 function StageCard({
   status,
   count,
@@ -157,7 +186,7 @@ function StageCard({
   totalTracked,
   compact = false,
 }: StageCardProps) {
-  const accents = stageAccentClasses[status];
+  const accents = stageClasses[status];
   const isArchived = status === "ARCHIVED";
 
   return (
@@ -210,61 +239,175 @@ function SummaryChip({ label, value }: { label: string; value: number }) {
   );
 }
 
-function DesktopStageNode({
+function ViewToggle({
+  view,
+  onChange,
+}: {
+  view: PipelineView;
+  onChange: (view: PipelineView) => void;
+}) {
+  return (
+    <div
+      role="tablist"
+      aria-label="Application pipeline view"
+      className="inline-flex items-center rounded-full border border-slate-200 bg-slate-100/80 p-1 dark:border-slate-700 dark:bg-slate-900/70"
+    >
+      {(["chart", "cards"] as const).map((option) => {
+        const isActive = view === option;
+        const label = option[0].toUpperCase() + option.slice(1);
+
+        return (
+          <button
+            key={option}
+            type="button"
+            role="tab"
+            aria-selected={isActive}
+            aria-label={`${label} view`}
+            onClick={() => onChange(option)}
+            className={[
+              "rounded-full px-3 py-1.5 text-xs font-semibold transition focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 dark:focus:ring-slate-500 dark:focus:ring-offset-slate-950",
+              isActive
+                ? "bg-white text-slate-900 shadow-sm dark:bg-slate-800 dark:text-slate-100"
+                : "text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-100",
+            ].join(" ")}
+          >
+            {label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function InfoTooltip({
+  id,
+  label,
+  tooltip,
+}: {
+  id: string;
+  label: string;
+  tooltip: string;
+}) {
+  return (
+    <span className="group/tooltip relative inline-flex">
+      <button
+        type="button"
+        aria-label={label}
+        aria-describedby={id}
+        className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-slate-300 bg-white text-[11px] font-semibold text-slate-500 transition hover:border-slate-400 hover:text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-500 dark:hover:text-slate-100 dark:focus:ring-slate-500 dark:focus:ring-offset-slate-950"
+      >
+        i
+      </button>
+      <span
+        id={id}
+        role="tooltip"
+        className="pointer-events-none absolute left-1/2 top-full z-10 mt-2 w-64 -translate-x-1/2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-left text-xs leading-5 text-slate-600 opacity-0 shadow-lg transition group-hover/tooltip:opacity-100 group-focus-within/tooltip:opacity-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
+      >
+        {tooltip}
+      </span>
+    </span>
+  );
+}
+
+function StatusGridCard({
+  label,
+  count,
+  accentClass,
+}: {
+  label: string;
+  count: number;
+  accentClass: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white/90 p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900/85">
+      <div className="flex items-center gap-2">
+        <span className={["h-2.5 w-2.5 rounded-full", accentClass].join(" ")} />
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+          {label}
+        </p>
+      </div>
+      <p className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 dark:text-slate-100">
+        {count}
+      </p>
+    </div>
+  );
+}
+
+function SvgStageNode({
   status,
   count,
   maxCount,
   totalTracked,
-  x,
-  y,
+  layout,
   secondary = false,
-}: DesktopStageNodeProps) {
-  const accents = stageAccentClasses[status];
+}: {
+  status: ApplicationStatus;
+  count: number;
+  maxCount: number;
+  totalTracked: number;
+  layout: SvgNodeLayout;
+  secondary?: boolean;
+}) {
+  const accent = stageClasses[status];
+  const meterTrackWidth = layout.width - 28;
+  const meterWidth = getSvgMeterWidth(count, maxCount, meterTrackWidth);
 
   return (
-    <div
-      className="absolute -translate-x-1/2 -translate-y-1/2"
-      style={{ left: `${x}%`, top: `${y}%` }}
-    >
-      <div
-        className={[
-          "w-40 rounded-2xl border bg-white/92 p-4 shadow-[0_10px_30px_rgba(15,23,42,0.12)] backdrop-blur-sm dark:bg-slate-900/88 dark:shadow-[0_12px_28px_rgba(2,6,23,0.4)]",
-          secondary
-            ? "border-dashed border-slate-300 dark:border-slate-600"
-            : "border-slate-200 dark:border-slate-700",
-          accents.surface,
-          `ring-1 ${accents.ring}`,
-        ].join(" ")}
+    <g>
+      <rect
+        x={layout.x}
+        y={layout.y}
+        width={layout.width}
+        height={layout.height}
+        rx={22}
+        className="fill-white/95 stroke-slate-200 dark:fill-slate-900/92 dark:stroke-slate-700"
+        strokeWidth={1.5}
+        strokeDasharray={secondary ? "6 6" : undefined}
+      />
+      <circle
+        cx={layout.x + 16}
+        cy={layout.y + 18}
+        r={4}
+        className={accent.accentFill}
+      />
+      <text
+        x={layout.x + 28}
+        y={layout.y + 22}
+        className="fill-slate-500 text-[11px] font-semibold uppercase tracking-[0.18em] dark:fill-slate-400"
       >
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <span className={["h-2.5 w-2.5 rounded-full", accents.dot].join(" ")} />
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
-              {statusLabels[status]}
-            </p>
-          </div>
-          <span className="rounded-full border border-slate-200 bg-white/80 px-2 py-0.5 text-[11px] font-medium text-slate-500 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-300">
-            {count}
-          </span>
-        </div>
-
-        <p className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 dark:text-slate-100">
-          {count}
-        </p>
-
-        <div className="mt-3">
-          <div className="h-1.5 rounded-full bg-slate-200/80 dark:bg-slate-800">
-            <div
-              className={["h-1.5 rounded-full", accents.meter].join(" ")}
-              style={{ width: getStageMeterWidth(count, maxCount) }}
-            />
-          </div>
-          <p className="mt-2 text-[11px] text-slate-500 dark:text-slate-400">
-            {formatShare(count, totalTracked)}
-          </p>
-        </div>
-      </div>
-    </div>
+        {statusLabels[status]}
+      </text>
+      <text
+        x={layout.x + 14}
+        y={layout.y + 54}
+        className="fill-slate-950 text-[30px] font-semibold dark:fill-slate-100"
+      >
+        {count}
+      </text>
+      <rect
+        x={layout.x + 14}
+        y={layout.y + layout.height - 22}
+        width={meterTrackWidth}
+        height={6}
+        rx={3}
+        className="fill-slate-200/90 dark:fill-slate-800"
+      />
+      <rect
+        x={layout.x + 14}
+        y={layout.y + layout.height - 22}
+        width={meterWidth}
+        height={6}
+        rx={3}
+        className={accent.accentFill}
+      />
+      <text
+        x={layout.x + 14}
+        y={layout.y + layout.height - 5}
+        className="fill-slate-500 text-[11px] dark:fill-slate-400"
+      >
+        {formatShare(count, totalTracked)}
+      </text>
+    </g>
   );
 }
 
@@ -292,132 +435,123 @@ function DesktopFlowChart({
     statusCounts.OFFER,
     maxCount,
   );
-  const rejectedBranchWidth = getBranchStrokeWidth(statusCounts.REJECTED, maxCount);
-  const archivedBranchWidth = getBranchStrokeWidth(statusCounts.ARCHIVED, maxCount);
+  const rejectedBranchWidth = getBranchStrokeWidth(
+    statusCounts.REJECTED,
+    maxCount,
+  );
+
+  const savedToAppliedPath = buildBandPath(
+    getNodeRightAnchor(primaryNodeLayouts.SAVED),
+    getNodeLeftAnchor(primaryNodeLayouts.APPLIED),
+  );
+  const appliedToInterviewingPath = buildBandPath(
+    getNodeRightAnchor(primaryNodeLayouts.APPLIED),
+    getNodeLeftAnchor(primaryNodeLayouts.INTERVIEWING),
+  );
+  const interviewingToOfferPath = buildBandPath(
+    getNodeRightAnchor(primaryNodeLayouts.INTERVIEWING),
+    getNodeLeftAnchor(primaryNodeLayouts.OFFER),
+  );
+
+  const rejectedPath = buildBandPath(
+    getNodeBottomBranchAnchor(primaryNodeLayouts.SAVED),
+    getNodeLeftAnchor(secondaryNodeLayouts.REJECTED),
+  );
 
   return (
     <div className="hidden lg:block">
-      <div className="rounded-[28px] border border-slate-200/80 bg-slate-50/70 p-4 dark:border-slate-700 dark:bg-slate-950/40">
-        <div className="mb-4 flex items-center justify-between gap-3">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
-              Pipeline snapshot
-            </p>
-            <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
-              Weighted connections mirror relative stage volume across your current saved roles.
-            </p>
-          </div>
+      <div className="rounded-[28px] bg-slate-50/55 px-1 pb-1 pt-2 dark:bg-slate-950/30">
+        <div className="mb-2 flex items-center justify-between gap-3 px-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+            Pipeline snapshot
+          </p>
           <div className="rounded-full border border-slate-200 bg-white/80 px-3 py-1.5 text-xs font-medium text-slate-600 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-300">
-            Current status distribution
+            Current snapshot
           </div>
         </div>
 
-        <div className="relative h-[22rem] overflow-hidden rounded-[24px] border border-slate-200/80 bg-white/65 p-4 dark:border-slate-700 dark:bg-slate-900/70">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(148,163,184,0.12),transparent_38%),radial-gradient(circle_at_bottom_right,rgba(148,163,184,0.12),transparent_36%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(148,163,184,0.08),transparent_36%),radial-gradient(circle_at_bottom_right,rgba(15,23,42,0.2),transparent_32%)]" />
-          <div className="absolute inset-x-6 top-6 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent dark:via-slate-700" />
-          <div className="absolute inset-x-6 bottom-24 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent dark:via-slate-700" />
-
+        <div className="overflow-hidden rounded-[24px]">
           <svg
-            viewBox="0 0 960 320"
+            viewBox={`0 0 ${chartWidth} ${chartHeight}`}
             aria-hidden="true"
-            className="absolute inset-0 h-full w-full"
+            className="block h-[31rem] w-full"
+            preserveAspectRatio="xMidYMid meet"
           >
             <path
-              d="M 130 145 C 220 145, 270 102, 360 102"
+              d={savedToAppliedPath}
               className="fill-none stroke-slate-200/80 dark:stroke-slate-700/70"
-              strokeWidth={savedToAppliedWidth + 10}
+              strokeWidth={savedToAppliedWidth + 8}
               strokeLinecap="round"
             />
             <path
-              d="M 130 145 C 220 145, 270 102, 360 102"
-              className={["fill-none", stageAccentClasses.APPLIED.path].join(" ")}
+              d={savedToAppliedPath}
+              className={["fill-none", stageClasses.APPLIED.path].join(" ")}
               strokeWidth={savedToAppliedWidth}
               strokeLinecap="round"
             />
 
             <path
-              d="M 360 102 C 450 102, 500 145, 590 145"
+              d={appliedToInterviewingPath}
               className="fill-none stroke-slate-200/80 dark:stroke-slate-700/70"
-              strokeWidth={appliedToInterviewingWidth + 10}
+              strokeWidth={appliedToInterviewingWidth + 8}
               strokeLinecap="round"
             />
             <path
-              d="M 360 102 C 450 102, 500 145, 590 145"
-              className={["fill-none", stageAccentClasses.INTERVIEWING.path].join(" ")}
+              d={appliedToInterviewingPath}
+              className={["fill-none", stageClasses.INTERVIEWING.path].join(" ")}
               strokeWidth={appliedToInterviewingWidth}
               strokeLinecap="round"
             />
 
             <path
-              d="M 590 145 C 680 145, 730 100, 820 100"
+              d={interviewingToOfferPath}
               className="fill-none stroke-slate-200/80 dark:stroke-slate-700/70"
-              strokeWidth={interviewingToOfferWidth + 10}
+              strokeWidth={interviewingToOfferWidth + 8}
               strokeLinecap="round"
             />
             <path
-              d="M 590 145 C 680 145, 730 100, 820 100"
-              className={["fill-none", stageAccentClasses.OFFER.path].join(" ")}
+              d={interviewingToOfferPath}
+              className={["fill-none", stageClasses.OFFER.path].join(" ")}
               strokeWidth={interviewingToOfferWidth}
               strokeLinecap="round"
             />
 
             <path
-              d="M 450 228 C 525 228, 585 255, 680 255"
+              d={rejectedPath}
               className="fill-none stroke-slate-200/70 dark:stroke-slate-700/70"
-              strokeWidth={rejectedBranchWidth + 8}
+              strokeWidth={rejectedBranchWidth + 6}
               strokeLinecap="round"
             />
             <path
-              d="M 450 228 C 525 228, 585 255, 680 255"
-              className={["fill-none", stageAccentClasses.REJECTED.path].join(" ")}
+              d={rejectedPath}
+              className={["fill-none", stageClasses.REJECTED.path].join(" ")}
               strokeWidth={rejectedBranchWidth}
               strokeLinecap="round"
             />
 
-            <path
-              d="M 680 255 C 740 255, 790 255, 860 255"
-              className="fill-none stroke-slate-200/70 dark:stroke-slate-700/70"
-              strokeWidth={archivedBranchWidth + 8}
-              strokeLinecap="round"
-              strokeDasharray="2 16"
-            />
-            <path
-              d="M 680 255 C 740 255, 790 255, 860 255"
-              className={["fill-none", stageAccentClasses.ARCHIVED.path].join(" ")}
-              strokeWidth={archivedBranchWidth}
-              strokeLinecap="round"
-              strokeDasharray="2 16"
-            />
+            {primaryStages.map((status) => (
+              <SvgStageNode
+                key={status}
+                status={status}
+                count={statusCounts[status]}
+                maxCount={maxCount}
+                totalTracked={totalTracked}
+                layout={primaryNodeLayouts[status]}
+              />
+            ))}
+
+            {secondaryStages.map((status) => (
+              <SvgStageNode
+                key={status}
+                status={status}
+                count={statusCounts[status]}
+                maxCount={maxCount}
+                totalTracked={totalTracked}
+                layout={secondaryNodeLayouts[status]}
+                secondary
+              />
+            ))}
           </svg>
-
-          <div className="absolute left-[50%] top-[68%] -translate-x-1/2 rounded-full border border-dashed border-slate-300 bg-white/80 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-slate-500 backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-400">
-            Side paths
-          </div>
-
-          {primaryStages.map((status) => (
-            <DesktopStageNode
-              key={status}
-              status={status}
-              count={statusCounts[status]}
-              maxCount={maxCount}
-              totalTracked={totalTracked}
-              x={primaryNodePositions[status].x}
-              y={primaryNodePositions[status].y}
-            />
-          ))}
-
-          {secondaryStages.map((status) => (
-            <DesktopStageNode
-              key={status}
-              status={status}
-              count={statusCounts[status]}
-              maxCount={maxCount}
-              totalTracked={totalTracked}
-              x={secondaryNodePositions[status].x}
-              y={secondaryNodePositions[status].y}
-              secondary
-            />
-          ))}
         </div>
       </div>
     </div>
@@ -437,9 +571,6 @@ function MobilePipeline({
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
               Pipeline snapshot
             </p>
-            <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
-              Compact view for smaller screens.
-            </p>
           </div>
         </div>
 
@@ -447,7 +578,7 @@ function MobilePipeline({
           {primaryStages.map((status, index) => (
             <div key={status} className="flex gap-3">
               <div className="flex w-4 shrink-0 flex-col items-center">
-                <span className={["mt-5 h-2.5 w-2.5 rounded-full", stageAccentClasses[status].dot].join(" ")} />
+                <span className={["mt-5 h-2.5 w-2.5 rounded-full", stageClasses[status].dot].join(" ")} />
                 {index < primaryStages.length - 1 ? (
                   <span className="mt-2 h-full w-px bg-slate-300 dark:bg-slate-700" />
                 ) : null}
@@ -486,26 +617,106 @@ function MobilePipeline({
   );
 }
 
+function CardsPipelineView({
+  activeTotal,
+  statusCounts,
+}: ApplicationPipelineProps) {
+  return (
+    <div className="rounded-2xl bg-slate-50/55 p-3 dark:bg-slate-950/30">
+      <div className="mb-3">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+          Pipeline snapshot
+        </p>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <StatusGridCard
+          label="Active jobs"
+          count={activeTotal}
+          accentClass="bg-indigo-500 dark:bg-indigo-400"
+        />
+        <StatusGridCard
+          label={statusLabels.SAVED}
+          count={statusCounts.SAVED}
+          accentClass={stageClasses.SAVED.dot}
+        />
+        <StatusGridCard
+          label={statusLabels.APPLIED}
+          count={statusCounts.APPLIED}
+          accentClass={stageClasses.APPLIED.dot}
+        />
+        <StatusGridCard
+          label={statusLabels.INTERVIEWING}
+          count={statusCounts.INTERVIEWING}
+          accentClass={stageClasses.INTERVIEWING.dot}
+        />
+        <StatusGridCard
+          label={statusLabels.OFFER}
+          count={statusCounts.OFFER}
+          accentClass={stageClasses.OFFER.dot}
+        />
+        <StatusGridCard
+          label={statusLabels.REJECTED}
+          count={statusCounts.REJECTED}
+          accentClass={stageClasses.REJECTED.dot}
+        />
+        <StatusGridCard
+          label={statusLabels.ARCHIVED}
+          count={statusCounts.ARCHIVED}
+          accentClass={stageClasses.ARCHIVED.dot}
+        />
+      </div>
+    </div>
+  );
+}
+
 export function ApplicationPipeline({
   activeTotal,
   statusCounts,
 }: ApplicationPipelineProps) {
+  const [view, setView] = useState<PipelineView>("chart");
+  const hasLoadedStoredView = useRef(false);
   const totalTracked = Object.values(statusCounts).reduce(
     (total, count) => total + count,
     0,
   );
   const maxCount = Math.max(...Object.values(statusCounts), 0);
 
+  useEffect(() => {
+    Promise.resolve().then(() => {
+      const storedView = window.localStorage.getItem(PIPELINE_VIEW_STORAGE_KEY);
+      if (storedView === "chart" || storedView === "cards") {
+        setView(storedView);
+      }
+      hasLoadedStoredView.current = true;
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!hasLoadedStoredView.current) {
+      return;
+    }
+
+    window.localStorage.setItem(PIPELINE_VIEW_STORAGE_KEY, view);
+  }, [view]);
+
   return (
     <Card>
       <CardHeader className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <CardTitle>Application Pipeline</CardTitle>
+          <div className="flex items-center gap-2">
+            <CardTitle>Application Pipeline</CardTitle>
+            <InfoTooltip
+              id="application-pipeline-tooltip-title"
+              label="Explain application pipeline"
+              tooltip="This chart shows a snapshot of your current job statuses. It does not represent historical conversion between stages."
+            />
+          </div>
           <CardDescription>
             A visual breakdown of where your saved roles stand.
           </CardDescription>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <ViewToggle view={view} onChange={setView} />
           <SummaryChip label="Tracked roles" value={totalTracked} />
           <SummaryChip label="Active roles" value={activeTotal} />
         </div>
@@ -525,20 +736,23 @@ export function ApplicationPipeline({
         </div>
       ) : (
         <>
-          <DesktopFlowChart
-            statusCounts={statusCounts}
-            maxCount={maxCount}
-            totalTracked={totalTracked}
-          />
-          <MobilePipeline
-            activeTotal={activeTotal}
-            statusCounts={statusCounts}
-            maxCount={maxCount}
-            totalTracked={totalTracked}
-          />
-          <p className="mt-4 text-xs leading-5 text-slate-500 dark:text-slate-400">
-            Counts reflect each saved job&apos;s current status, not historical conversion between stages.
-          </p>
+          {view === "chart" ? (
+            <>
+              <DesktopFlowChart
+                statusCounts={statusCounts}
+                maxCount={maxCount}
+                totalTracked={totalTracked}
+              />
+              <MobilePipeline
+                activeTotal={activeTotal}
+                statusCounts={statusCounts}
+                maxCount={maxCount}
+                totalTracked={totalTracked}
+              />
+            </>
+          ) : (
+            <CardsPipelineView activeTotal={activeTotal} statusCounts={statusCounts} />
+          )}
         </>
       )}
     </Card>

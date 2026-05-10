@@ -17,12 +17,27 @@ It should document what changed, why it mattered, and what the next step is. It 
 - Added a new dashboard `Application Pipeline` visualization that uses existing authenticated job status counts to show the current funnel across `Saved`, `Applied`, `Interviewing`, `Offer`, `Rejected`, and `Archived`.
 - Implemented the pipeline as a custom responsive dashboard component instead of adding a charting dependency, with a horizontal connected flow on desktop and a simplified stacked version on mobile.
 - Enhanced the dashboard pipeline card with an original SVG-backed chart layer so desktop now reads more like a real flow visualization, using weighted curved bands for the primary path and distinct secondary lanes for `Rejected` and `Archived`.
+- Refined the pipeline chart alignment so desktop flow bands connect cleanly to their intended stage nodes, and reduced always-visible explanatory copy by moving the chart caveat into a compact accessible info tooltip.
+- Rebuilt the desktop pipeline visualization into a single SVG coordinate system after the mixed SVG + absolutely positioned HTML overlay proved too brittle at common desktop widths and caused clipping/alignment failures.
+- Retuned the desktop SVG aspect ratio and node spacing so the pipeline uses more horizontal card space at wider desktop resolutions without increasing the card height.
+- Increased the desktop pipeline chart height and expanded the vertical SVG spacing so the main flow and side paths have more breathing room without changing the mobile layout or reverting the wider desktop fit.
+- Added extra bottom breathing room to the desktop SVG canvas so the `Rejected`/`Archived` side-path lane no longer sits against the lower chart edge, while leaving the main pipeline coordinates unchanged.
+- Fine-tuned only the lower desktop lane geometry (`Side paths`, `Rejected`, `Archived`, and the lane guide line) to increase visible bottom padding and reduce the squeezed feel without changing the main top pipeline spacing.
+- Reworked the desktop pipeline chart into a clearer two-lane composition by materially increasing the rendered SVG height and internal canvas height, keeping the main status flow in the upper half and moving the side-path lane deeper into the lower half.
+- Standardized the desktop side-path node sizing so `Rejected` and `Archived` now use the same card height and internal spacing rhythm as the main pipeline nodes, with dashed styling carrying the distinction instead of smaller card geometry.
+- De-emphasized `Archived` in the desktop pipeline by removing its large connector band and relying on muted/dashed node styling, while also spreading the SVG node layout closer to the chart-frame edges so the visualization reads as intentionally full-width.
+- Cleaned up the desktop pipeline framing by removing redundant inner borders, softening the chart container into a background layer, and pushing the SVG content closer to the frame edges so the visualization feels more integrated into the main dashboard card.
+- Repositioned `Rejected` under `Applied` for a clearer lower-lane balance, removed the hard horizontal separator between the main and side-path lanes, and kept `Archived` as a muted unconnected end-status card.
+- Corrected the desktop lower-lane semantics by reconnecting `Rejected` from `Saved` and removed the in-chart `Side paths` label/pill so the chart reads cleaner while preserving the same overall styling and layout.
+- Added a persisted `Chart / Cards` view toggle to the `Application Pipeline` card so users can switch between the SVG pipeline visualization and a compact status-cards breakdown without changing dashboard data or status logic.
 
 ### Notes
 - This was a navigation-UX and hierarchy improvement only; routes, query semantics, filtering logic, auth, database, and AI behavior were unchanged.
 - `Import jobs` remains an in-page action from the Jobs screen rather than a sidebar destination to keep primary navigation focused on persistent views.
 - The pipeline visualization is a snapshot of current status distribution, not a historical conversion chart, and it reuses the existing dashboard summary query without schema changes.
 - The chart weights are visual emphasis only, derived from current status counts; the app still does not store status history or true conversion transitions.
+- The current desktop chart now scales as one unit, so flow bands, labels, and stage nodes stay aligned together instead of drifting independently as the dashboard card resizes.
+- The pipeline view preference now saves to `localStorage` (`application-pipeline-view`) and hydrates on the client with a stable default (`Chart`) to avoid server/client mismatch.
 
 ### Next Step
 - Retake the dashboard screenshot so the public README reflects the new pipeline card and current visual polish.
