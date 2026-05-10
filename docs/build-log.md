@@ -16,11 +16,13 @@ It should document what changed, why it mattered, and what the next step is. It 
 - Restored `Jobs` parent clickability in desktop and mobile navigation so the top-level `Jobs` item navigates to `/jobs` while preserving nested `Active`/`Archived` links.
 - Added a new dashboard `Application Pipeline` visualization that uses existing authenticated job status counts to show the current funnel across `Saved`, `Applied`, `Interviewing`, `Offer`, `Rejected`, and `Archived`.
 - Implemented the pipeline as a custom responsive dashboard component instead of adding a charting dependency, with a horizontal connected flow on desktop and a simplified stacked version on mobile.
+- Enhanced the dashboard pipeline card with an original SVG-backed chart layer so desktop now reads more like a real flow visualization, using weighted curved bands for the primary path and distinct secondary lanes for `Rejected` and `Archived`.
 
 ### Notes
 - This was a navigation-UX and hierarchy improvement only; routes, query semantics, filtering logic, auth, database, and AI behavior were unchanged.
 - `Import jobs` remains an in-page action from the Jobs screen rather than a sidebar destination to keep primary navigation focused on persistent views.
 - The pipeline visualization is a snapshot of current status distribution, not a historical conversion chart, and it reuses the existing dashboard summary query without schema changes.
+- The chart weights are visual emphasis only, derived from current status counts; the app still does not store status history or true conversion transitions.
 
 ### Next Step
 - Retake the dashboard screenshot so the public README reflects the new pipeline card and current visual polish.
