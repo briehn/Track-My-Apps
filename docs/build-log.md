@@ -6,6 +6,24 @@ It should document what changed, why it mattered, and what the next step is. It 
 
 ---
 
+## 2026-05-12
+
+### Changes
+- Ran a focused QA bug-fix pass on the existing app without changing product scope, Prisma schema, or AI behavior.
+- Added app-wide HTTP security headers through `next.config.ts`: `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, and a conservative starter `Content-Security-Policy`.
+- Kept the CSP intentionally compatible with the current Next.js App Router setup and Google OAuth sign-in flow by allowing same-origin app resources plus the minimum Google API/connect origins used by auth.
+- Fixed the jobs-page CSV export affordance so `Export CSV` is visibly disabled when the current filtered view has no jobs, with disabled semantics and clearer user guidance.
+- Added a lightweight first-time profile guidance block above the existing profile form so new users get an obvious starting affordance without blocking manual entry.
+- Strengthened shared button and link-button hover/focus treatment so primary actions have clearer interaction feedback while staying consistent with current light/dark styling.
+- Improved the dashboard pipeline `Chart / Cards` segmented control so the selected state stays visually distinct even when there are zero tracked jobs and both views lead to the same empty-state content.
+
+### Notes
+- This was a hardening/polish pass only. No new features, schema changes, auth flow redesigns, or AI prompt/behavior changes were introduced.
+- The CSP remains conservative rather than maximally strict because breaking Next.js runtime scripts, inline styles, or Google OAuth would be a worse production outcome than starting with a slightly broader allowlist and tightening later with route-aware nonces or hashes.
+
+### Next Step
+- Re-run a short manual auth + dashboard smoke test in the deployed environment after release so the production headers are validated with the real OAuth callback domain.
+
 ## 2026-05-10
 
 ### Changes

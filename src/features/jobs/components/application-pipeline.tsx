@@ -265,10 +265,10 @@ function ViewToggle({
             aria-label={`${label} view`}
             onClick={() => onChange(option)}
             className={[
-              "rounded-full px-3 py-1.5 text-xs font-semibold transition focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 dark:focus:ring-slate-500 dark:focus:ring-offset-slate-950",
+              "rounded-full border px-3 py-1.5 text-xs font-semibold transition-[background-color,border-color,box-shadow,color] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/70 focus-visible:ring-offset-2 dark:focus-visible:ring-sky-400/70 dark:focus-visible:ring-offset-slate-950",
               isActive
-                ? "bg-white text-slate-900 shadow-sm dark:bg-slate-800 dark:text-slate-100"
-                : "text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-100",
+                ? "border-slate-300 bg-white text-slate-900 shadow-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+                : "border-transparent bg-transparent text-slate-600 hover:bg-white/80 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800/80 dark:hover:text-slate-100",
             ].join(" ")}
           >
             {label}

@@ -1,4 +1,5 @@
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { LinkButton } from "@/components/ui/link-button";
 import { ProfileForm } from "@/features/profiles/components/profile-form";
 import { getProfileForCurrentUser } from "@/features/profiles/queries";
 
@@ -30,9 +31,25 @@ export default async function ProfilePage() {
         </div>
       </div>
 
+      {!profile ? (
+        <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-700 dark:bg-slate-900/70 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-1">
+            <p className="text-sm font-medium text-slate-950 dark:text-slate-100">
+              Build your private profile to power resume extraction and profile-to-job matching.
+            </p>
+            <p className="text-sm text-slate-600 dark:text-slate-300">
+              Fill in the form below at your own pace. You can start with only the fields you have ready.
+            </p>
+          </div>
+          <LinkButton href="#career-profile-form" variant="secondary">
+            Start building profile
+          </LinkButton>
+        </div>
+      ) : null}
+
       <Card>
         <CardHeader>
-          <CardTitle>Career profile</CardTitle>
+          <CardTitle id="career-profile-form-title">Career profile</CardTitle>
           <CardDescription>
             This stays private to your account and is not shared publicly.
           </CardDescription>

@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { EmptyState } from "@/components/empty-states/empty-state";
+import { Button } from "@/components/ui/button";
 import { LinkButton } from "@/components/ui/link-button";
 import { JobList } from "@/features/jobs/components/job-list";
 import { getJobsForCurrentUser } from "@/features/jobs/queries";
@@ -17,6 +18,8 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
   const jobs = await getJobsForCurrentUser(
     isArchivedView ? "archived" : "active",
   );
+  const hasExportableJobs = jobs.length > 0;
+  const exportUnavailableMessage = "Add at least one job to export";
 
   return (
     <div className="space-y-6">
@@ -36,12 +39,23 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
           <LinkButton href="/jobs/import" variant="secondary">
             Import jobs
           </LinkButton>
-          <LinkButton
-            href={isArchivedView ? "/jobs/export?status=archived" : "/jobs/export?status=active"}
-            variant="secondary"
-          >
-            Export CSV
-          </LinkButton>
+          {hasExportableJobs ? (
+            <LinkButton
+              href={isArchivedView ? "/jobs/export?status=archived" : "/jobs/export?status=active"}
+              variant="secondary"
+            >
+              Export CSV
+            </LinkButton>
+          ) : (
+            <Button
+              variant="secondary"
+              disabled
+              title={exportUnavailableMessage}
+              aria-label={`Export CSV unavailable. ${exportUnavailableMessage}.`}
+            >
+              Export CSV
+            </Button>
+          )}
           <LinkButton href="/jobs/new">
             Add job
           </LinkButton>

@@ -138,10 +138,12 @@ export function ProfileForm({ profile }: ProfileFormProps) {
 
   return (
     <form
+      id="career-profile-form"
       ref={formRef}
       action={formAction}
       onChange={updateDirtyState}
-      className="space-y-6 pb-28"
+      className="scroll-mt-24 space-y-6 pb-28"
+      aria-labelledby="career-profile-form-title"
     >
       {state.formError ? (
         <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
