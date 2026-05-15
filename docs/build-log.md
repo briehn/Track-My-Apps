@@ -6,6 +6,23 @@ It should document what changed, why it mattered, and what the next step is. It 
 
 ---
 
+## 2026-05-15
+
+### Changes
+- Ran a focused prompt-injection hardening pass across all three OpenAI-backed workflows: saved job description analysis, saved resume-to-profile extraction, and saved profile-to-job matching.
+- Added a shared AI hardening helper in `src/lib/ai-hardening.ts` so prompt-defense rules and output checks stay consistent instead of drifting across feature-local service files.
+- Updated each OpenAI service prompt to explicitly treat job descriptions, resume text, saved job analysis data, and saved profile fields as untrusted content, with clear tagged boundaries and direct instructions to ignore attempts to override the task, force fit levels, reveal prompts, change schemas, or bypass safety rules.
+- Preserved the existing structured response schemas and normalization paths while adding a deterministic post-parse guard that rejects obvious prompt-injection phrases if they appear in model output.
+- Added focused unit coverage for the new hardening helper and revalidated the project with `npm run test`, `npm run lint`, and `npm run build`.
+
+### Notes
+- This is defense-in-depth hardening, not a claim that prompt injection is solved.
+- Product behavior remains the same: job analysis still saves automatically after a successful validated run, profile extraction still requires user review/apply before save, and job-match reports remain transient.
+- No Prisma schema, ownership/auth logic, rendering model, or setup/deployment configuration changed.
+
+### Next Step
+- If AI-heavy product scope expands further, add a shared retry policy or telemetry around `MALFORMED_OUTPUT` events so repeated suspicious provider responses are measurable without logging sensitive user content.
+
 ## 2026-05-12
 
 ### Changes
