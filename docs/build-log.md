@@ -9,6 +9,11 @@ It should document what changed, why it mattered, and what the next step is. It 
 ## 2026-05-15
 
 ### Changes
+- Added focused auth-route rate limiting at the network boundary using Next.js `proxy.ts`, scoped only to `/api/auth/:path*` and `/sign-in` so dashboard and app routes remain unaffected.
+- Introduced a shared auth rate-limit helper with route-specific policies: stricter general auth limits, more forgiving limits for OAuth callbacks and session reads, and a mild public-page limit for `/sign-in`.
+- Wired the limiter to use Upstash Redis over REST when `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` (or Vercel-injected `KV_REST_API_URL` / `KV_REST_API_TOKEN`) are available, with a documented in-memory fallback for local or misconfigured environments.
+- Added generic `429` handling with retry headers and without exposing sensitive auth, callback, or provider details.
+- Added focused unit coverage for auth rate-limit policy selection, forwarded-IP extraction, and in-memory fallback behavior.
 - Ran a focused prompt-injection hardening pass across all three OpenAI-backed workflows: saved job description analysis, saved resume-to-profile extraction, and saved profile-to-job matching.
 - Added a shared AI hardening helper in `src/lib/ai-hardening.ts` so prompt-defense rules and output checks stay consistent instead of drifting across feature-local service files.
 - Updated each OpenAI service prompt to explicitly treat job descriptions, resume text, saved job analysis data, and saved profile fields as untrusted content, with clear tagged boundaries and direct instructions to ignore attempts to override the task, force fit levels, reveal prompts, change schemas, or bypass safety rules.
@@ -16,12 +21,14 @@ It should document what changed, why it mattered, and what the next step is. It 
 - Added focused unit coverage for the new hardening helper and revalidated the project with `npm run test`, `npm run lint`, and `npm run build`.
 
 ### Notes
+- This auth hardening does not replace stronger perimeter controls such as Vercel WAF or bot protection; it is a focused application-level rate limit for auth-related routes.
+- The fallback in-memory limiter is intentionally small and maintainable, but it is only best-effort protection when Redis is not configured because serverless instances do not share memory.
 - This is defense-in-depth hardening, not a claim that prompt injection is solved.
 - Product behavior remains the same: job analysis still saves automatically after a successful validated run, profile extraction still requires user review/apply before save, and job-match reports remain transient.
-- No Prisma schema, ownership/auth logic, rendering model, or setup/deployment configuration changed.
+- No Prisma schema or ownership/auth logic changed. Deployment configuration now optionally includes Redis credentials for production-safe auth rate limiting.
 
 ### Next Step
-- If AI-heavy product scope expands further, add a shared retry policy or telemetry around `MALFORMED_OUTPUT` events so repeated suspicious provider responses are measurable without logging sensitive user content.
+- In the deployed environment, provision Upstash Redis if it is not already present, then run a short manual smoke pass covering Google sign-in, sign-out, callback flow, and repeated `/api/auth` requests to confirm the intended `429` thresholds.
 
 ## 2026-05-12
 

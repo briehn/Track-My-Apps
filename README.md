@@ -13,6 +13,7 @@ Job searching spreads context across job posts, notes, status updates, and resum
 ## Implemented Features
 
 - Google OAuth sign-in and a protected authenticated workspace
+- Focused auth-route rate limiting for sign-in and `/api/auth/*`, with a production-safe Redis-backed path on Vercel
 - Job tracking with statuses, notes, archive/delete, dashboard summaries, and an application pipeline visualization
 - Polished light/dark mode with a persistent user toggle across the app shell and dashboard/job/profile/import workflows
 - CSV export for saved jobs with user-scoped data access
@@ -75,9 +76,13 @@ GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
 OPENAI_API_KEY=
 OPENAI_MODEL=
+UPSTASH_REDIS_REST_URL=
+UPSTASH_REDIS_REST_TOKEN=
 ```
 
 For Neon, use the pooled connection string for `DATABASE_URL` and the direct, non-pooled connection string for `DIRECT_URL`. Prisma CLI commands use `DIRECT_URL` through `prisma.config.ts`.
+
+For production-safe auth rate limiting on Vercel, configure an Upstash Redis integration and set `UPSTASH_REDIS_REST_URL` plus `UPSTASH_REDIS_REST_TOKEN`. If you use the Vercel Marketplace integration, the equivalent `KV_REST_API_URL` and `KV_REST_API_TOKEN` variables also work because the Redis client accepts either naming convention.
 
 Generate a strong `NEXTAUTH_SECRET`, then create a Google OAuth client and add this local callback URL:
 
@@ -131,6 +136,7 @@ Deployment checklist:
 - Use a direct Neon URL for `DIRECT_URL`.
 - Set `NEXTAUTH_URL` to the production domain.
 - Set `NEXTAUTH_SECRET` to a strong stable value.
+- Configure Upstash Redis for auth rate limiting and set `UPSTASH_REDIS_REST_URL` plus `UPSTASH_REDIS_REST_TOKEN` in the deployment platform.
 - Set `OPENAI_API_KEY` and `OPENAI_MODEL` for server-side AI requests.
 - Run Prisma migrations against the production database before using the app.
 - Add the production Google OAuth callback URL in Google Cloud Console:
@@ -142,6 +148,8 @@ https://your-domain.com/api/auth/callback/google
 - Do not commit real `.env` values.
 
 For job analysis and profile matching, AI requests are manual and production-limited per authenticated user.
+
+Auth-related routes are also rate limited by IP. In production, that protection is intended to use Upstash Redis on Vercel. If Redis credentials are missing, the app falls back to an in-memory per-instance limiter, which is acceptable for local development but not fully reliable across multiple serverless instances.
 
 ## Screenshots
 
