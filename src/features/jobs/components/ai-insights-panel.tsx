@@ -5,13 +5,15 @@ import { useState, type ReactNode } from "react";
 type AIInsightsPanelProps = {
   analysisContent: ReactNode;
   matchContent: ReactNode;
+  prepContent: ReactNode;
 };
 
-type AIInsightsTab = "analysis" | "match";
+type AIInsightsTab = "analysis" | "match" | "prep";
 
 export function AIInsightsPanel({
   analysisContent,
   matchContent,
+  prepContent,
 }: AIInsightsPanelProps) {
   const [activeTab, setActiveTab] = useState<AIInsightsTab>("analysis");
 
@@ -50,10 +52,28 @@ export function AIInsightsPanel({
         >
           Profile Match
         </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === "prep"}
+          className={[
+            "rounded-md px-3 py-2 text-sm font-medium transition",
+            activeTab === "prep"
+              ? "bg-white text-slate-950 shadow-sm"
+              : "text-slate-600 hover:text-slate-950",
+          ].join(" ")}
+          onClick={() => setActiveTab("prep")}
+        >
+          Interview Prep
+        </button>
       </div>
 
       <div className="min-h-40">
-        {activeTab === "analysis" ? analysisContent : matchContent}
+        {activeTab === "analysis"
+          ? analysisContent
+          : activeTab === "match"
+            ? matchContent
+            : prepContent}
       </div>
     </div>
   );

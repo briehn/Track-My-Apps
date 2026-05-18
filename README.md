@@ -22,14 +22,15 @@ Job searching spreads context across job posts, notes, status updates, and resum
 - AI job description analysis with structured saved output
 - AI profile extraction suggestions from saved resume text with review before apply
 - Transient profile-to-job matching on job detail pages
-- Production-only AI usage limits for job analysis and profile matching
+- Transient interview prep guidance on job detail pages, based on saved job analysis with optional profile context
+- Production-only AI usage limits for job analysis and profile matching/interview prep
 - Server-side ownership checks, validation, and normalized persistence boundaries
 - Focused Vitest coverage for core schemas and helper logic
 - Deployed custom domain and production-ready app shell
 
 ## Planned Features
 
-Future scope includes resume upload/parsing, saved match history, skill-gap detection, tailored resume bullets, cover letters, interview prep, richer filtering, and analytics.
+Future scope includes resume upload/parsing, saved match history, skill-gap detection, tailored resume bullets, cover letters, richer filtering, and analytics.
 
 ## Tech Stack
 
@@ -147,7 +148,8 @@ https://your-domain.com/api/auth/callback/google
 
 - Do not commit real `.env` values.
 
-For job analysis and profile matching, AI requests are manual and production-limited per authenticated user.
+For job analysis, profile matching, and interview prep, AI requests are manual and production-limited per authenticated user.
+In the current MVP, profile matching and interview prep share the same daily production usage cap.
 
 Auth-related routes are also rate limited by IP. In production, that protection is intended to use Upstash Redis on Vercel. If Redis credentials are missing, the app falls back to an in-memory per-instance limiter, which is acceptable for local development but not fully reliable across multiple serverless instances.
 
@@ -189,6 +191,7 @@ Completed:
 - Private profile foundation with AI-assisted extraction suggestions
 - Manual AI job analysis saved to `JobAnalysis`
 - Transient AI profile-to-job matching on job detail pages
+- Transient AI interview prep on job detail pages
 - Production AI usage protections and usage tracking
 - Vitest coverage for core validation and helper logic
 - Deployed custom domain and production release

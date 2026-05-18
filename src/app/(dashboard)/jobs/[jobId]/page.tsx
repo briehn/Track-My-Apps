@@ -15,6 +15,7 @@ import {
   isJobDescriptionTooLong,
 } from "@/features/job-analysis/schemas";
 import { JobMatchCard } from "@/features/job-match/components/job-match-card";
+import { InterviewPrepCard } from "@/features/interview-prep/components/interview-prep-card";
 import { JobManagementActions } from "@/features/jobs/components/job-management-actions";
 import { AIInsightsPanel } from "@/features/jobs/components/ai-insights-panel";
 import { JobStatusForm } from "@/features/jobs/components/job-status-form";
@@ -217,6 +218,14 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
               }
               matchContent={
                 <JobMatchCard
+                  hasJobAnalysis={Boolean(job.analysis)}
+                  hasProfile={Boolean(profile)}
+                  hasResumeText={Boolean(profile?.resumeText?.trim())}
+                  jobId={job.id}
+                />
+              }
+              prepContent={
+                <InterviewPrepCard
                   hasJobAnalysis={Boolean(job.analysis)}
                   hasProfile={Boolean(profile)}
                   hasResumeText={Boolean(profile?.resumeText?.trim())}

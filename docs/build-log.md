@@ -6,6 +6,27 @@ It should document what changed, why it mattered, and what the next step is. It 
 
 ---
 
+## 2026-05-18
+
+### Changes
+- Added a new transient `Interview Prep` workflow to job detail `AI Insights`, alongside `Job Analysis` and `Profile Match`, with a third tab and compact summary-first UI.
+- Introduced `src/features/interview-prep/` with feature-local schemas, OpenAI service, server action, and UI component to keep boundaries consistent with existing AI modules.
+- Enforced prerequisites so interview prep requires a saved `JobAnalysis` but allows generation without a `UserProfile`, with explicit UX messaging that a profile improves personalization.
+- Reused existing AI hardening patterns end-to-end: untrusted content tagging, prompt-injection defense lines, and structured output safety checks before rendering.
+- Kept interview prep transient (no Prisma persistence of the generated report) and avoided schema/env changes as planned.
+- Added focused tests for interview-prep schema normalization and hardening-guard behavior checks.
+- Reused existing production usage-limit infrastructure by sharing the current profile-match daily cap for interview prep in this MVP iteration.
+- Redesigned Interview Prep result presentation for readability and scanability: moved to summary-first structure, surfaced limitation notes near the top, introduced a focus-areas grid, and converted question lists into lightweight prompt sections with ordered lists.
+- Added per-section `Show more` / `Show less` behavior for longer prompt lists so each section defaults to a compact first slice instead of rendering full-length walls of text.
+- Improved Interview Prep dark-mode/mobile legibility with explicit dark-surface/text variants, reduced nested border density, and softer spacing.
+
+### Notes
+- Usage-limit sharing is intentionally temporary: it provides immediate abuse protection without a schema migration, but does mix semantics between matching and interview prep.
+- No auth ownership boundaries, existing job-analysis behavior, or existing profile-match behavior were changed.
+
+### Next Step
+- If interview prep usage justifies separate tuning/analytics, add a dedicated `InterviewPrepRun` tracking model and independent daily cap in a follow-up migration.
+
 ## 2026-05-15
 
 ### Changes
