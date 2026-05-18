@@ -14,29 +14,46 @@ describe("normalizeJobsSearchParams", () => {
     expect(result).toEqual({
       view: "archived",
       q: "",
-      status: null,
-      remoteType: null,
-      employmentType: null,
+      statuses: [],
+      remoteTypes: [],
+      employmentTypes: [],
       sort: "newest",
     });
   });
 
-  it("normalizes active filters and trims search text", () => {
+  it("normalizes active multi-value filters and trims search text", () => {
     const result = normalizeJobsSearchParams({
-      status: "APPLIED",
+      statuses: "APPLIED,OFFER",
       q: "  stripe  ",
-      remoteType: "REMOTE",
-      employmentType: "FULL_TIME",
+      remoteTypes: "REMOTE,HYBRID",
+      employmentTypes: "FULL_TIME,CONTRACT",
       sort: "deadlineSoonest",
     });
 
     expect(result).toEqual({
       view: "active",
       q: "stripe",
+      statuses: ["APPLIED", "OFFER"],
+      remoteTypes: ["REMOTE", "HYBRID"],
+      employmentTypes: ["FULL_TIME", "CONTRACT"],
+      sort: "deadlineSoonest",
+    });
+  });
+
+  it("supports legacy single-value params for backward compatibility", () => {
+    const result = normalizeJobsSearchParams({
       status: "APPLIED",
       remoteType: "REMOTE",
       employmentType: "FULL_TIME",
-      sort: "deadlineSoonest",
+    });
+
+    expect(result).toEqual({
+      view: "active",
+      q: "",
+      statuses: ["APPLIED"],
+      remoteTypes: ["REMOTE"],
+      employmentTypes: ["FULL_TIME"],
+      sort: "newest",
     });
   });
 
@@ -44,17 +61,18 @@ describe("normalizeJobsSearchParams", () => {
     const result = normalizeJobsSearchParams({
       status: "INVALID",
       q: ["first", "second"],
-      remoteType: "REMOTE_INVALID",
-      employmentType: "FULL_TIME_INVALID",
+      statuses: "INVALID,SAVED",
+      remoteTypes: "REMOTE_INVALID",
+      employmentTypes: "FULL_TIME_INVALID",
       sort: "invalidSort",
     });
 
     expect(result).toEqual({
       view: "active",
       q: "first",
-      status: null,
-      remoteType: null,
-      employmentType: null,
+      statuses: ["SAVED"],
+      remoteTypes: [],
+      employmentTypes: [],
       sort: "newest",
     });
   });
@@ -65,14 +83,14 @@ describe("buildJobsQueryString", () => {
     const query = buildJobsQueryString({
       view: "active",
       q: "stripe",
-      status: "SAVED",
-      remoteType: "HYBRID",
-      employmentType: "FULL_TIME",
+      statuses: ["SAVED", "APPLIED"],
+      remoteTypes: ["HYBRID"],
+      employmentTypes: ["FULL_TIME"],
       sort: "followUpSoonest",
     });
 
     expect(query).toBe(
-      "?status=SAVED&q=stripe&remoteType=HYBRID&employmentType=FULL_TIME&sort=followUpSoonest",
+      "?statuses=SAVED%2CAPPLIED&q=stripe&remoteTypes=HYBRID&employmentTypes=FULL_TIME&sort=followUpSoonest",
     );
   });
 
@@ -80,9 +98,9 @@ describe("buildJobsQueryString", () => {
     const query = buildJobsQueryString({
       view: "archived",
       q: "",
-      status: "ARCHIVED",
-      remoteType: null,
-      employmentType: null,
+      statuses: ["ARCHIVED"],
+      remoteTypes: [],
+      employmentTypes: [],
       sort: "newest",
     });
 

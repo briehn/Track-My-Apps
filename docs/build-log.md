@@ -9,6 +9,22 @@ It should document what changed, why it mattered, and what the next step is. It 
 ## 2026-05-18
 
 ### Changes
+- Improved `/jobs` Clear Filters UX so it now behaves as a form reset in the expanded multi-select panel: draft checkbox selections clear immediately, panel stays open, and URL filters are cleared only when applied filters exist.
+- Added draft-vs-applied filter awareness in the client toolbar so `Clear filters` is available for unapplied checkbox selections as well as applied URL filters.
+- Fixed a `/jobs` filter-state sync bug where `Clear filters` removed URL params but checkbox selections stayed visually checked in the expanded panel.
+- Ensured toolbar filter UI now re-syncs to URL-derived state after navigation by remounting the filter toolbar on search-param changes, so cleared params immediately produce unchecked checkboxes and removed chips.
+- Upgraded `/jobs` secondary filters from single-select dropdowns to multi-select checkbox groups for statuses, remote types, and employment types.
+- Added URL-preserved multi-value filter params (`statuses`, `remoteTypes`, `employmentTypes`) while preserving archived-tab behavior with `status=archived`.
+- Updated server-side job query filtering to apply multi-value `in` conditions for status/remote/employment filters under authenticated user scoping.
+- Kept search/sort/toggle behavior intact and preserved active filter chips plus clear-filters behavior for multi-select state.
+- Added parsing/serialization test coverage updates for the multi-value filter param migration with backward compatibility for legacy single-value params.
+- Fixed `/jobs` filter-toggle behavior so `Filters` now reliably expands/collapses secondary controls with a dedicated client-side toggle state, while preserving server-rendered query behavior.
+- Kept the top toolbar row stable (`Search | Sort | Filters | Apply`) and moved secondary filters into a true conditional panel underneath, removing the prior confusing always-visible state.
+- Refined the `/jobs` compact filter toolbar to keep the top control row stable when filters expand, so `Search | Sort | Filters | Apply` remains aligned without jumpy button reflow.
+- Moved expanded secondary filters into a dedicated second row/panel under the primary toolbar, preserving existing filter/query behavior while reducing layout shift.
+- Polished `/jobs` filter controls into a compact toolbar layout so search and sort stay visible while secondary filters move behind an expandable `Filters` section.
+- Added active-filter chips and contextual `Clear filters` visibility to reduce vertical space while keeping current query behavior transparent.
+- Preserved existing URL query behavior, active/archived view semantics, and empty-state logic while improving mobile and dark-mode readability.
 - Implemented the next practical jobs-list workflow upgrade on `/jobs`: search by company/title, status/remote/employment filters, and sort options for newest, deadline soonest, and follow-up soonest.
 - Kept all filtering user-scoped at the Prisma query boundary and preserved active vs archived behavior while adding URL-stable query params for search/filter/sort state.
 - Added a compact, mobile-friendly filter bar with apply and clear actions, plus filtered empty states that distinguish "no jobs yet" from "no matching jobs."

@@ -10,11 +10,11 @@ export type JobListStatusView = "active" | "archived";
 export type JobListSort = "newest" | "deadlineSoonest" | "followUpSoonest";
 
 export type JobListFilters = {
-  employmentType: EmploymentType | null;
+  employmentTypes: EmploymentType[];
   q: string;
-  remoteType: RemoteType | null;
+  remoteTypes: RemoteType[];
   sort: JobListSort;
-  status: ApplicationStatus | null;
+  statuses: ApplicationStatus[];
   view: JobListStatusView;
 };
 
@@ -40,6 +40,18 @@ function getSingleParamValue(value: SearchParamValue): string | null {
   return typeof value === "string" ? value : null;
 }
 
+function getMultiParamValues(value: SearchParamValue): string[] {
+  if (Array.isArray(value)) {
+    return value.filter((item): item is string => typeof item === "string");
+  }
+
+  if (typeof value === "string") {
+    return [value];
+  }
+
+  return [];
+}
+
 function normalizeSearchText(value: string | null): string {
   return value?.trim() ?? "";
 }
@@ -60,6 +72,29 @@ function isEmploymentType(value: string): value is EmploymentType {
   return (EMPLOYMENT_TYPES as readonly string[]).includes(value);
 }
 
+function parseCsvOrMultiValues(value: SearchParamValue): string[] {
+  return getMultiParamValues(value)
+    .flatMap((entry) => entry.split(","))
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+}
+
+function dedupePreserveOrder<T extends string>(values: T[]): T[] {
+  const seen = new Set<string>();
+  const result: T[] = [];
+
+  for (const value of values) {
+    if (seen.has(value)) {
+      continue;
+    }
+
+    seen.add(value);
+    result.push(value);
+  }
+
+  return result;
+}
+
 export function normalizeJobsSearchParams(
   searchParams: JobsSearchParamsInput,
 ): JobListFilters {
@@ -69,19 +104,40 @@ export function normalizeJobsSearchParams(
 
   const q = normalizeSearchText(getSingleParamValue(searchParams.q));
 
-  const statusParam = getSingleParamValue(searchParams.status);
-  const status =
-    statusParam && isApplicationStatus(statusParam) ? statusParam : null;
+  const statusValues = parseCsvOrMultiValues(searchParams.statuses);
+  const fallbackStatusValue = getSingleParamValue(searchParams.status);
+  const statuses = dedupePreserveOrder(
+    [
+      ...statusValues,
+      ...(fallbackStatusValue &&
+      fallbackStatusValue !== "archived" &&
+      isApplicationStatus(fallbackStatusValue)
+        ? [fallbackStatusValue]
+        : []),
+    ].filter(isApplicationStatus),
+  );
 
-  const remoteTypeParam = getSingleParamValue(searchParams.remoteType);
-  const remoteType =
-    remoteTypeParam && isRemoteType(remoteTypeParam) ? remoteTypeParam : null;
+  const remoteTypeValues = parseCsvOrMultiValues(searchParams.remoteTypes);
+  const fallbackRemoteTypeValue = getSingleParamValue(searchParams.remoteType);
+  const remoteTypes = dedupePreserveOrder(
+    [
+      ...remoteTypeValues,
+      ...(fallbackRemoteTypeValue && isRemoteType(fallbackRemoteTypeValue)
+        ? [fallbackRemoteTypeValue]
+        : []),
+    ].filter(isRemoteType),
+  );
 
-  const employmentTypeParam = getSingleParamValue(searchParams.employmentType);
-  const employmentType =
-    employmentTypeParam && isEmploymentType(employmentTypeParam)
-      ? employmentTypeParam
-      : null;
+  const employmentTypeValues = parseCsvOrMultiValues(searchParams.employmentTypes);
+  const fallbackEmploymentTypeValue = getSingleParamValue(searchParams.employmentType);
+  const employmentTypes = dedupePreserveOrder(
+    [
+      ...employmentTypeValues,
+      ...(fallbackEmploymentTypeValue && isEmploymentType(fallbackEmploymentTypeValue)
+        ? [fallbackEmploymentTypeValue]
+        : []),
+    ].filter(isEmploymentType),
+  );
 
   const sortParam = getSingleParamValue(searchParams.sort);
   const sort: JobListSort =
@@ -90,9 +146,9 @@ export function normalizeJobsSearchParams(
   return {
     view,
     q,
-    status,
-    remoteType,
-    employmentType,
+    statuses,
+    remoteTypes,
+    employmentTypes,
     sort,
   };
 }
@@ -109,20 +165,25 @@ export function buildJobsQueryString(
 
   if (mergedFilters.view === "archived") {
     params.set("status", "archived");
-  } else if (mergedFilters.status && mergedFilters.status !== "ARCHIVED") {
-    params.set("status", mergedFilters.status);
+  } else if (mergedFilters.statuses.length > 0) {
+    const filteredStatuses = mergedFilters.statuses.filter(
+      (value) => value !== "ARCHIVED",
+    );
+    if (filteredStatuses.length > 0) {
+      params.set("statuses", filteredStatuses.join(","));
+    }
   }
 
   if (mergedFilters.q) {
     params.set("q", mergedFilters.q);
   }
 
-  if (mergedFilters.remoteType) {
-    params.set("remoteType", mergedFilters.remoteType);
+  if (mergedFilters.remoteTypes.length > 0) {
+    params.set("remoteTypes", mergedFilters.remoteTypes.join(","));
   }
 
-  if (mergedFilters.employmentType) {
-    params.set("employmentType", mergedFilters.employmentType);
+  if (mergedFilters.employmentTypes.length > 0) {
+    params.set("employmentTypes", mergedFilters.employmentTypes.join(","));
   }
 
   if (mergedFilters.sort !== "newest") {

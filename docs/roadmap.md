@@ -161,7 +161,7 @@ Track My Apps now has a complete, deployed MVP. The remaining roadmap shifts fro
 
 - Implemented MVP slice:
 - Search by company and title on `/jobs`.
-- URL-preserved filters for status, remote type, and employment type.
+- URL-preserved multi-select filters for status, remote type, and employment type.
 - URL-preserved sorting for newest, deadline soonest, and follow-up soonest.
 - Clear-filters action and filtered empty-state messaging.
 - Active and archived views remain intact and work with the new controls.

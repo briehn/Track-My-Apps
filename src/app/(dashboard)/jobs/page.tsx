@@ -2,22 +2,24 @@ import Link from "next/link";
 
 import { EmptyState } from "@/components/empty-states/empty-state";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { LinkButton } from "@/components/ui/link-button";
+import { JobsFilterToolbar } from "@/features/jobs/components/jobs-filter-toolbar";
 import { JobList } from "@/features/jobs/components/job-list";
 import {
   buildJobsQueryString,
   normalizeJobsSearchParams,
 } from "@/features/jobs/list-params";
 import { getJobsForCurrentUser } from "@/features/jobs/queries";
-import { statusLabels } from "@/features/jobs/status";
 
 type JobsPageProps = {
   searchParams: Promise<{
     status?: string | string[];
+    statuses?: string | string[];
     q?: string | string[];
     remoteType?: string | string[];
+    remoteTypes?: string | string[];
     employmentType?: string | string[];
+    employmentTypes?: string | string[];
     sort?: string | string[];
   }>;
 };
@@ -30,36 +32,44 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
     isArchivedView ? "archived" : "active",
     {
       q: normalizedParams.q,
-      status: normalizedParams.status,
-      remoteType: normalizedParams.remoteType,
-      employmentType: normalizedParams.employmentType,
+      statuses: normalizedParams.statuses,
+      remoteTypes: normalizedParams.remoteTypes,
+      employmentTypes: normalizedParams.employmentTypes,
       sort: normalizedParams.sort,
     },
   );
   const hasAnyActiveFilters = Boolean(
     normalizedParams.q ||
-      normalizedParams.status ||
-      normalizedParams.remoteType ||
-      normalizedParams.employmentType ||
+      normalizedParams.statuses.length > 0 ||
+      normalizedParams.remoteTypes.length > 0 ||
+      normalizedParams.employmentTypes.length > 0 ||
       normalizedParams.sort !== "newest",
   );
   const hasExportableJobs = jobs.length > 0;
   const exportUnavailableMessage = "Add at least one job to export";
   const clearFiltersHref = `/jobs${buildJobsQueryString(normalizedParams, {
     q: "",
-    status: null,
-    remoteType: null,
-    employmentType: null,
+    statuses: [],
+    remoteTypes: [],
+    employmentTypes: [],
     sort: "newest",
   })}`;
   const activeViewHref = `/jobs${buildJobsQueryString(normalizedParams, {
     view: "active",
-    status: normalizedParams.status === "ARCHIVED" ? null : normalizedParams.status,
+    statuses: normalizedParams.statuses.filter((statusValue) => statusValue !== "ARCHIVED"),
   })}`;
   const archivedViewHref = `/jobs${buildJobsQueryString(normalizedParams, {
     view: "archived",
-    status: null,
+    statuses: [],
   })}`;
+  const toolbarStateKey = JSON.stringify({
+    view: normalizedParams.view,
+    q: normalizedParams.q,
+    statuses: normalizedParams.statuses,
+    remoteTypes: normalizedParams.remoteTypes,
+    employmentTypes: normalizedParams.employmentTypes,
+    sort: normalizedParams.sort,
+  });
   const hasAppliedFiltersWithNoResults = hasAnyActiveFilters && jobs.length === 0;
   const emptyTitle = hasAppliedFiltersWithNoResults
     ? "No jobs match these filters"
@@ -144,114 +154,22 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
         </Link>
       </div>
 
-      <form
-        method="GET"
-        className="space-y-4 rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900"
-      >
-        {isArchivedView ? (
-          <input type="hidden" name="status" value="archived" />
-        ) : null}
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-          <div className="xl:col-span-2">
-            <label htmlFor="q" className="text-sm font-medium text-slate-950 dark:text-slate-100">
-              Search company or title
-            </label>
-            <Input
-              id="q"
-              name="q"
-              defaultValue={normalizedParams.q}
-              placeholder="e.g. Stripe, Product Manager"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="status-filter" className="text-sm font-medium text-slate-950 dark:text-slate-100">
-              Status
-            </label>
-            <select
-              id="status-filter"
-              name="status"
-              defaultValue={
-                isArchivedView ? "archived" : (normalizedParams.status ?? "")
-              }
-              className="mt-1 block h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-950 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-500 dark:focus:ring-slate-700"
-            >
-              {isArchivedView ? <option value="archived">Archived</option> : <option value="">All active statuses</option>}
-              {!isArchivedView ? (
-                <>
-                  <option value="SAVED">{statusLabels.SAVED}</option>
-                  <option value="APPLIED">{statusLabels.APPLIED}</option>
-                  <option value="INTERVIEWING">{statusLabels.INTERVIEWING}</option>
-                  <option value="OFFER">{statusLabels.OFFER}</option>
-                  <option value="REJECTED">{statusLabels.REJECTED}</option>
-                </>
-              ) : null}
-            </select>
-          </div>
-
-          <div>
-            <label htmlFor="remoteType" className="text-sm font-medium text-slate-950 dark:text-slate-100">
-              Remote type
-            </label>
-            <select
-              id="remoteType"
-              name="remoteType"
-              defaultValue={normalizedParams.remoteType ?? ""}
-              className="mt-1 block h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-950 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-500 dark:focus:ring-slate-700"
-            >
-              <option value="">All remote types</option>
-              <option value="ONSITE">Onsite</option>
-              <option value="HYBRID">Hybrid</option>
-              <option value="REMOTE">Remote</option>
-            </select>
-          </div>
-
-          <div>
-            <label htmlFor="employmentType" className="text-sm font-medium text-slate-950 dark:text-slate-100">
-              Employment type
-            </label>
-            <select
-              id="employmentType"
-              name="employmentType"
-              defaultValue={normalizedParams.employmentType ?? ""}
-              className="mt-1 block h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-950 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-500 dark:focus:ring-slate-700"
-            >
-              <option value="">All employment types</option>
-              <option value="FULL_TIME">Full-time</option>
-              <option value="PART_TIME">Part-time</option>
-              <option value="CONTRACT">Contract</option>
-              <option value="INTERNSHIP">Internship</option>
-              <option value="TEMPORARY">Temporary</option>
-            </select>
-          </div>
-        </div>
-
-        <div className="grid gap-3 sm:grid-cols-[1fr_auto_auto] sm:items-end">
-          <div className="sm:max-w-xs">
-            <label htmlFor="sort" className="text-sm font-medium text-slate-950 dark:text-slate-100">
-              Sort
-            </label>
-            <select
-              id="sort"
-              name="sort"
-              defaultValue={normalizedParams.sort}
-              className="mt-1 block h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-950 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-500 dark:focus:ring-slate-700"
-            >
-              <option value="newest">Newest</option>
-              <option value="deadlineSoonest">Deadline soonest</option>
-              <option value="followUpSoonest">Follow-up soonest</option>
-            </select>
-          </div>
-          <Button type="submit" className="w-full sm:w-auto">
-            Apply filters
-          </Button>
-          {hasAnyActiveFilters ? (
-            <LinkButton href={clearFiltersHref} variant="ghost" className="w-full sm:w-auto">
-              Clear filters
-            </LinkButton>
-          ) : null}
-        </div>
-      </form>
+      <JobsFilterToolbar
+        key={toolbarStateKey}
+        clearFiltersHref={clearFiltersHref}
+        employmentTypes={normalizedParams.employmentTypes}
+        hasAnyActiveFilters={hasAnyActiveFilters}
+        isArchivedView={isArchivedView}
+        q={normalizedParams.q}
+        remoteTypes={normalizedParams.remoteTypes}
+        secondaryFiltersActive={Boolean(
+          normalizedParams.statuses.length > 0 ||
+            normalizedParams.remoteTypes.length > 0 ||
+            normalizedParams.employmentTypes.length > 0,
+        )}
+        sort={normalizedParams.sort}
+        statuses={normalizedParams.statuses}
+      />
 
       {jobs.length > 0 ? (
         <JobList jobs={jobs} />

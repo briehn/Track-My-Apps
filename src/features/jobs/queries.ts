@@ -18,12 +18,19 @@ export async function getJobsForCurrentUser(
           not: "ARCHIVED" as const,
         };
 
+  const normalizedStatuses =
+    filters?.statuses.filter((statusValue) =>
+      statusFilter === "archived"
+        ? statusValue === "ARCHIVED"
+        : statusValue !== "ARCHIVED",
+    ) ?? [];
+
   const effectiveStatusFilter =
-    filters?.status && statusFilter === "active" && filters.status !== "ARCHIVED"
-      ? filters.status
-      : filters?.status === "ARCHIVED" && statusFilter === "archived"
-        ? "ARCHIVED"
-        : null;
+    normalizedStatuses.length > 0
+      ? {
+          in: normalizedStatuses,
+        }
+      : null;
 
   const orderBy =
     filters?.sort === "deadlineSoonest"
@@ -42,9 +49,19 @@ export async function getJobsForCurrentUser(
     where: {
       userId: user.id,
       status: effectiveStatusFilter ?? statusWhereCondition,
-      ...(filters?.remoteType ? { remoteType: filters.remoteType } : {}),
-      ...(filters?.employmentType
-        ? { employmentType: filters.employmentType }
+      ...(filters?.remoteTypes && filters.remoteTypes.length > 0
+        ? {
+            remoteType: {
+              in: filters.remoteTypes,
+            },
+          }
+        : {}),
+      ...(filters?.employmentTypes && filters.employmentTypes.length > 0
+        ? {
+            employmentType: {
+              in: filters.employmentTypes,
+            },
+          }
         : {}),
       ...(normalizedSearchText
         ? {
