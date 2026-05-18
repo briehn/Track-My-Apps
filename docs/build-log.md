@@ -9,6 +9,20 @@ It should document what changed, why it mattered, and what the next step is. It 
 ## 2026-05-18
 
 ### Changes
+- Implemented the next practical jobs-list workflow upgrade on `/jobs`: search by company/title, status/remote/employment filters, and sort options for newest, deadline soonest, and follow-up soonest.
+- Kept all filtering user-scoped at the Prisma query boundary and preserved active vs archived behavior while adding URL-stable query params for search/filter/sort state.
+- Added a compact, mobile-friendly filter bar with apply and clear actions, plus filtered empty states that distinguish "no jobs yet" from "no matching jobs."
+- Added focused tests for jobs list query-param normalization and query-string serialization helpers to keep URL behavior predictable.
+- Updated `docs/roadmap.md` to mark Phase 21 as meaningfully advanced with the implemented MVP search/filter/sort slice.
+- Updated `docs/roadmap.md` to mark Phase 19: Interview Prep as implemented and to describe the current transient MVP behavior, prerequisites, and follow-up ideas.
+
+### Notes
+- This was a documentation-only update. No application code changed.
+
+### Next Step
+- Keep the roadmap aligned with future AI product slices as they move from planned to implemented.
+
+### Changes
 - Added a new transient `Interview Prep` workflow to job detail `AI Insights`, alongside `Job Analysis` and `Profile Match`, with a third tab and compact summary-first UI.
 - Introduced `src/features/interview-prep/` with feature-local schemas, OpenAI service, server action, and UI component to keep boundaries consistent with existing AI modules.
 - Enforced prerequisites so interview prep requires a saved `JobAnalysis` but allows generation without a `UserProfile`, with explicit UX messaging that a profile improves personalization.

@@ -7,7 +7,9 @@ Track My Apps now has a complete, deployed MVP. The remaining roadmap shifts fro
 - Core MVP is complete and deployed.
 - AI job analysis, AI profile extraction, and transient profile-to-job matching are implemented.
 - CSV export and CSV import with preview, mapping, and validation are implemented.
-- Interview prep, deeper resume tailoring, XLSX support, advanced filtering, and broader automated coverage remain future improvements.
+- Interview prep is implemented as a transient AI feature inside job detail AI Insights.
+- Core jobs search/filter/sort is implemented for title/company query, status/remote/employment filters, URL-preserved state, and newest/deadline/follow-up sorting.
+- Deeper resume tailoring, XLSX support, advanced filtering depth, and broader automated coverage remain future improvements.
 
 ## Completed MVP Phases
 
@@ -138,9 +140,15 @@ Track My Apps now has a complete, deployed MVP. The remaining roadmap shifts fro
 
 ### Phase 19: Interview Prep
 
-- Generate job-specific technical questions.
-- Generate behavioral questions and STAR prompts.
-- Surface study topics tied to the role.
+- Implemented as a transient AI feature inside job detail `AI Insights`.
+- Requires saved `JobAnalysis` before generation.
+- Allows optional `UserProfile` personalization without blocking general job-based prep.
+- Generates technical questions, behavioral / STAR prompts, topics to review, weak areas, role-specific talking points, and questions to ask the interviewer.
+- Reuses prompt-injection hardening and Zod validation/normalization.
+- Does not persist results to Prisma yet.
+- Uses the existing temporary AI usage protection shared with profile matching in the current MVP.
+- Ships with a summary-first UI and show more/show less behavior for long question lists.
+- Future improvements: dedicated usage tracking, optional saved history, mock interview mode, and marking questions as practiced.
 
 ### Phase 20: Job URL Importing
 
@@ -151,10 +159,15 @@ Track My Apps now has a complete, deployed MVP. The remaining roadmap shifts fro
 
 ### Phase 21: Search, Filtering, and Organization
 
-- Add search by company and title.
-- Add filtering by status, deadline, remote type, and employment type.
-- Add sorting by newest, deadline, and follow-up.
-- Improve active and archived organization if the list grows further.
+- Implemented MVP slice:
+- Search by company and title on `/jobs`.
+- URL-preserved filters for status, remote type, and employment type.
+- URL-preserved sorting for newest, deadline soonest, and follow-up soonest.
+- Clear-filters action and filtered empty-state messaging.
+- Active and archived views remain intact and work with the new controls.
+- Remaining follow-up:
+- Add richer deadline-specific filter controls if needed.
+- Expand organization/filter depth only when list size and usage patterns justify it.
 
 ## Phase 22: Import / Export
 
