@@ -1,15 +1,14 @@
 # Roadmap
 
-Track My Apps now has a complete, deployed MVP. The remaining roadmap shifts from core tracker delivery to AI refinement, profile-based matching, importing, and later product polish.
+Track My Apps now has a complete, deployed MVP with several post-MVP slices already shipped. The remaining roadmap shifts from tracker organization to AI refinement, guidance, tailoring, analytics, importing, and later product polish.
 
 ## Status Summary
 
 - Core MVP is complete and deployed.
-- AI job analysis, AI profile extraction, and transient profile-to-job matching are implemented.
-- CSV export and CSV import with preview, mapping, and validation are implemented.
-- Interview prep is implemented as a transient AI feature inside job detail AI Insights.
-- Core jobs search/filter/sort is implemented for title/company query, status/remote/employment filters, URL-preserved state, and newest/deadline/follow-up sorting.
-- Deeper resume tailoring, XLSX support, advanced filtering depth, and broader automated coverage remain future improvements.
+- AI job analysis, AI profile extraction, transient profile-to-job matching, interview prep, and jobs search/filter/sort are implemented.
+- Application Pipeline, dark mode, CSV export/import, and recent QA/security hardening are implemented.
+- Implemented AI features remain transient where appropriate and stay grounded in saved user data.
+- Remaining roadmap items focus on guidance, tailoring, analytics, importing polish, and broader reliability work.
 
 ## Completed MVP Phases
 
@@ -154,16 +153,16 @@ Track My Apps now has a complete, deployed MVP. The remaining roadmap shifts fro
 
 - Allow pasting a job URL to prefill job details.
 - Keep a manual review and edit step before saving.
+- Keep this narrow and manual-review focused because scraping can become unreliable.
 - Consider future `JobPosting` and `UserSavedJob` normalization if the feature expands.
-- Keep scraping scope narrow until product requirements are clearer.
 
 ### Phase 21: Search, Filtering, and Organization
 
-- Implemented MVP slice:
+- Implemented.
 - Search by company and title on `/jobs`.
-- URL-preserved multi-select filters for status, remote type, and employment type.
+- URL-preserved multi-select filters for statuses, remote types, and employment types.
 - URL-preserved sorting for newest, deadline soonest, and follow-up soonest.
-- Clear-filters action and filtered empty-state messaging.
+- Clear-filters action, active filter chips, and filtered empty-state messaging.
 - Active and archived views remain intact and work with the new controls.
 - Remaining follow-up:
 - Add richer deadline-specific filter controls if needed.
@@ -173,6 +172,7 @@ Track My Apps now has a complete, deployed MVP. The remaining roadmap shifts fro
 
 - CSV export for saved jobs is implemented.
 - CSV import for saved jobs with preview, mapping, validation, and explicit confirm is implemented.
+- Future work remains:
 - Add formatted XLSX export for saved jobs with preserved readability features.
 - Keep CSV export for compatibility with existing workflows.
 - Make exports authenticated and user-scoped, without including profile/resume data or transient AI match reports.
@@ -190,9 +190,39 @@ Track My Apps now has a complete, deployed MVP. The remaining roadmap shifts fro
 - Verify auth and ownership boundaries.
 - Test AI usage limits.
 - Add production monitoring considerations.
+- Recent security hardening already completed:
+- App-wide security headers.
+- Prompt-injection hardening across AI flows.
+- Auth endpoint rate limiting.
+- Focused UI bug fixes from QA passes.
 
 ### Phase 24: Portfolio/Resume Polish
 
 - Update README screenshots when the AI UI is stable.
 - Refresh resume wording from AI-ready to AI-powered job description analysis.
 - Keep planned features clearly marked as planned.
+
+### Phase 25: Job Search Guidance Layer
+
+- Today action queue.
+- Follow-up command center.
+- Overdue follow-up detection.
+- Application priority signals.
+- Stale AI output detection when job descriptions or profile data change.
+- Dashboard guidance that tells users what to do next.
+
+### Phase 26: Resume Tailoring and Prep Workspace
+
+- Resume tailoring checklist based on job analysis and profile.
+- Safe, evidence-based suggestions without fabricating experience.
+- Option to save interview prep reports.
+- STAR story bank.
+- Mark interview questions as practiced.
+
+### Phase 27: Job Search Analytics
+
+- Response rate by role type or source.
+- Interview rate by source or status history.
+- No-response aging.
+- Best-fit roles by profile match.
+- Weekly job search review.

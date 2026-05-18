@@ -9,6 +9,11 @@ It should document what changed, why it mattered, and what the next step is. It 
 ## 2026-05-18
 
 ### Changes
+- Strengthened `AGENTS.md` with new UI/state, URL-state, and React event-handling guardrails after the recent `/jobs` filter-toolbar issues.
+- Added explicit guidance to keep trigger controls stable, separate draft vs applied filter state, reset visible UI on clear actions, and capture event values before state updates.
+- Refreshed `docs/roadmap.md` to reflect the current implemented state after Interview Prep, multi-select jobs filtering, and other post-MVP shipped work.
+- Marked Phase 19 and Phase 21 as implemented, kept import/export and testing/reliability future work, and added new future phases for guidance, tailoring, and analytics.
+- Clarified the product direction to stay focused on what happens after a user finds a job rather than turning Track My Apps into a job board.
 - Improved `/jobs` Clear Filters UX so it now behaves as a form reset in the expanded multi-select panel: draft checkbox selections clear immediately, panel stays open, and URL filters are cleared only when applied filters exist.
 - Added draft-vs-applied filter awareness in the client toolbar so `Clear filters` is available for unapplied checkbox selections as well as applied URL filters.
 - Fixed a `/jobs` filter-state sync bug where `Clear filters` removed URL params but checkbox selections stayed visually checked in the expanded panel.
