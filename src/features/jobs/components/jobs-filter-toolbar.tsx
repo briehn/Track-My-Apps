@@ -23,7 +23,9 @@ import { statusLabels } from "@/features/jobs/status";
 type JobsFilterToolbarProps = {
   employmentTypes: EmploymentType[];
   hasAnyActiveFilters: boolean;
+  isExpanded?: boolean;
   isArchivedView: boolean;
+  panelId?: string;
   q: string;
   remoteTypes: RemoteType[];
   secondaryFiltersActive: boolean;
@@ -46,7 +48,9 @@ function formatRemoteTypeLabel(value: string) {
 export function JobsFilterToolbar({
   employmentTypes,
   hasAnyActiveFilters,
+  isExpanded,
   isArchivedView,
+  panelId = "secondary-filters-panel",
   q,
   remoteTypes,
   secondaryFiltersActive,
@@ -55,7 +59,6 @@ export function JobsFilterToolbar({
   statuses,
 }: JobsFilterToolbarProps) {
   const router = useRouter();
-  const [isExpanded, setIsExpanded] = useState(secondaryFiltersActive);
   const [selectedStatuses, setSelectedStatuses] = useState<ApplicationStatus[]>(
     statuses,
   );
@@ -127,76 +130,71 @@ export function JobsFilterToolbar({
     selectedEmploymentTypes.length > 0;
   const canClearFilters =
     hasAnyActiveFilters || hasDraftSelections || draftDiffersFromApplied;
+  const filtersExpanded = isExpanded ?? secondaryFiltersActive;
 
   function navigateWithFilters(nextFilters: JobListFilters) {
     router.replace(`/jobs${buildJobsQueryString(nextFilters, undefined, { layout: selectedLayout })}`);
   }
 
+  const shouldRenderContainer = filtersExpanded || canClearFilters;
+
   return (
     <form
       method="GET"
-      className="space-y-3 rounded-lg border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-slate-900"
+      className={
+        shouldRenderContainer
+          ? "space-y-3 rounded-lg border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-slate-900"
+          : "hidden"
+      }
       onSubmit={(event) => {
         event.preventDefault();
         navigateWithFilters(draftFilters);
       }}
     >
-      <div className="grid gap-2 lg:grid-cols-[minmax(0,1fr)_12rem_auto_auto] lg:items-end">
-        <div>
-          <label htmlFor="q" className="text-sm font-medium text-slate-950 dark:text-slate-100">
-            Search company or title
-          </label>
-          <Input
-            id="q"
-            name="q"
-            value={searchTextDraft}
-            onChange={(event) => {
-              setSearchTextDraft(event.currentTarget.value);
-            }}
-            placeholder="Search jobs"
-          />
-        </div>
-        <div>
-          <label htmlFor="sort" className="text-sm font-medium text-slate-950 dark:text-slate-100">
-            Sort
-          </label>
-          <select
-            id="sort"
-            name="sort"
-            value={sortDraft}
-            onChange={(event) => {
-              setSortDraft(event.currentTarget.value as JobListSort);
-            }}
-            className="mt-1 block h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-950 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-500 dark:focus:ring-slate-700"
-          >
-            <option value="newest">Newest</option>
-            <option value="deadlineSoonest">Deadline soonest</option>
-            <option value="followUpSoonest">Follow-up soonest</option>
-          </select>
-        </div>
-        <Button
-          type="button"
-          variant="secondary"
-          aria-expanded={isExpanded}
-          aria-controls="secondary-filters-panel"
-          className="w-full lg:w-auto"
-          onClick={() => {
-            setIsExpanded((previous) => !previous);
-          }}
-        >
-          Filters
-        </Button>
-        <Button type="submit" className="w-full lg:w-auto">
-          Apply
-        </Button>
-      </div>
-
-      {isExpanded ? (
+      {filtersExpanded ? (
         <div
-          id="secondary-filters-panel"
+          id={panelId}
           className="rounded-md border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-900/60"
         >
-          <div className="grid gap-4 lg:grid-cols-3">
+          <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_12rem_auto] lg:items-end">
+            <div>
+              <label htmlFor="q" className="text-sm font-medium text-slate-950 dark:text-slate-100">
+                Search company or title
+              </label>
+              <Input
+                id="q"
+                name="q"
+                value={searchTextDraft}
+                onChange={(event) => {
+                  setSearchTextDraft(event.currentTarget.value);
+                }}
+                placeholder="Search jobs"
+              />
+            </div>
+            <div>
+              <label htmlFor="sort" className="text-sm font-medium text-slate-950 dark:text-slate-100">
+                Sort
+              </label>
+              <select
+                id="sort"
+                name="sort"
+                value={sortDraft}
+                onChange={(event) => {
+                  setSortDraft(event.currentTarget.value as JobListSort);
+                }}
+                className="mt-1 block h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-950 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-500 dark:focus:ring-slate-700"
+              >
+                <option value="newest">Newest</option>
+                <option value="deadlineSoonest">Deadline soonest</option>
+                <option value="followUpSoonest">Follow-up soonest</option>
+              </select>
+            </div>
+            <Button type="submit" className="w-full lg:w-auto">
+              Apply
+            </Button>
+          </div>
+
+          <div className="mt-4 grid gap-4 lg:grid-cols-3">
             <fieldset className="space-y-2">
               <legend className="text-sm font-medium text-slate-950 dark:text-slate-100">
                 Status
@@ -312,7 +310,25 @@ export function JobsFilterToolbar({
 
       {canClearFilters ? (
         <div className="flex flex-wrap items-center gap-2">
-          {q ? <Badge>Search: {q}</Badge> : null}
+          {q ? (
+            <Badge className="flex items-center gap-1">
+              Search: {q}
+              <button
+                type="button"
+                aria-label={`Remove Search: ${q} filter`}
+                className="ml-1 text-slate-500 transition hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
+                onClick={() => {
+                  setSearchTextDraft("");
+                  navigateWithFilters({
+                    ...appliedFilters,
+                    q: "",
+                  });
+                }}
+              >
+                ×
+              </button>
+            </Badge>
+          ) : null}
           {statuses.map((statusValue) => (
             <Badge key={statusValue} className="flex items-center gap-1">
               Status: {statusLabels[statusValue]}

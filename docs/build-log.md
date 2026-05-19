@@ -41,6 +41,11 @@ It should document what changed, why it mattered, and what the next step is. It 
 - Ran a copy-density and hierarchy cleanup across Profile, Dashboard, and Jobs to remove repeated eyebrow labels and redundant explanatory text while keeping core UX guidance and validation messages.
 - Simplified profile page headings/subheadings and tool-card copy so the workspace feels less tutorial-like and more task-focused without changing profile logic.
 - Kept the existing Application Pipeline SVG visualization intact and removed duplicate surrounding snapshot labels/descriptions to reduce dashboard text clutter.
+- Added a desktop-collapsible sidebar with persisted preference, accessible compact navigation labels, and adaptive shell width so users can reclaim horizontal workspace without changing mobile nav behavior.
+- Reorganized `/jobs` controls into a cleaner hierarchy: Active/Archived as the primary scope selector on the left, with Cards/Table and Filters grouped on the right in one compact toolbar.
+- Kept existing `/jobs` behavior intact while moving only presentation/control placement: search/sort/apply flow, filter panel expansion, removable chips, active/archived URLs, and cards/table data parity remain unchanged.
+- Moved `/jobs` search and sort into the expandable Filters panel so the top-level controls stay focused on scope/view toggles and actions.
+- Preserved existing `q`/`sort` URL behavior and added removable `Search: ...` chips so query-only filters remain visible and can be cleared independently.
 
 ### Notes
 - CSV export behavior remains unchanged.

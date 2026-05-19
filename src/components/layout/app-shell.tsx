@@ -20,6 +20,13 @@ export function AppShell({ children, initialThemePreference, user }: AppShellPro
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+    if (typeof window === "undefined") {
+      return false;
+    }
+
+    return window.localStorage.getItem("sidebar-collapsed") === "true";
+  });
   const displayName = user.name ?? user.email ?? "Signed-in user";
   const statusQuery = searchParams.get("status");
   const isJobsRoute = pathname === "/jobs" || pathname.startsWith("/jobs/");
@@ -27,6 +34,17 @@ export function AppShell({ children, initialThemePreference, user }: AppShellPro
   const isActiveJobsView = pathname === "/jobs" && !isArchivedView;
   const showJobsSubNav = isJobsRoute || isMobileMenuOpen;
   const isProfileView = pathname === "/profile";
+  const desktopSidebarWidthClass = isSidebarCollapsed
+    ? "md:grid-cols-[4.5rem_1fr]"
+    : "md:grid-cols-[16rem_1fr]";
+
+  function handleSidebarToggle() {
+    setIsSidebarCollapsed((previous) => {
+      const nextValue = !previous;
+      window.localStorage.setItem("sidebar-collapsed", String(nextValue));
+      return nextValue;
+    });
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-950 dark:bg-slate-950 dark:text-slate-100">
@@ -162,67 +180,99 @@ export function AppShell({ children, initialThemePreference, user }: AppShellPro
           </aside>
         </div>
       ) : null}
-      <div className="grid min-h-[calc(100vh-4rem)] md:grid-cols-[16rem_1fr]">
+      <div className={`grid min-h-[calc(100vh-4rem)] ${desktopSidebarWidthClass}`}>
         <aside className="hidden border-b border-slate-200 bg-white p-3 sm:p-4 md:block md:border-b-0 md:border-r dark:border-slate-700 dark:bg-slate-950">
-          <p className="px-3 pb-2 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-            Workspace
-          </p>
+          <div className="mb-2 flex items-center justify-between px-1">
+            {!isSidebarCollapsed ? (
+              <p className="px-2 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                Workspace
+              </p>
+            ) : (
+              <span className="sr-only">Workspace navigation</span>
+            )}
+            <button
+              type="button"
+              aria-label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+              title={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+              onClick={handleSidebarToggle}
+              className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-slate-300 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+            >
+              {isSidebarCollapsed ? "»" : "«"}
+            </button>
+          </div>
           <nav
             aria-label="Primary navigation"
             className="space-y-2"
           >
             <Link
               href="/dashboard"
+              aria-label="Dashboard"
+              title="Dashboard"
               aria-current={pathname === "/dashboard" ? "page" : undefined}
               className={[
-                "block rounded-lg px-3 py-2 text-sm font-medium transition",
+                "block rounded-lg py-2 text-sm font-medium transition",
+                isSidebarCollapsed ? "px-2 text-center" : "px-3",
                 pathname === "/dashboard"
                   ? "bg-slate-900 text-white shadow-sm dark:bg-slate-100 dark:text-slate-950"
                   : "text-slate-700 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100",
               ].join(" ")}
             >
-              Dashboard
+              {isSidebarCollapsed ? "Db" : "Dashboard"}
             </Link>
 
             <div className="mt-2 space-y-1">
               <Link
                 href="/jobs"
+                aria-label="Jobs"
+                title="Jobs"
                 className={[
-                  "block rounded-lg px-3 py-2 text-sm font-medium transition",
+                  "block rounded-lg py-2 text-sm font-medium transition",
+                  isSidebarCollapsed ? "px-2 text-center" : "px-3",
                   isJobsRoute
                     ? "text-slate-950 dark:text-slate-100"
                     : "text-slate-700 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100",
                 ].join(" ")}
               >
-                Jobs
+                {isSidebarCollapsed ? "Jb" : "Jobs"}
               </Link>
 
               {showJobsSubNav ? (
-                <div className="ml-3 border-l border-slate-200 pl-3 dark:border-slate-700">
+                <div
+                  className={[
+                    "border-slate-200 dark:border-slate-700",
+                    isSidebarCollapsed ? "space-y-1" : "ml-3 border-l pl-3",
+                  ].join(" ")}
+                >
                   <Link
                     href="/jobs"
+                    aria-label="Active jobs"
+                    title="Active jobs"
                     aria-current={isActiveJobsView ? "page" : undefined}
                     className={[
-                      "block rounded-lg px-3 py-2 text-sm font-medium transition",
+                      "block rounded-lg py-2 text-sm font-medium transition",
+                      isSidebarCollapsed ? "px-2 text-center" : "px-3",
                       isActiveJobsView
                         ? "bg-slate-900 text-white shadow-sm dark:bg-slate-100 dark:text-slate-950"
                         : "text-slate-700 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100",
                     ].join(" ")}
                   >
-                    Active
+                    {isSidebarCollapsed ? "Ac" : "Active"}
                   </Link>
 
                   <Link
                     href="/jobs?status=archived"
+                    aria-label="Archived jobs"
+                    title="Archived jobs"
                     aria-current={isArchivedView ? "page" : undefined}
                     className={[
-                      "block rounded-lg px-3 py-2 text-sm font-medium transition",
+                      "block rounded-lg py-2 text-sm font-medium transition",
+                      isSidebarCollapsed ? "px-2 text-center" : "px-3",
                       isArchivedView
                         ? "bg-slate-900 text-white shadow-sm dark:bg-slate-100 dark:text-slate-950"
                         : "text-slate-700 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100",
                     ].join(" ")}
                   >
-                    Archived
+                    {isSidebarCollapsed ? "Ar" : "Archived"}
                   </Link>
                 </div>
               ) : null}
@@ -230,15 +280,18 @@ export function AppShell({ children, initialThemePreference, user }: AppShellPro
 
             <Link
               href="/profile"
+              aria-label="Profile"
+              title="Profile"
               aria-current={isProfileView ? "page" : undefined}
               className={[
-                "mt-2 block rounded-lg px-3 py-2 text-sm font-medium transition",
+                "mt-2 block rounded-lg py-2 text-sm font-medium transition",
+                isSidebarCollapsed ? "px-2 text-center" : "px-3",
                 isProfileView
                   ? "bg-slate-900 text-white shadow-sm dark:bg-slate-100 dark:text-slate-950"
                   : "text-slate-700 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100",
               ].join(" ")}
             >
-              Profile
+              {isSidebarCollapsed ? "Pr" : "Profile"}
             </Link>
 
           </nav>
