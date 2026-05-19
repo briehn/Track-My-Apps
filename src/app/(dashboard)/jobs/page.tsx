@@ -51,13 +51,6 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
     ? "/jobs/export?status=archived"
     : "/jobs/export?status=active";
   const xlsxExportHref = `/jobs/export/xlsx${buildJobsQueryString(normalizedParams)}`;
-  const clearFiltersHref = `/jobs${buildJobsQueryString(normalizedParams, {
-    q: "",
-    statuses: [],
-    remoteTypes: [],
-    employmentTypes: [],
-    sort: "newest",
-  })}`;
   const activeViewHref = `/jobs${buildJobsQueryString(normalizedParams, {
     view: "active",
     statuses: normalizedParams.statuses.filter((statusValue) => statusValue !== "ARCHIVED"),
@@ -66,14 +59,6 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
     view: "archived",
     statuses: [],
   })}`;
-  const toolbarStateKey = JSON.stringify({
-    view: normalizedParams.view,
-    q: normalizedParams.q,
-    statuses: normalizedParams.statuses,
-    remoteTypes: normalizedParams.remoteTypes,
-    employmentTypes: normalizedParams.employmentTypes,
-    sort: normalizedParams.sort,
-  });
   const hasAppliedFiltersWithNoResults = hasAnyActiveFilters && jobs.length === 0;
   const emptyTitle = hasAppliedFiltersWithNoResults
     ? "No jobs match these filters"
@@ -167,8 +152,7 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
       </div>
 
       <JobsFilterToolbar
-        key={toolbarStateKey}
-        clearFiltersHref={clearFiltersHref}
+        key={normalizedParams.view}
         employmentTypes={normalizedParams.employmentTypes}
         hasAnyActiveFilters={hasAnyActiveFilters}
         isArchivedView={isArchivedView}

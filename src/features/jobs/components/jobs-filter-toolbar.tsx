@@ -1,23 +1,30 @@
 "use client";
 
-import type { ApplicationStatus } from "@prisma/client";
+import type {
+  ApplicationStatus,
+  EmploymentType,
+  RemoteType,
+} from "@prisma/client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import type { JobListSort } from "@/features/jobs/list-params";
+import {
+  buildJobsQueryString,
+  type JobListFilters,
+  type JobListSort,
+} from "@/features/jobs/list-params";
 import { APPLICATION_STATUSES } from "@/features/jobs/status";
 import { statusLabels } from "@/features/jobs/status";
 
 type JobsFilterToolbarProps = {
-  clearFiltersHref: string;
-  employmentTypes: string[];
+  employmentTypes: EmploymentType[];
   hasAnyActiveFilters: boolean;
   isArchivedView: boolean;
   q: string;
-  remoteTypes: string[];
+  remoteTypes: RemoteType[];
   secondaryFiltersActive: boolean;
   sort: JobListSort;
   statuses: ApplicationStatus[];
@@ -35,7 +42,6 @@ function formatRemoteTypeLabel(value: string) {
 }
 
 export function JobsFilterToolbar({
-  clearFiltersHref,
   employmentTypes,
   hasAnyActiveFilters,
   isArchivedView,
@@ -50,12 +56,34 @@ export function JobsFilterToolbar({
   const [selectedStatuses, setSelectedStatuses] = useState<ApplicationStatus[]>(
     statuses,
   );
-  const [selectedRemoteTypes, setSelectedRemoteTypes] = useState<string[]>(
+  const [selectedRemoteTypes, setSelectedRemoteTypes] = useState<RemoteType[]>(
     remoteTypes,
   );
-  const [selectedEmploymentTypes, setSelectedEmploymentTypes] = useState<string[]>(
+  const [selectedEmploymentTypes, setSelectedEmploymentTypes] = useState<
+    EmploymentType[]
+  >(
     employmentTypes,
   );
+  const [searchTextDraft, setSearchTextDraft] = useState(q);
+  const [sortDraft, setSortDraft] = useState<JobListSort>(sort);
+
+  const view: JobListFilters["view"] = isArchivedView ? "archived" : "active";
+  const appliedFilters: JobListFilters = {
+    view,
+    q,
+    statuses,
+    remoteTypes,
+    employmentTypes,
+    sort,
+  };
+  const draftFilters: JobListFilters = {
+    view,
+    q: searchTextDraft.trim(),
+    statuses: selectedStatuses,
+    remoteTypes: selectedRemoteTypes,
+    employmentTypes: selectedEmploymentTypes,
+    sort: sortDraft,
+  };
   const normalizedStatuses: ApplicationStatus[] = isArchivedView
     ? ["ARCHIVED"]
     : APPLICATION_STATUSES.filter((statusValue) => statusValue !== "ARCHIVED");
@@ -63,9 +91,9 @@ export function JobsFilterToolbar({
     isArchivedView
       ? statusValue === "ARCHIVED"
       : selectedStatuses.includes(statusValue);
-  const isRemoteTypeChecked = (remoteTypeValue: string) =>
+  const isRemoteTypeChecked = (remoteTypeValue: RemoteType) =>
     selectedRemoteTypes.includes(remoteTypeValue);
-  const isEmploymentTypeChecked = (employmentTypeValue: string) =>
+  const isEmploymentTypeChecked = (employmentTypeValue: EmploymentType) =>
     selectedEmploymentTypes.includes(employmentTypeValue);
 
   function toggleStringSelection<T extends string>(
@@ -85,6 +113,8 @@ export function JobsFilterToolbar({
   }
 
   const draftDiffersFromApplied =
+    searchTextDraft.trim() !== q ||
+    sortDraft !== sort ||
     toSortedString(selectedStatuses) !== toSortedString(statuses) ||
     toSortedString(selectedRemoteTypes) !== toSortedString(remoteTypes) ||
     toSortedString(selectedEmploymentTypes) !== toSortedString(employmentTypes);
@@ -95,19 +125,33 @@ export function JobsFilterToolbar({
   const canClearFilters =
     hasAnyActiveFilters || hasDraftSelections || draftDiffersFromApplied;
 
+  function navigateWithFilters(nextFilters: JobListFilters) {
+    router.replace(`/jobs${buildJobsQueryString(nextFilters)}`);
+  }
+
   return (
     <form
       method="GET"
       className="space-y-3 rounded-lg border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-slate-900"
+      onSubmit={(event) => {
+        event.preventDefault();
+        navigateWithFilters(draftFilters);
+      }}
     >
-      {isArchivedView ? <input type="hidden" name="status" value="archived" /> : null}
-
       <div className="grid gap-2 lg:grid-cols-[minmax(0,1fr)_12rem_auto_auto] lg:items-end">
         <div>
           <label htmlFor="q" className="text-sm font-medium text-slate-950 dark:text-slate-100">
             Search company or title
           </label>
-          <Input id="q" name="q" defaultValue={q} placeholder="Search jobs" />
+          <Input
+            id="q"
+            name="q"
+            value={searchTextDraft}
+            onChange={(event) => {
+              setSearchTextDraft(event.currentTarget.value);
+            }}
+            placeholder="Search jobs"
+          />
         </div>
         <div>
           <label htmlFor="sort" className="text-sm font-medium text-slate-950 dark:text-slate-100">
@@ -116,7 +160,10 @@ export function JobsFilterToolbar({
           <select
             id="sort"
             name="sort"
-            defaultValue={sort}
+            value={sortDraft}
+            onChange={(event) => {
+              setSortDraft(event.currentTarget.value as JobListSort);
+            }}
             className="mt-1 block h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-950 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-500 dark:focus:ring-slate-700"
           >
             <option value="newest">Newest</option>
@@ -190,7 +237,7 @@ export function JobsFilterToolbar({
                 Remote type
               </legend>
               <div className="space-y-2">
-                {["ONSITE", "HYBRID", "REMOTE"].map((remoteTypeValue) => (
+                {(["ONSITE", "HYBRID", "REMOTE"] as const).map((remoteTypeValue) => (
                   <label
                     key={remoteTypeValue}
                     className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300"
@@ -223,13 +270,13 @@ export function JobsFilterToolbar({
                 Employment type
               </legend>
               <div className="space-y-2">
-                {[
+                {([
                   "FULL_TIME",
                   "PART_TIME",
                   "CONTRACT",
                   "INTERNSHIP",
                   "TEMPORARY",
-                ].map((employmentTypeValue) => (
+                ] as const).map((employmentTypeValue) => (
                   <label
                     key={employmentTypeValue}
                     className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300"
@@ -264,16 +311,69 @@ export function JobsFilterToolbar({
         <div className="flex flex-wrap items-center gap-2">
           {q ? <Badge>Search: {q}</Badge> : null}
           {statuses.map((statusValue) => (
-            <Badge key={statusValue}>Status: {statusLabels[statusValue]}</Badge>
+            <Badge key={statusValue} className="flex items-center gap-1">
+              Status: {statusLabels[statusValue]}
+              <button
+                type="button"
+                aria-label={`Remove Status: ${statusLabels[statusValue]} filter`}
+                className="ml-1 text-slate-500 transition hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
+                onClick={() => {
+                  const nextStatuses = statuses.filter(
+                    (value) => value !== statusValue,
+                  );
+                  setSelectedStatuses(nextStatuses);
+                  navigateWithFilters({
+                    ...appliedFilters,
+                    statuses: nextStatuses,
+                  });
+                }}
+              >
+                ×
+              </button>
+            </Badge>
           ))}
           {remoteTypes.map((remoteTypeValue) => (
-            <Badge key={remoteTypeValue}>
+            <Badge key={remoteTypeValue} className="flex items-center gap-1">
               Remote: {formatRemoteTypeLabel(remoteTypeValue)}
+              <button
+                type="button"
+                aria-label={`Remove Remote: ${formatRemoteTypeLabel(remoteTypeValue)} filter`}
+                className="ml-1 text-slate-500 transition hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
+                onClick={() => {
+                  const nextRemoteTypes = remoteTypes.filter(
+                    (value) => value !== remoteTypeValue,
+                  );
+                  setSelectedRemoteTypes(nextRemoteTypes);
+                  navigateWithFilters({
+                    ...appliedFilters,
+                    remoteTypes: nextRemoteTypes,
+                  });
+                }}
+              >
+                ×
+              </button>
             </Badge>
           ))}
           {employmentTypes.map((employmentTypeValue) => (
-            <Badge key={employmentTypeValue}>
+            <Badge key={employmentTypeValue} className="flex items-center gap-1">
               Employment: {formatEmploymentTypeLabel(employmentTypeValue)}
+              <button
+                type="button"
+                aria-label={`Remove Employment: ${formatEmploymentTypeLabel(employmentTypeValue)} filter`}
+                className="ml-1 text-slate-500 transition hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
+                onClick={() => {
+                  const nextEmploymentTypes = employmentTypes.filter(
+                    (value) => value !== employmentTypeValue,
+                  );
+                  setSelectedEmploymentTypes(nextEmploymentTypes);
+                  navigateWithFilters({
+                    ...appliedFilters,
+                    employmentTypes: nextEmploymentTypes,
+                  });
+                }}
+              >
+                ×
+              </button>
             </Badge>
           ))}
           {sort !== "newest" ? (
@@ -289,10 +389,17 @@ export function JobsFilterToolbar({
               setSelectedStatuses([]);
               setSelectedRemoteTypes([]);
               setSelectedEmploymentTypes([]);
+              setSearchTextDraft("");
+              setSortDraft("newest");
 
-              if (hasAnyActiveFilters) {
-                router.replace(clearFiltersHref);
-              }
+              navigateWithFilters({
+                ...draftFilters,
+                q: "",
+                statuses: [],
+                remoteTypes: [],
+                employmentTypes: [],
+                sort: "newest",
+              });
             }}
           >
             Clear filters

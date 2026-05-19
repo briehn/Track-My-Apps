@@ -17,6 +17,9 @@ It should document what changed, why it mattered, and what the next step is. It 
 - Added an `Export XLSX` control beside `Export CSV` on `/jobs` and matched the existing disabled/empty-state behavior when no rows are exportable.
 - Added focused tests for XLSX row mapping and formula-sanitization behavior.
 - Updated `docs/roadmap.md` Phase 22 to mark formatted XLSX export as implemented.
+- Fixed two `/jobs` filter-toolbar UX regressions: closing the secondary filter panel no longer drops draft multi-select filter values on apply, and active filter chips now support one-click per-chip removal.
+- Decoupled panel visibility from applied filter state by keeping expand/collapse as local UI-only state and applying filters from controlled draft state instead of relying on conditionally mounted checkbox form inputs.
+- Added accessible chip remove controls (`aria-label` per chip) for status, remote type, and employment type filters that update local draft state and URL-applied filters in one action while preserving active/archived baseline behavior.
 
 ### Notes
 - CSV export behavior remains unchanged.
