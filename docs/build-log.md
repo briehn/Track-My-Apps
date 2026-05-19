@@ -20,6 +20,9 @@ It should document what changed, why it mattered, and what the next step is. It 
 - Fixed two `/jobs` filter-toolbar UX regressions: closing the secondary filter panel no longer drops draft multi-select filter values on apply, and active filter chips now support one-click per-chip removal.
 - Decoupled panel visibility from applied filter state by keeping expand/collapse as local UI-only state and applying filters from controlled draft state instead of relying on conditionally mounted checkbox form inputs.
 - Added accessible chip remove controls (`aria-label` per chip) for status, remote type, and employment type filters that update local draft state and URL-applied filters in one action while preserving active/archived baseline behavior.
+- Redesigned the `/profile` form into clearer section cards (`Profile Overview`, `Resume & AI Extraction`, `Skills & Experience`, `Career Links`) to reduce long-form fatigue while keeping all fields editable.
+- Expanded predefined profile target-role options well beyond software engineering and added broader title normalization aliases so role targeting better fits multi-discipline job seekers without schema or behavior changes.
+- Improved profile dark-mode polish by fixing the sticky unsaved-changes bar to use dark surface, dark border, readable text, and app-consistent shadow treatment instead of a bright disconnected floating strip.
 
 ### Notes
 - CSV export behavior remains unchanged.

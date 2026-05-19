@@ -21,10 +21,10 @@ export default async function ProfilePage() {
           </p>
           <h1 className="mt-1 text-2xl font-semibold text-slate-950">Profile</h1>
           <p className="mt-1 max-w-2xl text-sm text-slate-600">
-            Keep one private canonical career profile for future resume matching and tailoring.
+            Keep one private canonical career profile to support matching, preparation, and role targeting across industries.
           </p>
         </div>
-        <div className="w-fit rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
+        <div className="w-fit rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
           {profile
             ? `Last updated ${dateFormatter.format(profile.updatedAt)}`
             : "No profile saved yet"}
@@ -38,7 +38,7 @@ export default async function ProfilePage() {
               Build your private profile to power resume extraction and profile-to-job matching.
             </p>
             <p className="text-sm text-slate-600 dark:text-slate-300">
-              Fill in the form below at your own pace. You can start with only the fields you have ready.
+              Fill in the sections below at your own pace. You can start with only the fields you have ready.
             </p>
           </div>
           <LinkButton href="#career-profile-form" variant="secondary">
@@ -51,7 +51,7 @@ export default async function ProfilePage() {
         <CardHeader>
           <CardTitle id="career-profile-form-title">Career profile</CardTitle>
           <CardDescription>
-            This stays private to your account and is not shared publicly.
+            This profile stays private to your account and is not shared publicly.
           </CardDescription>
         </CardHeader>
         <ProfileForm

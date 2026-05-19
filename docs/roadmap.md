@@ -126,6 +126,8 @@ Track My Apps now has a complete, deployed MVP with several post-MVP slices alre
 
 - Implemented.
 - Added a private canonical user profile page with resume text, skills, structured target titles, structured experience ranges, multi-select work preferences, and career links.
+- Expanded profile target-role options beyond software-only titles to better support broader job seekers across product, data, design, operations, marketing/sales, support, and security/cloud roles.
+- Improved profile form UX into clearer sections for overview, resume/extraction context, skills/experience, and career links while preserving existing save semantics.
 - Added AI-assisted profile extraction suggestions from saved resume text with manual review/apply before profile save.
 - User profile and resume text storage are now in place behind authenticated ownership checks.
 - Skills, experience, and preferences are stored in a user-owned profile model.

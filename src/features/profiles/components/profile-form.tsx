@@ -146,13 +146,13 @@ export function ProfileForm({ profile }: ProfileFormProps) {
       aria-labelledby="career-profile-form-title"
     >
       {state.formError ? (
-        <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-500/40 dark:bg-red-500/10 dark:text-red-200">
           {state.formError}
         </div>
       ) : null}
 
       {state.successMessage ? (
-        <div className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+        <div className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-200">
           {state.successMessage}
         </div>
       ) : null}
@@ -172,9 +172,9 @@ export function ProfileForm({ profile }: ProfileFormProps) {
       />
 
       {isDirty ? (
-        <div className="fixed bottom-4 left-1/2 z-50 w-[calc(100%-1.5rem)] max-w-3xl -translate-x-1/2 rounded-lg border border-slate-300 bg-white/95 p-3 shadow-xl backdrop-blur sm:w-[calc(100%-2rem)]">
+        <div className="fixed bottom-4 left-1/2 z-50 w-[calc(100%-1.5rem)] max-w-3xl -translate-x-1/2 rounded-xl border border-slate-300 bg-white/95 p-3 shadow-[0_12px_36px_rgba(15,23,42,0.18)] backdrop-blur sm:w-[calc(100%-2rem)] dark:border-slate-700 dark:bg-slate-900/95 dark:shadow-[0_16px_42px_rgba(2,6,23,0.7)]">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-slate-700">
+            <p className="text-sm text-slate-700 dark:text-slate-200">
               {isPending ? "Saving changes..." : "You have unsaved changes."}
             </p>
             <div className="flex gap-2 sm:justify-end">

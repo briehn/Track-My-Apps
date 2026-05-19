@@ -38,4 +38,16 @@ describe("normalizeTargetTitleToPredefinedOption", () => {
       "Backend Engineer",
     );
   });
+
+  it("maps broader non-software aliases to predefined options", () => {
+    expect(normalizeTargetTitleToPredefinedOption("SRE")).toBe(
+      "Site Reliability Engineer",
+    );
+    expect(normalizeTargetTitleToPredefinedOption("Product Owner")).toBe(
+      "Product Manager",
+    );
+    expect(normalizeTargetTitleToPredefinedOption("Cyber Security Analyst")).toBe(
+      "Cybersecurity Analyst",
+    );
+  });
 });
