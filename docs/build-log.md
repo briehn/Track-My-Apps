@@ -23,6 +23,24 @@ It should document what changed, why it mattered, and what the next step is. It 
 - Redesigned the `/profile` form into clearer section cards (`Profile Overview`, `Resume & AI Extraction`, `Skills & Experience`, `Career Links`) to reduce long-form fatigue while keeping all fields editable.
 - Expanded predefined profile target-role options well beyond software engineering and added broader title normalization aliases so role targeting better fits multi-discipline job seekers without schema or behavior changes.
 - Improved profile dark-mode polish by fixing the sticky unsaved-changes bar to use dark surface, dark border, readable text, and app-consistent shadow treatment instead of a bright disconnected floating strip.
+- Added resume upload/import text support in the profile workflow so users can extract plain text from `.txt`, `.docx`, or `.pdf` files without manual copy/paste.
+- Kept resume import authenticated and transient (no file storage), added server-side file validation (type/extension + size cap), and surfaced extraction errors with explicit user guidance.
+- Kept extracted text review-first by showing preview output and requiring an explicit "Use extracted text in form" action before any draft replacement, with normal profile save still required to persist.
+- Hardened resume import failure handling so unsupported/incompatible uploads now fail safely with inline messages and do not crash the profile page or break later profile saves.
+- Changed resume import UX to suggestions-first: upload now extracts text and immediately runs profile suggestion extraction, showing structured suggestions as the primary output with explicit apply/save steps.
+- Reframed raw resume text as secondary source context via collapsible UI, preserving manual editing and saved resume context for downstream matching/prep workflows.
+- Redesigned `/profile` into a clearer workspace layout with a profile summary header, canonical profile editor area, and dedicated tools rail for resume import, AI extraction, and completion status.
+- Added lightweight profile completeness tracking and visual progress indicators to surface missing core profile signals without altering save semantics.
+- Added skills chip previews alongside textarea editing to improve readability while preserving manual structured input control.
+- Added a `/jobs` Cards/Table view toggle with URL persistence (`layout=table`) so users can switch between the existing card workflow and a compact high-density table scan mode.
+- Kept search/filter/sort, active/archived tabs, auth-scoped query behavior, and CSV/XLSX export behavior unchanged while preserving selected layout across jobs query interactions.
+- Implemented a semantic jobs table view with status badges, key tracking columns, responsive horizontal overflow on smaller screens, and keyboard-accessible row actions.
+- Refined profile workspace desktop layout to use a wider content container and stronger two-column proportion so the page no longer feels cramped.
+- Reduced visual clutter by removing unnecessary outer card wrappers and simplifying nested bordered containers in the profile editor/tools areas.
+- Kept all profile logic and save/discard behavior intact while improving hierarchy with larger workspace header treatment, cleaner section grouping, and preserved dark-mode styling.
+- Ran a copy-density and hierarchy cleanup across Profile, Dashboard, and Jobs to remove repeated eyebrow labels and redundant explanatory text while keeping core UX guidance and validation messages.
+- Simplified profile page headings/subheadings and tool-card copy so the workspace feels less tutorial-like and more task-focused without changing profile logic.
+- Kept the existing Application Pipeline SVG visualization intact and removed duplicate surrounding snapshot labels/descriptions to reduce dashboard text clutter.
 
 ### Notes
 - CSV export behavior remains unchanged.

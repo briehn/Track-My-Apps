@@ -5,8 +5,10 @@ import { Button } from "@/components/ui/button";
 import { LinkButton } from "@/components/ui/link-button";
 import { JobsFilterToolbar } from "@/features/jobs/components/jobs-filter-toolbar";
 import { JobList } from "@/features/jobs/components/job-list";
+import { JobsTable } from "@/features/jobs/components/jobs-table";
 import {
   buildJobsQueryString,
+  normalizeJobsLayoutParam,
   normalizeJobsSearchParams,
 } from "@/features/jobs/list-params";
 import { getJobsForCurrentUser } from "@/features/jobs/queries";
@@ -20,6 +22,7 @@ type JobsPageProps = {
     remoteTypes?: string | string[];
     employmentType?: string | string[];
     employmentTypes?: string | string[];
+    layout?: string | string[];
     sort?: string | string[];
   }>;
 };
@@ -27,6 +30,8 @@ type JobsPageProps = {
 export default async function JobsPage({ searchParams }: JobsPageProps) {
   const params = await searchParams;
   const normalizedParams = normalizeJobsSearchParams(params);
+  const selectedLayout = normalizeJobsLayoutParam(params);
+  const isTableLayout = selectedLayout === "table";
   const isArchivedView = normalizedParams.view === "archived";
   const jobs = await getJobsForCurrentUser(
     isArchivedView ? "archived" : "active",
@@ -54,10 +59,16 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
   const activeViewHref = `/jobs${buildJobsQueryString(normalizedParams, {
     view: "active",
     statuses: normalizedParams.statuses.filter((statusValue) => statusValue !== "ARCHIVED"),
-  })}`;
+  }, { layout: selectedLayout })}`;
   const archivedViewHref = `/jobs${buildJobsQueryString(normalizedParams, {
     view: "archived",
     statuses: [],
+  }, { layout: selectedLayout })}`;
+  const cardsViewHref = `/jobs${buildJobsQueryString(normalizedParams, undefined, {
+    layout: "cards",
+  })}`;
+  const tableViewHref = `/jobs${buildJobsQueryString(normalizedParams, undefined, {
+    layout: "table",
   })}`;
   const hasAppliedFiltersWithNoResults = hasAnyActiveFilters && jobs.length === 0;
   const emptyTitle = hasAppliedFiltersWithNoResults
@@ -75,14 +86,11 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-            Job tracker
-          </p>
-          <h1 className="mt-1 text-2xl font-semibold text-slate-950">Jobs</h1>
+          <h1 className="text-2xl font-semibold text-slate-950 dark:text-slate-100">Jobs</h1>
           <p className="mt-1 text-sm text-slate-600">
             {isArchivedView
-              ? "Review jobs you have moved out of your active workflow."
-              : "View active roles you have manually saved."}
+              ? "Archived roles."
+              : "Track and organize your applications."}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -151,6 +159,36 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
         </Link>
       </div>
 
+      <div
+        className="inline-flex w-fit rounded-lg border border-slate-200 bg-white p-1 dark:border-slate-700 dark:bg-slate-900"
+        aria-label="Jobs layout toggle"
+      >
+        <Link
+          href={cardsViewHref}
+          aria-current={!isTableLayout ? "page" : undefined}
+          className={[
+            "rounded-md px-3 py-2 text-sm font-medium transition",
+            !isTableLayout
+              ? "bg-slate-950 text-white dark:bg-slate-100 dark:text-slate-950"
+              : "text-slate-700 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100",
+          ].join(" ")}
+        >
+          Cards
+        </Link>
+        <Link
+          href={tableViewHref}
+          aria-current={isTableLayout ? "page" : undefined}
+          className={[
+            "rounded-md px-3 py-2 text-sm font-medium transition",
+            isTableLayout
+              ? "bg-slate-950 text-white dark:bg-slate-100 dark:text-slate-950"
+              : "text-slate-700 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100",
+          ].join(" ")}
+        >
+          Table
+        </Link>
+      </div>
+
       <JobsFilterToolbar
         key={normalizedParams.view}
         employmentTypes={normalizedParams.employmentTypes}
@@ -158,6 +196,7 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
         isArchivedView={isArchivedView}
         q={normalizedParams.q}
         remoteTypes={normalizedParams.remoteTypes}
+        selectedLayout={selectedLayout}
         secondaryFiltersActive={Boolean(
           normalizedParams.statuses.length > 0 ||
             normalizedParams.remoteTypes.length > 0 ||
@@ -168,7 +207,7 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
       />
 
       {jobs.length > 0 ? (
-        <JobList jobs={jobs} />
+        isTableLayout ? <JobsTable jobs={jobs} /> : <JobList jobs={jobs} />
       ) : (
         <EmptyState
           title={emptyTitle}

@@ -15,10 +15,13 @@ Job searching spreads context across job posts, notes, status updates, and resum
 - Google OAuth sign-in and a protected authenticated workspace
 - Focused auth-route rate limiting for sign-in and `/api/auth/*`, with a production-safe Redis-backed path on Vercel
 - Job tracking with statuses, notes, archive/delete, dashboard summaries, and an application pipeline visualization
+- Job tracking with statuses, notes, archive/delete, dashboard summaries, application pipeline visualization, and Cards/Table jobs list views
 - Polished light/dark mode with a persistent user toggle across the app shell and dashboard/job/profile/import workflows
 - CSV and formatted XLSX export for saved jobs with user-scoped data access
 - CSV import for saved jobs with upload, column mapping, validation preview, duplicate warnings, and explicit confirm import
 - Private profile and resume foundation for a single user-owned canonical profile
+- Profile workspace layout with canonical profile editing, resume import tools, and completion guidance
+- Resume import for `.txt`, `.docx`, and `.pdf` that extracts text and generates review-first profile suggestions before apply/save
 - AI job description analysis with structured saved output
 - AI profile extraction suggestions from saved resume text with review before apply
 - Transient profile-to-job matching on job detail pages
@@ -198,7 +201,7 @@ Completed:
 
 Not yet implemented:
 
-- Resume upload and parsing
+- OCR for scanned/image-only resumes
 - Saved match history and deeper scoring
 - URL-based job importing
 - XLSX import and richer spreadsheet migration support

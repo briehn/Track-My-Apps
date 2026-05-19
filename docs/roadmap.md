@@ -128,6 +128,9 @@ Track My Apps now has a complete, deployed MVP with several post-MVP slices alre
 - Added a private canonical user profile page with resume text, skills, structured target titles, structured experience ranges, multi-select work preferences, and career links.
 - Expanded profile target-role options beyond software-only titles to better support broader job seekers across product, data, design, operations, marketing/sales, support, and security/cloud roles.
 - Improved profile form UX into clearer sections for overview, resume/extraction context, skills/experience, and career links while preserving existing save semantics.
+- Added resume file import for `.txt`, `.docx`, and `.pdf` to extract plain text into the existing editable resume-text workflow before save.
+- Updated resume import to a suggestions-first flow: uploaded resume text now feeds profile extraction suggestions for review/apply before save, while raw source text remains available as secondary context.
+- Introduced a profile-workspace presentation with stronger profile summary hierarchy, canonical-data editing focus, tools-oriented extraction/import workflow, and progress/completeness guidance.
 - Added AI-assisted profile extraction suggestions from saved resume text with manual review/apply before profile save.
 - User profile and resume text storage are now in place behind authenticated ownership checks.
 - Skills, experience, and preferences are stored in a user-owned profile model.
@@ -164,6 +167,7 @@ Track My Apps now has a complete, deployed MVP with several post-MVP slices alre
 - Search by company and title on `/jobs`.
 - URL-preserved multi-select filters for statuses, remote types, and employment types.
 - URL-preserved sorting for newest, deadline soonest, and follow-up soonest.
+- Added URL-preserved Cards/Table layout toggle on `/jobs` so users can switch between detailed card browsing and high-density table scanning.
 - Clear-filters action, active filter chips, and filtered empty-state messaging.
 - Active and archived views remain intact and work with the new controls.
 - Remaining follow-up:

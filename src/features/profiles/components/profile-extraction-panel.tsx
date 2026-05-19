@@ -15,6 +15,7 @@ import {
 } from "@/features/profiles/schemas";
 
 type ProfileExtractionPanelProps = {
+  className?: string;
   hasSavedResumeText: boolean;
   savedResumeTextLength: number;
   isProfileDirty: boolean;
@@ -46,12 +47,12 @@ function SuggestionList({
 
   return (
     <div className="space-y-2">
-      <h4 className="text-sm font-medium text-slate-950">{title}</h4>
+      <h4 className="text-sm font-medium text-slate-950 dark:text-slate-100">{title}</h4>
       <div className="flex flex-wrap gap-2">
         {items.map((item) => (
           <span
             key={item}
-            className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs text-slate-700"
+            className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
           >
             {item}
           </span>
@@ -62,6 +63,7 @@ function SuggestionList({
 }
 
 export function ProfileExtractionPanel({
+  className,
   hasSavedResumeText,
   savedResumeTextLength,
   isProfileDirty,
@@ -87,15 +89,22 @@ export function ProfileExtractionPanel({
   }
 
   return (
-    <div className="space-y-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
+    <div
+      className={[
+        "space-y-4 rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-900/60",
+        className,
+      ]
+        .filter(Boolean)
+        .join(" ")}
+    >
       <div className="space-y-1">
-        <h3 className="text-base font-semibold text-slate-950">AI profile extraction</h3>
-        <p className="text-sm text-slate-600">
-          AI suggestions are not saved until you apply them and click Save changes.
+        <h3 className="text-base font-semibold text-slate-950 dark:text-slate-100">AI profile extraction</h3>
+        <p className="text-sm text-slate-600 dark:text-slate-300">
+          Generate suggestions from saved resume source text.
         </p>
       </div>
 
-      <div className="space-y-1 text-xs text-slate-500">
+      <div className="space-y-1 text-xs text-slate-500 dark:text-slate-400">
         <p>
           Save at least {MIN_PROFILE_RESUME_EXTRACTION_CHARS} characters of resume text before extracting suggestions.
         </p>
@@ -108,13 +117,13 @@ export function ProfileExtractionPanel({
       </div>
 
       {!hasSavedResumeText ? (
-        <div className="rounded-md border border-dashed border-slate-300 bg-white px-4 py-3 text-sm text-slate-600">
+        <div className="rounded-md border border-dashed border-slate-300 bg-white px-4 py-3 text-sm text-slate-600 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-300">
           Add and save resume text before extracting profile details.
         </div>
       ) : null}
 
       {isProfileDirty ? (
-        <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+        <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-200">
           Save or discard your current profile edits before extracting from the saved resume text.
         </div>
       ) : null}
@@ -129,32 +138,29 @@ export function ProfileExtractionPanel({
         </Button>
 
         {isPending ? (
-          <p className="text-sm text-slate-600" role="status">
+          <p className="text-sm text-slate-600 dark:text-slate-300" role="status">
             Extracting profile suggestions... This may take a few seconds.
           </p>
         ) : null}
 
         {state.formError ? (
-          <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-500/40 dark:bg-red-500/10 dark:text-red-200">
             {state.formError}
           </div>
         ) : null}
 
         {state.successMessage ? (
-          <div className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+          <div className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-200">
             {state.successMessage}
           </div>
         ) : null}
       </div>
 
       {state.suggestions ? (
-        <div className="space-y-4 rounded-md border border-slate-200 bg-white p-4">
+        <div className="space-y-4 rounded-md border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h4 className="text-sm font-semibold text-slate-950">Suggested profile details</h4>
-              <p className="mt-1 text-sm text-slate-600">
-                Review these suggestions before applying them to the form.
-              </p>
+              <h4 className="text-sm font-semibold text-slate-950 dark:text-slate-100">Suggested profile details</h4>
             </div>
             <Button
               type="button"
@@ -166,7 +172,7 @@ export function ProfileExtractionPanel({
           </div>
 
           {applyMessage ? (
-            <div className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+            <div className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-200">
               {applyMessage}
             </div>
           ) : null}
@@ -177,7 +183,7 @@ export function ProfileExtractionPanel({
                 <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
                   Target title
                 </p>
-                <p className="mt-1 text-sm text-slate-700">{state.suggestions.targetTitle}</p>
+                <p className="mt-1 text-sm text-slate-700 dark:text-slate-200">{state.suggestions.targetTitle}</p>
               </div>
             ) : null}
 
@@ -186,7 +192,7 @@ export function ProfileExtractionPanel({
                 <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
                   Experience range
                 </p>
-                <p className="mt-1 text-sm text-slate-700">
+                <p className="mt-1 text-sm text-slate-700 dark:text-slate-200">
                   {yearsOfExperienceLabels[state.suggestions.yearsOfExperience]}
                 </p>
               </div>
@@ -196,7 +202,7 @@ export function ProfileExtractionPanel({
           {state.suggestions.experienceSummary ? (
             <div className="space-y-2">
               <h4 className="text-sm font-medium text-slate-950">Experience summary</h4>
-              <p className="text-sm leading-6 text-slate-700">
+              <p className="text-sm leading-6 text-slate-700 dark:text-slate-200">
                 {state.suggestions.experienceSummary}
               </p>
             </div>

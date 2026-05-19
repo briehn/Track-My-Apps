@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import {
   buildJobsQueryString,
   type JobListFilters,
+  type JobListLayout,
   type JobListSort,
 } from "@/features/jobs/list-params";
 import { APPLICATION_STATUSES } from "@/features/jobs/status";
@@ -26,6 +27,7 @@ type JobsFilterToolbarProps = {
   q: string;
   remoteTypes: RemoteType[];
   secondaryFiltersActive: boolean;
+  selectedLayout: JobListLayout;
   sort: JobListSort;
   statuses: ApplicationStatus[];
 };
@@ -48,6 +50,7 @@ export function JobsFilterToolbar({
   q,
   remoteTypes,
   secondaryFiltersActive,
+  selectedLayout,
   sort,
   statuses,
 }: JobsFilterToolbarProps) {
@@ -126,7 +129,7 @@ export function JobsFilterToolbar({
     hasAnyActiveFilters || hasDraftSelections || draftDiffersFromApplied;
 
   function navigateWithFilters(nextFilters: JobListFilters) {
-    router.replace(`/jobs${buildJobsQueryString(nextFilters)}`);
+    router.replace(`/jobs${buildJobsQueryString(nextFilters, undefined, { layout: selectedLayout })}`);
   }
 
   return (

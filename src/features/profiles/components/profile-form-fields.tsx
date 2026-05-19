@@ -13,7 +13,10 @@ import {
   workPreferenceOptions,
 } from "@/features/profiles/options";
 import { ProfileSelect } from "@/features/profiles/components/profile-select";
-import type { ProfileFormFieldName } from "@/features/profiles/schemas";
+import {
+  normalizeSkillsInput,
+  type ProfileFormFieldName,
+} from "@/features/profiles/schemas";
 
 export type ProfileFormFieldErrors = Partial<Record<ProfileFormFieldName, string[]>>;
 
@@ -51,15 +54,15 @@ export function ProfileFormFields({
   const [targetTitleOption, setTargetTitleOption] = useState(
     defaultValues?.targetTitleOption ?? "",
   );
+  const [skillsPreview, setSkillsPreview] = useState<string[]>(
+    normalizeSkillsInput(defaultValues?.skills),
+  );
 
   return (
     <>
-      <section className="space-y-4 rounded-xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-700 dark:bg-slate-950/30">
+      <section className="space-y-4 rounded-xl bg-white/85 p-5 shadow-sm dark:bg-slate-900/70">
         <div className="space-y-1">
-          <h2 className="text-base font-semibold text-slate-950 dark:text-slate-100">Profile Overview</h2>
-          <p className="text-sm text-slate-600 dark:text-slate-300">
-            Define the role direction and job setup preferences for your search.
-          </p>
+          <h2 className="text-base font-semibold text-slate-950 dark:text-slate-100">Canonical Profile</h2>
         </div>
         <div className="grid gap-4 md:grid-cols-2">
           <div>
@@ -154,36 +157,9 @@ export function ProfileFormFields({
         </fieldset>
       </section>
 
-      <section className="space-y-4 rounded-xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-700 dark:bg-slate-950/30">
-        <div className="space-y-1">
-          <h2 className="text-base font-semibold text-slate-950 dark:text-slate-100">Resume & AI Extraction</h2>
-          <p className="text-sm text-slate-600 dark:text-slate-300">
-            Keep your latest resume text here so extraction suggestions can stay grounded.
-          </p>
-        </div>
-        <div>
-          <label htmlFor="resumeText" className="text-sm font-medium text-slate-950 dark:text-slate-100">
-            Resume text
-          </label>
-          <Textarea
-            id="resumeText"
-            name="resumeText"
-            rows={10}
-            defaultValue={defaultValues?.resumeText}
-          />
-          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-            Paste plain-text resume content for future extraction and matching.
-          </p>
-          <FieldError errors={errors?.resumeText} />
-        </div>
-      </section>
-
-      <section className="space-y-4 rounded-xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-700 dark:bg-slate-950/30">
+      <section className="space-y-4 rounded-xl bg-white/85 p-5 shadow-sm dark:bg-slate-900/70">
         <div className="space-y-1">
           <h2 className="text-base font-semibold text-slate-950 dark:text-slate-100">Skills & Experience</h2>
-          <p className="text-sm text-slate-600 dark:text-slate-300">
-            Summarize your experience and core skills in a format that is easy to update.
-          </p>
         </div>
         <div className="grid gap-4 md:grid-cols-2">
           <div>
@@ -214,11 +190,26 @@ export function ProfileFormFields({
               name="skills"
               rows={5}
               defaultValue={defaultValues?.skills}
+              onChange={(event) => {
+                setSkillsPreview(normalizeSkillsInput(event.currentTarget.value));
+              }}
               placeholder="Project management, SQL, stakeholder communication&#10;A/B testing, user research"
             />
             <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
               Separate skills with commas or line breaks. Duplicates are removed when saved.
             </p>
+            {skillsPreview.length > 0 ? (
+              <div className="mt-2 flex flex-wrap gap-2">
+                {skillsPreview.map((skill) => (
+                  <span
+                    key={skill}
+                    className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                  >
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            ) : null}
             <FieldError errors={errors?.skills} />
           </div>
         </div>
@@ -237,12 +228,9 @@ export function ProfileFormFields({
         </div>
       </section>
 
-      <section className="space-y-4 rounded-xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-700 dark:bg-slate-950/30">
+      <section className="space-y-4 rounded-xl bg-white/85 p-5 shadow-sm dark:bg-slate-900/70">
         <div className="space-y-1">
           <h2 className="text-base font-semibold text-slate-950 dark:text-slate-100">Career Links</h2>
-          <p className="text-sm text-slate-600 dark:text-slate-300">
-            Add professional links you want to keep alongside your profile.
-          </p>
         </div>
         <div className="grid gap-4 md:grid-cols-3">
           <div>

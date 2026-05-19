@@ -33,6 +33,36 @@ export type ExtractProfileDetailsActionState = {
   suggestions?: ProfileExtractionSuggestion;
 };
 
+export type ImportResumeTextActionState = {
+  formError?: string;
+  successMessage?: string;
+  extractedText?: string;
+  extractedTextLength?: number;
+  fileName?: string;
+  suggestions?: ProfileExtractionSuggestion;
+};
+
+function mapProfileExtractionErrorToMessage(
+  error: ProfileExtractionServiceError,
+) {
+  switch (error.code) {
+    case "NOT_CONFIGURED":
+      return "AI profile extraction is not configured right now.";
+    case "MALFORMED_OUTPUT":
+      return "The AI response could not be validated. Try again.";
+    case "TIMEOUT":
+      return "The AI extraction took too long. Please try again.";
+    case "RATE_LIMITED":
+      return "OpenAI is rate-limiting requests right now. Please try again in a few minutes.";
+    case "QUOTA_EXCEEDED":
+      return "AI profile extraction is temporarily unavailable due to provider quota limits. Please try again later.";
+    case "UNAVAILABLE":
+    case "PROVIDER_FAILURE":
+    default:
+      return "There was an issue extracting profile details. Please try again later.";
+  }
+}
+
 export async function upsertProfile(
   _previousState: UpsertProfileActionState,
   formData: FormData,
@@ -137,35 +167,9 @@ export async function extractProfileDetails(
         providerName: error.details?.name ?? null,
         providerRequestId: error.details?.requestId ?? null,
       });
-
-      switch (error.code) {
-        case "NOT_CONFIGURED":
-          return {
-            formError: "AI profile extraction is not configured right now.",
-          };
-        case "MALFORMED_OUTPUT":
-          return {
-            formError: "The AI response could not be validated. Try again.",
-          };
-        case "TIMEOUT":
-          return {
-            formError: "The AI extraction took too long. Please try again.",
-          };
-        case "RATE_LIMITED":
-          return {
-            formError: "OpenAI is rate-limiting requests right now. Please try again in a few minutes.",
-          };
-        case "QUOTA_EXCEEDED":
-          return {
-            formError: "AI profile extraction is temporarily unavailable due to provider quota limits. Please try again later.",
-          };
-        case "UNAVAILABLE":
-        case "PROVIDER_FAILURE":
-        default:
-          return {
-            formError: "There was an issue extracting profile details. Please try again later.",
-          };
-      }
+      return {
+        formError: mapProfileExtractionErrorToMessage(error),
+      };
     }
 
     console.error("Profile extraction action failed with unexpected provider error", {
@@ -175,6 +179,93 @@ export async function extractProfileDetails(
 
     return {
       formError: "There was an issue extracting profile details. Please try again later.",
+    };
+  }
+}
+
+export async function importResumeText(
+  _previousStateIgnored: ImportResumeTextActionState,
+  formData: FormData,
+): Promise<ImportResumeTextActionState> {
+  void _previousStateIgnored;
+
+  try {
+    const { extractResumeTextFromUploadFile } = await import(
+      "@/features/profiles/resume-import"
+    );
+    await requireUser();
+    const resumeFile = formData.get("resumeFile");
+
+    if (!(resumeFile instanceof File)) {
+      return {
+        formError: "Select a resume file to import.",
+      };
+    }
+
+    const result = await extractResumeTextFromUploadFile(resumeFile);
+    if (!hasExtractableResumeText(result.extractedText)) {
+      return {
+        formError: `Add at least ${MIN_PROFILE_RESUME_EXTRACTION_CHARS} characters of readable resume content before extracting profile details.`,
+      };
+    }
+
+    const suggestions = await extractProfileSuggestionsFromResumeText(
+      result.extractedText,
+    );
+    if (!hasAnyProfileExtractionSuggestions(suggestions)) {
+      return {
+        formError: "No confident profile suggestions could be extracted from that resume file.",
+      };
+    }
+
+    return {
+      successMessage: `Resume imported from ${resumeFile.name}. Review the suggestions before applying them to your form.`,
+      suggestions,
+      extractedText: result.extractedText,
+      extractedTextLength: result.extractedText.length,
+      fileName: resumeFile.name,
+    };
+  } catch (error) {
+    const resumeImportErrorCode =
+      error &&
+      typeof error === "object" &&
+      "code" in error &&
+      typeof error.code === "string"
+        ? error.code
+        : null;
+
+    if (
+      error instanceof Error &&
+      resumeImportErrorCode &&
+      [
+        "EMPTY_FILE",
+        "FILE_TOO_LARGE",
+        "UNSUPPORTED_FILE_TYPE",
+        "EXTRACTION_FAILED",
+        "EMPTY_EXTRACTED_TEXT",
+        "TEXT_TOO_LONG",
+      ].includes(resumeImportErrorCode)
+    ) {
+      return {
+        formError: error.message,
+      };
+    }
+
+    if (error instanceof ProfileExtractionServiceError) {
+      console.error("Profile extraction during resume import failed", {
+        code: error.code,
+        status: error.details?.status ?? null,
+        providerCode: error.details?.code ?? null,
+        providerName: error.details?.name ?? null,
+        providerRequestId: error.details?.requestId ?? null,
+      });
+      return {
+        formError: mapProfileExtractionErrorToMessage(error),
+      };
+    }
+
+    return {
+      formError: "Resume import failed. Try another file or paste text manually.",
     };
   }
 }

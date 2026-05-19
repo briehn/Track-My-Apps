@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   buildJobsQueryString,
+  normalizeJobsLayoutParam,
   normalizeJobsSearchParams,
 } from "@/features/jobs/list-params";
 
@@ -105,5 +106,31 @@ describe("buildJobsQueryString", () => {
     });
 
     expect(query).toBe("?status=archived");
+  });
+
+  it("includes table layout when requested", () => {
+    const query = buildJobsQueryString(
+      {
+        view: "active",
+        q: "",
+        statuses: [],
+        remoteTypes: [],
+        employmentTypes: [],
+        sort: "newest",
+      },
+      undefined,
+      { layout: "table" },
+    );
+
+    expect(query).toBe("?layout=table");
+  });
+});
+
+describe("normalizeJobsLayoutParam", () => {
+  it("defaults to cards and accepts table", () => {
+    expect(normalizeJobsLayoutParam({})).toBe("cards");
+    expect(normalizeJobsLayoutParam({ layout: "table" })).toBe("table");
+    expect(normalizeJobsLayoutParam({ layout: "cards" })).toBe("cards");
+    expect(normalizeJobsLayoutParam({ layout: "invalid" })).toBe("cards");
   });
 });

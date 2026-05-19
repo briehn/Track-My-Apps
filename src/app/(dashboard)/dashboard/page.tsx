@@ -33,12 +33,9 @@ export default async function DashboardPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-            Workspace Overview
-          </p>
-          <h1 className="mt-1 text-2xl font-semibold text-slate-950">Dashboard</h1>
+          <h1 className="text-2xl font-semibold text-slate-950 dark:text-slate-100">Dashboard</h1>
           <p className="mt-1 text-sm text-slate-600">
-            A focused overview of your active job search.
+            Your job search at a glance.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -58,7 +55,7 @@ export default async function DashboardPage() {
         <Card>
           <CardHeader>
             <CardTitle>Recent Jobs</CardTitle>
-            <CardDescription>Newest active jobs saved to your tracker.</CardDescription>
+            <CardDescription>Latest active roles.</CardDescription>
           </CardHeader>
           {summary.recentJobs.length > 0 ? (
             <div className="space-y-3">
@@ -101,7 +98,7 @@ export default async function DashboardPage() {
         <Card>
           <CardHeader>
             <CardTitle>Upcoming Dates</CardTitle>
-            <CardDescription>Deadlines and follow-ups for active jobs.</CardDescription>
+            <CardDescription>Deadlines and follow-ups.</CardDescription>
           </CardHeader>
           {summary.upcomingJobs.length > 0 ? (
             <div className="space-y-3">

@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import { LinkButton } from "@/components/ui/link-button";
 import {
   Card,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -461,15 +460,6 @@ function DesktopFlowChart({
   return (
     <div className="hidden lg:block">
       <div className="rounded-[28px] bg-slate-50/55 px-1 pb-1 pt-2 dark:bg-slate-950/30">
-        <div className="mb-2 flex items-center justify-between gap-3 px-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
-            Pipeline snapshot
-          </p>
-          <div className="rounded-full border border-slate-200 bg-white/80 px-3 py-1.5 text-xs font-medium text-slate-600 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-300">
-            Current snapshot
-          </div>
-        </div>
-
         <div className="overflow-hidden rounded-[24px]">
           <svg
             viewBox={`0 0 ${chartWidth} ${chartHeight}`}
@@ -566,14 +556,6 @@ function MobilePipeline({
   return (
     <div className="space-y-3 lg:hidden">
       <div className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-3 dark:border-slate-700 dark:bg-slate-950/40">
-        <div className="mb-3 flex items-center justify-between gap-3">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
-              Pipeline snapshot
-            </p>
-          </div>
-        </div>
-
         <div className="space-y-2">
           {primaryStages.map((status, index) => (
             <div key={status} className="flex gap-3">
@@ -623,11 +605,6 @@ function CardsPipelineView({
 }: ApplicationPipelineProps) {
   return (
     <div className="rounded-2xl bg-slate-50/55 p-3 dark:bg-slate-950/30">
-      <div className="mb-3">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
-          Pipeline snapshot
-        </p>
-      </div>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <StatusGridCard
           label="Active jobs"
@@ -711,9 +688,6 @@ export function ApplicationPipeline({
               tooltip="This chart shows a snapshot of your current job statuses. It does not represent historical conversion between stages."
             />
           </div>
-          <CardDescription>
-            A visual breakdown of where your saved roles stand.
-          </CardDescription>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <ViewToggle view={view} onChange={setView} />

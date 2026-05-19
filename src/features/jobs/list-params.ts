@@ -8,6 +8,7 @@ import {
 
 export type JobListStatusView = "active" | "archived";
 export type JobListSort = "newest" | "deadlineSoonest" | "followUpSoonest";
+export type JobListLayout = "cards" | "table";
 
 export type JobListFilters = {
   employmentTypes: EmploymentType[];
@@ -156,6 +157,7 @@ export function normalizeJobsSearchParams(
 export function buildJobsQueryString(
   filters: JobListFilters,
   overrides?: Partial<JobListFilters>,
+  options?: { layout?: JobListLayout },
 ): string {
   const mergedFilters: JobListFilters = {
     ...filters,
@@ -190,8 +192,19 @@ export function buildJobsQueryString(
     params.set("sort", mergedFilters.sort);
   }
 
+  if (options?.layout === "table") {
+    params.set("layout", "table");
+  }
+
   const query = params.toString();
   return query.length > 0 ? `?${query}` : "";
+}
+
+export function normalizeJobsLayoutParam(
+  searchParams: JobsSearchParamsInput,
+): JobListLayout {
+  const rawValue = getSingleParamValue(searchParams.layout);
+  return rawValue === "table" ? "table" : "cards";
 }
 
 export const jobListStatusOptions = APPLICATION_STATUSES;
