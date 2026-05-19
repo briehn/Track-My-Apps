@@ -4,13 +4,10 @@ import { prisma } from "@/server/db/prisma";
 
 type JobListStatusFilter = "active" | "archived";
 
-export async function getJobsForCurrentUser(
-  statusFilter: JobListStatusFilter = "active",
+function getJobStatusWhere(
+  statusFilter: JobListStatusFilter,
   filters?: Omit<JobListFilters, "view">,
 ) {
-  const user = await requireUser();
-  const normalizedSearchText = filters?.q?.trim() ?? "";
-
   const statusWhereCondition =
     statusFilter === "archived"
       ? "ARCHIVED"
@@ -32,23 +29,38 @@ export async function getJobsForCurrentUser(
         }
       : null;
 
-  const orderBy =
-    filters?.sort === "deadlineSoonest"
-      ? [
-          { deadline: { sort: "asc" as const, nulls: "last" as const } },
-          { createdAt: "desc" as const },
-        ]
-      : filters?.sort === "followUpSoonest"
-        ? [
-            { followUpAt: { sort: "asc" as const, nulls: "last" as const } },
-            { createdAt: "desc" as const },
-          ]
-        : [{ createdAt: "desc" as const }];
+  return effectiveStatusFilter ?? statusWhereCondition;
+}
+
+function getJobListOrderBy(sort?: Omit<JobListFilters, "view">["sort"]) {
+  if (sort === "deadlineSoonest") {
+    return [
+      { deadline: { sort: "asc" as const, nulls: "last" as const } },
+      { createdAt: "desc" as const },
+    ];
+  }
+
+  if (sort === "followUpSoonest") {
+    return [
+      { followUpAt: { sort: "asc" as const, nulls: "last" as const } },
+      { createdAt: "desc" as const },
+    ];
+  }
+
+  return [{ createdAt: "desc" as const }];
+}
+
+export async function getJobsForCurrentUser(
+  statusFilter: JobListStatusFilter = "active",
+  filters?: Omit<JobListFilters, "view">,
+) {
+  const user = await requireUser();
+  const normalizedSearchText = filters?.q?.trim() ?? "";
 
   return prisma.job.findMany({
     where: {
       userId: user.id,
-      status: effectiveStatusFilter ?? statusWhereCondition,
+      status: getJobStatusWhere(statusFilter, filters),
       ...(filters?.remoteTypes && filters.remoteTypes.length > 0
         ? {
             remoteType: {
@@ -82,7 +94,7 @@ export async function getJobsForCurrentUser(
           }
         : {}),
     },
-    orderBy,
+    orderBy: getJobListOrderBy(filters?.sort),
     select: {
       id: true,
       company: true,
@@ -94,6 +106,81 @@ export async function getJobsForCurrentUser(
       deadline: true,
       followUpAt: true,
       createdAt: true,
+    },
+  });
+}
+
+export async function getJobsExportForCurrentUser(
+  statusFilter: JobListStatusFilter = "active",
+  filters?: Omit<JobListFilters, "view">,
+) {
+  const user = await requireUser();
+  const normalizedSearchText = filters?.q?.trim() ?? "";
+
+  return prisma.job.findMany({
+    where: {
+      userId: user.id,
+      status: getJobStatusWhere(statusFilter, filters),
+      ...(filters?.remoteTypes && filters.remoteTypes.length > 0
+        ? {
+            remoteType: {
+              in: filters.remoteTypes,
+            },
+          }
+        : {}),
+      ...(filters?.employmentTypes && filters.employmentTypes.length > 0
+        ? {
+            employmentType: {
+              in: filters.employmentTypes,
+            },
+          }
+        : {}),
+      ...(normalizedSearchText
+        ? {
+            OR: [
+              {
+                company: {
+                  contains: normalizedSearchText,
+                  mode: "insensitive" as const,
+                },
+              },
+              {
+                title: {
+                  contains: normalizedSearchText,
+                  mode: "insensitive" as const,
+                },
+              },
+            ],
+          }
+        : {}),
+    },
+    orderBy: getJobListOrderBy(filters?.sort),
+    select: {
+      company: true,
+      title: true,
+      status: true,
+      location: true,
+      remoteType: true,
+      employmentType: true,
+      url: true,
+      source: true,
+      salaryMin: true,
+      salaryMax: true,
+      salaryCurrency: true,
+      deadline: true,
+      followUpAt: true,
+      createdAt: true,
+      updatedAt: true,
+      analysis: {
+        select: {
+          id: true,
+        },
+      },
+      _count: {
+        select: {
+          notes: true,
+        },
+      },
     },
   });
 }

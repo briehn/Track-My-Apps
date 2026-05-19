@@ -16,7 +16,7 @@ Job searching spreads context across job posts, notes, status updates, and resum
 - Focused auth-route rate limiting for sign-in and `/api/auth/*`, with a production-safe Redis-backed path on Vercel
 - Job tracking with statuses, notes, archive/delete, dashboard summaries, and an application pipeline visualization
 - Polished light/dark mode with a persistent user toggle across the app shell and dashboard/job/profile/import workflows
-- CSV export for saved jobs with user-scoped data access
+- CSV and formatted XLSX export for saved jobs with user-scoped data access
 - CSV import for saved jobs with upload, column mapping, validation preview, duplicate warnings, and explicit confirm import
 - Private profile and resume foundation for a single user-owned canonical profile
 - AI job description analysis with structured saved output
@@ -186,7 +186,7 @@ Completed:
 - Google OAuth authentication with Prisma-backed sessions
 - Protected dashboard and jobs workspace
 - Job tracking workflow with status changes, notes, archive/delete, and summaries
-- CSV export for authenticated users across current job-list views
+- CSV and formatted XLSX export for authenticated users across current job-list views
 - CSV import for authenticated users with preview, column mapping, validation, and duplicate warnings
 - Private profile foundation with AI-assisted extraction suggestions
 - Manual AI job analysis saved to `JobAnalysis`

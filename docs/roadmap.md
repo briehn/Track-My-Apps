@@ -171,12 +171,11 @@ Track My Apps now has a complete, deployed MVP with several post-MVP slices alre
 ## Phase 22: Import / Export
 
 - CSV export for saved jobs is implemented.
+- Formatted XLSX export for saved jobs is implemented.
 - CSV import for saved jobs with preview, mapping, validation, and explicit confirm is implemented.
 - Future work remains:
-- Add formatted XLSX export for saved jobs with preserved readability features.
 - Keep CSV export for compatibility with existing workflows.
 - Make exports authenticated and user-scoped, without including profile/resume data or transient AI match reports.
-- Include spreadsheet-friendly formatting such as bold headers, frozen header rows, filters, readable column widths, wrapped text, and formatted dates.
 - Extend import support to XLSX job trackers.
 - Add column mapping for spreadsheet imports.
 - Validate imported rows before saving.

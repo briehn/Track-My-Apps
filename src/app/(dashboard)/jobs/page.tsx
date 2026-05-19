@@ -47,6 +47,10 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
   );
   const hasExportableJobs = jobs.length > 0;
   const exportUnavailableMessage = "Add at least one job to export";
+  const csvExportHref = isArchivedView
+    ? "/jobs/export?status=archived"
+    : "/jobs/export?status=active";
+  const xlsxExportHref = `/jobs/export/xlsx${buildJobsQueryString(normalizedParams)}`;
   const clearFiltersHref = `/jobs${buildJobsQueryString(normalizedParams, {
     q: "",
     statuses: [],
@@ -101,25 +105,33 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
             Import jobs
           </LinkButton>
           {hasExportableJobs ? (
-            <LinkButton
-              href={
-                isArchivedView
-                  ? "/jobs/export?status=archived"
-                  : "/jobs/export?status=active"
-              }
-              variant="secondary"
-            >
-              Export CSV
-            </LinkButton>
+            <>
+              <LinkButton href={csvExportHref} variant="secondary">
+                Export CSV
+              </LinkButton>
+              <LinkButton href={xlsxExportHref} variant="secondary">
+                Export XLSX
+              </LinkButton>
+            </>
           ) : (
-            <Button
-              variant="secondary"
-              disabled
-              title={exportUnavailableMessage}
-              aria-label={`Export CSV unavailable. ${exportUnavailableMessage}.`}
-            >
-              Export CSV
-            </Button>
+            <>
+              <Button
+                variant="secondary"
+                disabled
+                title={exportUnavailableMessage}
+                aria-label={`Export CSV unavailable. ${exportUnavailableMessage}.`}
+              >
+                Export CSV
+              </Button>
+              <Button
+                variant="secondary"
+                disabled
+                title={exportUnavailableMessage}
+                aria-label={`Export XLSX unavailable. ${exportUnavailableMessage}.`}
+              >
+                Export XLSX
+              </Button>
+            </>
           )}
           <LinkButton href="/jobs/new">
             Add job

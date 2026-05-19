@@ -6,6 +6,25 @@ It should document what changed, why it mattered, and what the next step is. It 
 
 ---
 
+## 2026-05-19
+
+### Changes
+- Added formatted XLSX export for saved jobs with a new authenticated route at `/jobs/export/xlsx`.
+- Kept export user-scoped by reusing existing server-side ownership enforcement and job query boundaries, without changing Prisma schema or auth logic.
+- Updated export query behavior to follow current `/jobs` URL-applied filters and sorting (`status/view`, `q`, `statuses`, `remoteTypes`, `employmentTypes`, `sort`) for XLSX export.
+- Added spreadsheet formatting for readability: bold header row, frozen header row, autofilter, tuned column widths, wrapped long text columns, and explicit date column formatting.
+- Added spreadsheet formula-injection protection for user-controlled text cells by escaping values that start with `=`, `+`, `-`, or `@`.
+- Added an `Export XLSX` control beside `Export CSV` on `/jobs` and matched the existing disabled/empty-state behavior when no rows are exportable.
+- Added focused tests for XLSX row mapping and formula-sanitization behavior.
+- Updated `docs/roadmap.md` Phase 22 to mark formatted XLSX export as implemented.
+
+### Notes
+- CSV export behavior remains unchanged.
+- XLSX export does not include profile/resume data or transient AI match/interview prep reports.
+
+### Next Step
+- Add XLSX import support with mapping/preview parity once the current CSV import workflow is stable enough to extend.
+
 ## 2026-05-18
 
 ### Changes
