@@ -1,5 +1,9 @@
 import { requireUser } from "@/features/auth/require-user";
 import {
+  buildTodayFocusSummary,
+  type TodayFocusSummary,
+} from "@/features/jobs/dashboard-focus";
+import {
   isApplicationStatus,
   type ApplicationStatus,
 } from "@/features/jobs/status";
@@ -42,7 +46,14 @@ export type DashboardSummary = {
   statusCounts: Record<ApplicationStatus, number>;
   recentJobs: RecentDashboardJob[];
   upcomingJobs: UpcomingDashboardJob[];
+  todayFocus: TodayFocusSummary;
 };
+
+function getStartOfDay(date: Date) {
+  const start = new Date(date);
+  start.setHours(0, 0, 0, 0);
+  return start;
+}
 
 function toStatusGroups(
   groups: Array<{
@@ -68,8 +79,8 @@ function toStatusGroups(
 
 export async function getDashboardSummaryForCurrentUser(): Promise<DashboardSummary> {
   const user = await requireUser();
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const now = new Date();
+  const today = getStartOfDay(now);
 
   const rawStatusGroups = await prisma.job.groupBy({
     by: ["status"],
@@ -83,7 +94,7 @@ export async function getDashboardSummaryForCurrentUser(): Promise<DashboardSumm
 
   const statusGroups = toStatusGroups(rawStatusGroups);
 
-  const [recentJobs, upcomingJobs] = await Promise.all([
+  const [recentJobs, upcomingJobs, activeJobsForFocus] = await Promise.all([
     prisma.job.findMany({
       where: {
         userId: user.id,
@@ -132,6 +143,28 @@ export async function getDashboardSummaryForCurrentUser(): Promise<DashboardSumm
         followUpAt: true,
       },
     }),
+    prisma.job.findMany({
+      where: {
+        userId: user.id,
+        status: {
+          not: "ARCHIVED",
+        },
+      },
+      select: {
+        id: true,
+        company: true,
+        title: true,
+        status: true,
+        createdAt: true,
+        deadline: true,
+        followUpAt: true,
+        analysis: {
+          select: {
+            id: true,
+          },
+        },
+      },
+    }),
   ]);
 
   const statusCounts: Record<ApplicationStatus, number> = {
@@ -149,10 +182,25 @@ export async function getDashboardSummaryForCurrentUser(): Promise<DashboardSumm
     statusCounts.OFFER +
     statusCounts.REJECTED;
 
+  const todayFocus = buildTodayFocusSummary(
+    activeJobsForFocus.map((job) => ({
+      id: job.id,
+      company: job.company,
+      title: job.title,
+      status: job.status,
+      createdAt: job.createdAt,
+      deadline: job.deadline,
+      followUpAt: job.followUpAt,
+      hasAnalysis: job.analysis !== null,
+    })),
+    now,
+  );
+
   return {
     activeTotal,
     statusCounts,
     recentJobs,
     upcomingJobs,
+    todayFocus,
   };
 }

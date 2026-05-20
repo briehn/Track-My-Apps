@@ -15,7 +15,7 @@ Job searching spreads context across job posts, notes, status updates, and resum
 - Google OAuth sign-in and a protected authenticated workspace
 - Focused auth-route rate limiting for sign-in and `/api/auth/*`, with a production-safe Redis-backed path on Vercel
 - Job tracking with statuses, notes, archive/delete, dashboard summaries, and an application pipeline visualization
-- Job tracking with statuses, notes, archive/delete, dashboard summaries, application pipeline visualization, and Cards/Table jobs list views
+- Job tracking with statuses, notes, archive/delete, dashboard summaries, a `Today's Focus` action section, application pipeline visualization, and Cards/Table jobs list views
 - Polished light/dark mode with a persistent user toggle across the app shell and dashboard/job/profile/import workflows
 - CSV and formatted XLSX export for saved jobs with user-scoped data access
 - CSV import for saved jobs with upload, column mapping, validation preview, duplicate warnings, and explicit confirm import
@@ -162,7 +162,7 @@ Auth-related routes are also rate limited by IP. In production, that protection 
 
 ![Dashboard summary](public/screenshots/dashboard.png)
 
-High-level view of active jobs, status counts, recent jobs, and upcoming dates in the authenticated workspace.
+High-level view of active jobs, today-focus actions, status counts, recent jobs, and upcoming dates in the authenticated workspace.
 
 ### CSV Import Preview
 

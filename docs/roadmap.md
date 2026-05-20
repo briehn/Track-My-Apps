@@ -57,6 +57,7 @@ Track My Apps now has a complete, deployed MVP with several post-MVP slices alre
 - Completed.
 - Built `/dashboard`.
 - Added status counts, recent jobs, and upcoming dates.
+- Added a compact `Today's Focus` guidance section with follow-ups due, near-term deadlines, missing analysis prompts, and interview-prep opportunities.
 
 ### Phase 8: Job Detail
 
@@ -209,7 +210,7 @@ Track My Apps now has a complete, deployed MVP with several post-MVP slices alre
 
 ### Phase 25: Job Search Guidance Layer
 
-- Today action queue.
+- Implemented first slice: dashboard `Today's Focus` action queue.
 - Follow-up command center.
 - Overdue follow-up detection.
 - Application priority signals.

@@ -28,6 +28,7 @@ function formatDate(date: Date) {
 
 export default async function DashboardPage() {
   const summary: DashboardSummary = await getDashboardSummaryForCurrentUser();
+  const todayFocus = summary.todayFocus;
 
   return (
     <div className="space-y-6">
@@ -45,6 +46,109 @@ export default async function DashboardPage() {
           <LinkButton href="/jobs/new">Add job</LinkButton>
         </div>
       </div>
+
+      <section className="space-y-3">
+        <div>
+          <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-100">Today&apos;s Focus</h2>
+          <p className="text-sm text-slate-600 dark:text-slate-300">
+            Priority actions to keep your search moving today.
+          </p>
+        </div>
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Follow-ups Due</CardTitle>
+              <CardDescription>{todayFocus.followUpsDue.count} job(s) need attention.</CardDescription>
+            </CardHeader>
+            <div className="space-y-2 px-6 pb-6">
+              {todayFocus.followUpsDue.jobs.length > 0 ? (
+                <>
+                  <p className="text-xs text-slate-600 dark:text-slate-300">Follow up on overdue or due-today check-ins.</p>
+                  {todayFocus.followUpsDue.jobs.map((job) => (
+                    <Link key={job.id} href={`/jobs/${job.id}`} className="block rounded-md border border-slate-200 p-2 text-sm transition hover:border-slate-300 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 dark:border-slate-700 dark:hover:bg-slate-800/60">
+                      <p className="font-medium text-slate-900 dark:text-slate-100">{job.title}</p>
+                      <p className="text-xs text-slate-600 dark:text-slate-300">{job.company}</p>
+                    </Link>
+                  ))}
+                </>
+              ) : (
+                <p className="text-sm text-slate-600 dark:text-slate-300">No follow-ups due.</p>
+              )}
+            </div>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Upcoming Deadlines</CardTitle>
+              <CardDescription>{todayFocus.upcomingDeadlines.count} deadline(s) in 7 days.</CardDescription>
+            </CardHeader>
+            <div className="space-y-2 px-6 pb-6">
+              {todayFocus.upcomingDeadlines.jobs.length > 0 ? (
+                <>
+                  <p className="text-xs text-slate-600 dark:text-slate-300">Handle the closest deadlines first.</p>
+                  {todayFocus.upcomingDeadlines.jobs.map((job) => (
+                    <Link key={job.id} href={`/jobs/${job.id}`} className="block rounded-md border border-slate-200 p-2 text-sm transition hover:border-slate-300 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 dark:border-slate-700 dark:hover:bg-slate-800/60">
+                      <p className="font-medium text-slate-900 dark:text-slate-100">{job.title}</p>
+                      <p className="text-xs text-slate-600 dark:text-slate-300">
+                        {job.company}
+                        {job.deadline ? ` - Due ${formatDate(job.deadline)}` : ""}
+                      </p>
+                    </Link>
+                  ))}
+                </>
+              ) : (
+                <p className="text-sm text-slate-600 dark:text-slate-300">No upcoming deadlines.</p>
+              )}
+            </div>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Missing AI Analysis</CardTitle>
+              <CardDescription>{todayFocus.missingAnalysis.count} active job(s) without analysis.</CardDescription>
+            </CardHeader>
+            <div className="space-y-2 px-6 pb-6">
+              {todayFocus.missingAnalysis.jobs.length > 0 ? (
+                <>
+                  <p className="text-xs text-slate-600 dark:text-slate-300">Open a job to run AI analysis before tailoring.</p>
+                  {todayFocus.missingAnalysis.jobs.map((job) => (
+                    <Link key={job.id} href={`/jobs/${job.id}`} className="block rounded-md border border-slate-200 p-2 text-sm transition hover:border-slate-300 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 dark:border-slate-700 dark:hover:bg-slate-800/60">
+                      <p className="font-medium text-slate-900 dark:text-slate-100">{job.title}</p>
+                      <p className="text-xs text-slate-600 dark:text-slate-300">{job.company}</p>
+                    </Link>
+                  ))}
+                </>
+              ) : (
+                <p className="text-sm text-slate-600 dark:text-slate-300">All active jobs have analysis.</p>
+              )}
+            </div>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Interview Prep Opportunities</CardTitle>
+              <CardDescription>{todayFocus.interviewPrepOpportunities.count} role(s) ready for prep.</CardDescription>
+            </CardHeader>
+            <div className="space-y-2 px-6 pb-6">
+              {todayFocus.interviewPrepOpportunities.jobs.length > 0 ? (
+                <>
+                  <p className="text-xs text-slate-600 dark:text-slate-300">Open these roles and use Interview Prep.</p>
+                  {todayFocus.interviewPrepOpportunities.jobs.map((job) => (
+                    <Link key={job.id} href={`/jobs/${job.id}`} className="block rounded-md border border-slate-200 p-2 text-sm transition hover:border-slate-300 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 dark:border-slate-700 dark:hover:bg-slate-800/60">
+                      <p className="font-medium text-slate-900 dark:text-slate-100">{job.title}</p>
+                      <p className="text-xs text-slate-600 dark:text-slate-300">
+                        {job.company} - {statusLabels[job.status]}
+                      </p>
+                    </Link>
+                  ))}
+                </>
+              ) : (
+                <p className="text-sm text-slate-600 dark:text-slate-300">No interview-prep opportunities yet.</p>
+              )}
+            </div>
+          </Card>
+        </div>
+      </section>
 
       <ApplicationPipeline
         activeTotal={summary.activeTotal}

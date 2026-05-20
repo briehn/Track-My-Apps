@@ -9,6 +9,30 @@ It should document what changed, why it mattered, and what the next step is. It 
 ## 2026-05-20
 
 ### Changes
+- Added a new `Today's Focus` section near the top of `/dashboard` to surface actionable daily priorities before the Application Pipeline.
+- Extended dashboard query boundaries (without schema changes) to derive four user-scoped focus buckets from existing active job data: follow-ups due (today/overdue), deadlines within 7 days, active jobs missing AI analysis, and interview-prep opportunities (`INTERVIEWING`/`OFFER`).
+- Added urgency-based sorting and compact display limits (top 3 jobs per focus card) so the dashboard stays actionable without becoming noisy.
+- Added positive empty states for each focus card (`No follow-ups due`, `No upcoming deadlines`, `All active jobs have analysis`, etc.) to provide clear guidance even when nothing is urgent.
+- Added focused unit tests for today-focus selection and sorting rules to keep the guidance logic defensible and maintainable.
+
+### Notes
+- This feature reuses existing authenticated, user-owned job and job-analysis data only. No Prisma schema or auth boundary changes were introduced.
+
+### Next Step
+- Consider adding quick links from each focus card to pre-filtered jobs list views once guidance usage patterns are validated.
+
+### Changes
+- Replaced the app-shell header brand mark text (`TM`) with the real app icon asset from `/public/screenshots/icon.png`.
+- Kept the existing rounded square logo container and theme-aware background so the icon remains readable across light/dark surfaces and with transparent image regions.
+- Preserved all navigation behavior (desktop collapsed/expanded sidebar logic, mobile menu behavior, routing/auth boundaries) while applying a branding-only visual update.
+
+### Notes
+- This was a UI/branding polish update only; no page/business logic or data flow changed.
+
+### Next Step
+- Quick visual pass on desktop/mobile in both themes to confirm icon contrast and crop quality in the 32x32 brand slot.
+
+### Changes
 - Polished desktop sidebar collapsed navigation by replacing abbreviation placeholders (`Db`, `Jb`, `Ac`, `Ar`, `Pr`) with real icons from `lucide-react`.
 - Added consistent iconography for expanded and collapsed desktop sidebar navigation: Dashboard, Jobs, Active, Archived, and Profile now use stable 20px icons.
 - Replaced sidebar collapse/expand text chevrons with explicit panel-state icons (`PanelLeftClose` / `PanelLeftOpen`) while preserving existing collapse-state persistence and sidebar width behavior.

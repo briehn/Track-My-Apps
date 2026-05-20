@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import {
   Archive,
   BriefcaseBusiness,
@@ -25,17 +26,47 @@ type AppShellProps = Readonly<{
   };
 }>;
 
+const SIDEBAR_COLLAPSED_KEY = "sidebar-collapsed";
+const SIDEBAR_COLLAPSED_EVENT = "sidebar-collapsed-change";
+
+function getSidebarCollapsedSnapshot() {
+  if (typeof window === "undefined") {
+    return false;
+  }
+
+  return window.localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === "true";
+}
+
+function subscribeSidebarCollapsed(onStoreChange: () => void) {
+  if (typeof window === "undefined") {
+    return () => undefined;
+  }
+
+  const handleStorage = (event: StorageEvent) => {
+    if (event.key === SIDEBAR_COLLAPSED_KEY || event.key === null) {
+      onStoreChange();
+    }
+  };
+  const handleLocalChange = () => onStoreChange();
+
+  window.addEventListener("storage", handleStorage);
+  window.addEventListener(SIDEBAR_COLLAPSED_EVENT, handleLocalChange);
+
+  return () => {
+    window.removeEventListener("storage", handleStorage);
+    window.removeEventListener(SIDEBAR_COLLAPSED_EVENT, handleLocalChange);
+  };
+}
+
 export function AppShell({ children, initialThemePreference, user }: AppShellProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
-    if (typeof window === "undefined") {
-      return false;
-    }
-
-    return window.localStorage.getItem("sidebar-collapsed") === "true";
-  });
+  const isSidebarCollapsed = useSyncExternalStore(
+    subscribeSidebarCollapsed,
+    getSidebarCollapsedSnapshot,
+    () => false,
+  );
   const displayName = user.name ?? user.email ?? "Signed-in user";
   const statusQuery = searchParams.get("status");
   const isJobsRoute = pathname === "/jobs" || pathname.startsWith("/jobs/");
@@ -48,11 +79,9 @@ export function AppShell({ children, initialThemePreference, user }: AppShellPro
     : "md:grid-cols-[16rem_1fr]";
 
   function handleSidebarToggle() {
-    setIsSidebarCollapsed((previous) => {
-      const nextValue = !previous;
-      window.localStorage.setItem("sidebar-collapsed", String(nextValue));
-      return nextValue;
-    });
+    const nextValue = !isSidebarCollapsed;
+    window.localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(nextValue));
+    window.dispatchEvent(new Event(SIDEBAR_COLLAPSED_EVENT));
   }
 
   return (
@@ -64,8 +93,15 @@ export function AppShell({ children, initialThemePreference, user }: AppShellPro
             className="flex items-center gap-3 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 dark:focus:ring-slate-500"
             aria-label="Go to dashboard"
           >
-            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 text-xs font-semibold text-white dark:bg-slate-100 dark:text-slate-950">
-              TM
+            <span className="inline-flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg bg-slate-900 dark:bg-slate-100">
+              <Image
+                src="/screenshots/icon.png"
+                alt="Track My Apps logo"
+                width={32}
+                height={32}
+                className="h-full w-full object-cover"
+                priority
+              />
             </span>
             <div>
               <p className="text-sm font-semibold tracking-tight text-slate-950 dark:text-slate-100">
