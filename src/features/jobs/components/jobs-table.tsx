@@ -34,7 +34,7 @@ function formatDate(value: Date | null) {
 
 export function JobsTable({ jobs }: JobsTableProps) {
   return (
-    <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
+    <div className="max-w-full overflow-x-auto rounded-lg border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
       <table className="min-w-[920px] w-full border-collapse">
         <thead>
           <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-400">
@@ -94,4 +94,3 @@ export function JobsTable({ jobs }: JobsTableProps) {
     </div>
   );
 }
-

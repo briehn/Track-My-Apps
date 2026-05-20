@@ -83,7 +83,7 @@ export function JobsControlsToolbar({
 
         <div className="flex flex-wrap items-center gap-2">
           <div
-            className="inline-flex w-fit rounded-lg border border-slate-200 bg-white p-1 dark:border-slate-700 dark:bg-slate-900"
+            className="hidden w-fit rounded-lg border border-slate-200 bg-white p-1 dark:border-slate-700 dark:bg-slate-900 md:inline-flex"
             aria-label="Jobs layout toggle"
           >
             <Link
@@ -111,6 +111,12 @@ export function JobsControlsToolbar({
               Table
             </Link>
           </div>
+
+          {isTableLayout ? (
+            <p className="text-xs text-slate-600 dark:text-slate-300 md:hidden" role="status">
+              Table view is shown on larger screens. Cards are shown on mobile.
+            </p>
+          ) : null}
 
           <Button
             type="button"

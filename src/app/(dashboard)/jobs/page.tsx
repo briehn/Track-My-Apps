@@ -81,7 +81,7 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
       : "Start by manually saving a role. Archived jobs are kept separate from this active list.";
 
   return (
-    <div className="space-y-6">
+    <div className="min-w-0 space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-slate-950 dark:text-slate-100">Jobs</h1>
@@ -152,7 +152,18 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
       />
 
       {jobs.length > 0 ? (
-        isTableLayout ? <JobsTable jobs={jobs} /> : <JobList jobs={jobs} />
+        isTableLayout ? (
+          <>
+            <div className="md:hidden">
+              <JobList jobs={jobs} />
+            </div>
+            <div className="hidden md:block">
+              <JobsTable jobs={jobs} />
+            </div>
+          </>
+        ) : (
+          <JobList jobs={jobs} />
+        )
       ) : (
         <EmptyState
           title={emptyTitle}

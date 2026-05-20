@@ -6,6 +6,21 @@ It should document what changed, why it mattered, and what the next step is. It 
 
 ---
 
+## 2026-05-20
+
+### Changes
+- Fixed `/jobs` mobile responsive overflow regression by making table layout render as cards on small screens while preserving URL state (`layout=table`) and full table rendering on `md+`.
+- Hid the Cards/Table layout toggle on small screens and added a mobile-only status message when table layout is selected to clarify that cards are intentionally shown on mobile.
+- Hardened overflow containment for jobs table rendering by ensuring the table container stays within available width (`max-w-full` + `overflow-x-auto`) and cannot force page-level horizontal overflow.
+- Added shell-level main-content constraints (`min-w-0` and `overflow-x-hidden`) to prevent wide children from creating viewport-wide horizontal scroll/blank space.
+- Kept existing query behavior, auth/ownership boundaries, active/archived behavior, import/export behavior, and jobs filter/sort URL semantics unchanged.
+
+### Notes
+- This was a targeted responsive/UI containment fix only. No Prisma query logic, schema, AI, or data/export logic changed.
+
+### Next Step
+- Run a manual mobile Safari pass on `/jobs` in both `layout=cards` and `layout=table` URLs to confirm no right-side blank area and stable action/filter controls.
+
 ## 2026-05-19
 
 ### Changes
