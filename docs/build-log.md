@@ -9,6 +9,20 @@ It should document what changed, why it mattered, and what the next step is. It 
 ## 2026-05-20
 
 ### Changes
+- Polished desktop sidebar collapsed navigation by replacing abbreviation placeholders (`Db`, `Jb`, `Ac`, `Ar`, `Pr`) with real icons from `lucide-react`.
+- Added consistent iconography for expanded and collapsed desktop sidebar navigation: Dashboard, Jobs, Active, Archived, and Profile now use stable 20px icons.
+- Replaced sidebar collapse/expand text chevrons with explicit panel-state icons (`PanelLeftClose` / `PanelLeftOpen`) while preserving existing collapse-state persistence and sidebar width behavior.
+- Kept collapsed mode accessible by preserving `aria-label`/`title` on icon-only links and rendering text labels as screen-reader-only content when collapsed.
+- Left mobile navigation behavior and routing semantics unchanged.
+- Added `lucide-react` as the single icon library dependency to avoid mixed icon systems.
+
+### Notes
+- This was a UI polish pass only. No auth, routing, Prisma, query/filter/export, or page-level business logic was changed.
+
+### Next Step
+- Run a quick visual check in both light/dark mode for expanded and collapsed desktop sidebar states to confirm icon alignment and active-state clarity.
+
+### Changes
 - Fixed `/jobs` mobile responsive overflow regression by making table layout render as cards on small screens while preserving URL state (`layout=table`) and full table rendering on `md+`.
 - Hid the Cards/Table layout toggle on small screens and added a mobile-only status message when table layout is selected to clarify that cards are intentionally shown on mobile.
 - Hardened overflow containment for jobs table rendering by ensuring the table container stays within available width (`max-w-full` + `overflow-x-auto`) and cannot force page-level horizontal overflow.
