@@ -31,23 +31,10 @@ export default async function DashboardPage() {
   const todayFocus = summary.todayFocus;
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-950 dark:text-slate-100">Dashboard</h1>
-          <p className="mt-1 text-sm text-slate-600">
-            Your job search at a glance.
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <LinkButton href="/jobs" variant="secondary">
-            View jobs
-          </LinkButton>
-          <LinkButton href="/jobs/new">Add job</LinkButton>
-        </div>
-      </div>
+    <div className="space-y-5">
+      <h1 className="sr-only">Dashboard</h1>
 
-      <section className="space-y-3">
+      <section className="space-y-2.5">
         <div>
           <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-100">Today&apos;s Focus</h2>
           <p className="text-sm text-slate-600 dark:text-slate-300">
@@ -56,15 +43,15 @@ export default async function DashboardPage() {
         </div>
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <Card>
-            <CardHeader>
+            <CardHeader className="pb-4">
               <CardTitle className="text-base">Follow-ups Due</CardTitle>
               <CardDescription>{todayFocus.followUpsDue.count} job(s) need attention.</CardDescription>
             </CardHeader>
-            <div className="space-y-2 px-6 pb-6">
+            <div className="space-y-2 px-6 pb-5">
               {todayFocus.followUpsDue.jobs.length > 0 ? (
                 <>
                   <p className="text-xs text-slate-600 dark:text-slate-300">Follow up on overdue or due-today check-ins.</p>
-                  {todayFocus.followUpsDue.jobs.map((job) => (
+                  {todayFocus.followUpsDue.jobs.slice(0, 2).map((job) => (
                     <Link key={job.id} href={`/jobs/${job.id}`} className="block rounded-md border border-slate-200 p-2 text-sm transition hover:border-slate-300 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 dark:border-slate-700 dark:hover:bg-slate-800/60">
                       <p className="font-medium text-slate-900 dark:text-slate-100">{job.title}</p>
                       <p className="text-xs text-slate-600 dark:text-slate-300">{job.company}</p>
@@ -78,15 +65,15 @@ export default async function DashboardPage() {
           </Card>
 
           <Card>
-            <CardHeader>
+            <CardHeader className="pb-4">
               <CardTitle className="text-base">Upcoming Deadlines</CardTitle>
               <CardDescription>{todayFocus.upcomingDeadlines.count} deadline(s) in 7 days.</CardDescription>
             </CardHeader>
-            <div className="space-y-2 px-6 pb-6">
+            <div className="space-y-2 px-6 pb-5">
               {todayFocus.upcomingDeadlines.jobs.length > 0 ? (
                 <>
                   <p className="text-xs text-slate-600 dark:text-slate-300">Handle the closest deadlines first.</p>
-                  {todayFocus.upcomingDeadlines.jobs.map((job) => (
+                  {todayFocus.upcomingDeadlines.jobs.slice(0, 2).map((job) => (
                     <Link key={job.id} href={`/jobs/${job.id}`} className="block rounded-md border border-slate-200 p-2 text-sm transition hover:border-slate-300 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 dark:border-slate-700 dark:hover:bg-slate-800/60">
                       <p className="font-medium text-slate-900 dark:text-slate-100">{job.title}</p>
                       <p className="text-xs text-slate-600 dark:text-slate-300">
@@ -103,15 +90,15 @@ export default async function DashboardPage() {
           </Card>
 
           <Card>
-            <CardHeader>
+            <CardHeader className="pb-4">
               <CardTitle className="text-base">Missing AI Analysis</CardTitle>
               <CardDescription>{todayFocus.missingAnalysis.count} active job(s) without analysis.</CardDescription>
             </CardHeader>
-            <div className="space-y-2 px-6 pb-6">
+            <div className="space-y-2 px-6 pb-5">
               {todayFocus.missingAnalysis.jobs.length > 0 ? (
                 <>
                   <p className="text-xs text-slate-600 dark:text-slate-300">Open a job to run AI analysis before tailoring.</p>
-                  {todayFocus.missingAnalysis.jobs.map((job) => (
+                  {todayFocus.missingAnalysis.jobs.slice(0, 2).map((job) => (
                     <Link key={job.id} href={`/jobs/${job.id}`} className="block rounded-md border border-slate-200 p-2 text-sm transition hover:border-slate-300 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 dark:border-slate-700 dark:hover:bg-slate-800/60">
                       <p className="font-medium text-slate-900 dark:text-slate-100">{job.title}</p>
                       <p className="text-xs text-slate-600 dark:text-slate-300">{job.company}</p>
@@ -125,15 +112,15 @@ export default async function DashboardPage() {
           </Card>
 
           <Card>
-            <CardHeader>
+            <CardHeader className="pb-4">
               <CardTitle className="text-base">Interview Prep Opportunities</CardTitle>
               <CardDescription>{todayFocus.interviewPrepOpportunities.count} role(s) ready for prep.</CardDescription>
             </CardHeader>
-            <div className="space-y-2 px-6 pb-6">
+            <div className="space-y-2 px-6 pb-5">
               {todayFocus.interviewPrepOpportunities.jobs.length > 0 ? (
                 <>
                   <p className="text-xs text-slate-600 dark:text-slate-300">Open these roles and use Interview Prep.</p>
-                  {todayFocus.interviewPrepOpportunities.jobs.map((job) => (
+                  {todayFocus.interviewPrepOpportunities.jobs.slice(0, 2).map((job) => (
                     <Link key={job.id} href={`/jobs/${job.id}`} className="block rounded-md border border-slate-200 p-2 text-sm transition hover:border-slate-300 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 dark:border-slate-700 dark:hover:bg-slate-800/60">
                       <p className="font-medium text-slate-900 dark:text-slate-100">{job.title}</p>
                       <p className="text-xs text-slate-600 dark:text-slate-300">
@@ -150,12 +137,54 @@ export default async function DashboardPage() {
         </div>
       </section>
 
-      <ApplicationPipeline
-        activeTotal={summary.activeTotal}
-        statusCounts={summary.statusCounts}
-      />
+      <section className="grid gap-5 xl:grid-cols-3">
+        <div className="xl:col-span-2">
+          <ApplicationPipeline
+            activeTotal={summary.activeTotal}
+            statusCounts={summary.statusCounts}
+          />
+        </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Upcoming Dates</CardTitle>
+            <CardDescription>Deadlines and follow-ups.</CardDescription>
+          </CardHeader>
+          {summary.upcomingJobs.length > 0 ? (
+            <div className="space-y-3">
+              {summary.upcomingJobs.map((job) => {
+                const date = job.deadline ?? job.followUpAt;
+                const label = job.deadline ? "Deadline" : "Follow-up";
+
+                return (
+                <Link
+                  key={job.id}
+                  href={`/jobs/${job.id}`}
+                  className="block rounded-xl border border-slate-200 p-3 transition hover:border-slate-300 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
+                >
+                    <p className="text-sm font-medium text-slate-950">
+                      {job.title}
+                    </p>
+                    <p className="mt-1 text-sm text-slate-600">{job.company}</p>
+                    {date ? (
+                      <p className="mt-2 text-xs font-medium text-slate-500">
+                        {label} {formatDate(date)}
+                      </p>
+                    ) : null}
+                </Link>
+                );
+              })}
+            </div>
+          ) : (
+            <EmptyState
+              title="No upcoming dates"
+              description="Deadlines and follow-ups for active jobs will appear here."
+            />
+          )}
+        </Card>
+      </section>
+
+      <section>
         <Card>
           <CardHeader>
             <CardTitle>Recent Jobs</CardTitle>
@@ -198,45 +227,7 @@ export default async function DashboardPage() {
             />
           )}
         </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Upcoming Dates</CardTitle>
-            <CardDescription>Deadlines and follow-ups.</CardDescription>
-          </CardHeader>
-          {summary.upcomingJobs.length > 0 ? (
-            <div className="space-y-3">
-              {summary.upcomingJobs.map((job) => {
-                const date = job.deadline ?? job.followUpAt;
-                const label = job.deadline ? "Deadline" : "Follow-up";
-
-                return (
-                <Link
-                  key={job.id}
-                  href={`/jobs/${job.id}`}
-                  className="block rounded-xl border border-slate-200 p-3 transition hover:border-slate-300 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
-                >
-                    <p className="text-sm font-medium text-slate-950">
-                      {job.title}
-                    </p>
-                    <p className="mt-1 text-sm text-slate-600">{job.company}</p>
-                    {date ? (
-                      <p className="mt-2 text-xs font-medium text-slate-500">
-                        {label} {formatDate(date)}
-                      </p>
-                    ) : null}
-                  </Link>
-                );
-              })}
-            </div>
-          ) : (
-            <EmptyState
-              title="No upcoming dates"
-              description="Deadlines and follow-ups for active jobs will appear here."
-            />
-          )}
-        </Card>
-      </div>
+      </section>
     </div>
   );
 }

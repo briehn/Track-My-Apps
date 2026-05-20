@@ -9,6 +9,99 @@ It should document what changed, why it mattered, and what the next step is. It 
 ## 2026-05-20
 
 ### Changes
+- Fixed a Bars-mode rendering regression where vertical columns appeared invisible due to percentage-based heights inside an auto-height layout context.
+- Switched bars to explicit pixel heights within a fixed-height plotting area so columns render reliably in all themes and viewports.
+- Added pragmatic sizing bounds for bars mode (`max`, `min`, and zero-baseline marker heights) to keep non-zero statuses visible and zero statuses intentionally subtle.
+
+### Notes
+- This was a targeted Bars-view bug fix only; Flow/SVG and Cards views were not changed.
+
+### Next Step
+- Re-capture dashboard screenshots after verifying the repaired Bars visualization in both light and dark mode.
+
+### Changes
+- Redesigned `Application Pipeline` Bars mode from boxed mini-containers into a single shared-canvas vertical column chart with one common baseline.
+- Removed per-status bar-box backgrounds and heavy segmented framing so the bar chart reads as one cohesive graph area.
+- Updated bars labels to status-plus-count format (`Saved (2)`) and kept compact count cues above each column.
+- Kept bars proportional to the max status count with tiny baseline-height markers for zero-count statuses.
+
+### Notes
+- Flow/SVG and Cards modes were not modified in this pass.
+
+### Next Step
+- Re-capture dashboard screenshots now that Bars mode matches the shared-canvas visual direction.
+
+### Changes
+- Replaced the initial `Bars` pipeline mode (horizontal progress rows) with a compact vertical column chart so the view better matches the intended dashboard bar-graph style.
+- Bars now render bottom-aligned in a shared chart area with per-status counts and labels (`Saved`, `Applied`, `Interviewing`, `Offer`, `Rejected`, `Archived`) using existing status colors.
+- Added explicit zero-count handling in bars mode so zero statuses remain visible via a small baseline bar instead of disappearing.
+- Kept bars mode mobile-safe with an internal horizontal-scroll container to prevent page-level overflow on narrow screens.
+
+### Notes
+- This updates only the bars presentation mode. Flow/SVG and Cards views, plus all dashboard/query/auth/schema behavior, remain unchanged.
+
+### Next Step
+- Re-capture dashboard screenshots showing the updated `Bars` mode now that it uses vertical columns.
+
+### Changes
+- Added a third `Bars` mode to the dashboard `Application Pipeline` view toggle, expanding it from `Flow | Cards` to `Flow | Bars | Cards` while preserving the existing custom SVG flow view and cards view.
+- Implemented a compact div-based horizontal bar graph using existing status-count data (`Saved`, `Applied`, `Interviewing`, `Offer`, `Rejected`, `Archived`) and existing status color accents.
+- Added clear per-row count and percentage labels in Bars mode, with graceful zero-count handling and dark-mode-safe contrast.
+- Kept pipeline-view persistence behavior and added backward compatibility that maps previously saved `chart` preference to `flow`.
+
+### Notes
+- No dashboard query, auth/ownership, Prisma schema, or AI feature behavior changed; this is a presentation-mode enhancement only.
+
+### Next Step
+- Re-capture dashboard screenshots to include the new `Bars` pipeline mode.
+
+### Changes
+- Removed the leftover `/dashboard` top-right action row so the page now starts directly with Today&apos;s Focus after the screen-reader-only heading.
+- Kept the dashboard accessible without visible header chrome, reducing wasted top-of-page space and avoiding the awkward floating-button look.
+
+### Notes
+- This is a pure dashboard chrome cleanup. No data, routing, or feature behavior changed.
+
+### Next Step
+- Re-capture dashboard screenshots to reflect the tighter top spacing and headerless top area.
+
+### Changes
+- Removed the visible `/dashboard` page title/subtitle block and replaced it with a screen-reader-only heading so `Today's Focus` starts closer to the top without losing page semantics.
+- Kept the `View jobs` and `Add job` actions in a compact top row aligned to the right, preserving their prominence while saving vertical space.
+- Preserved dashboard data, pipeline behavior, and responsive layout structure; this is a page-chrome reduction only.
+
+### Notes
+- This is a compactness/accessibility pass, not a dashboard feature change.
+
+### Next Step
+- Re-capture dashboard screenshots to reflect the tighter top-of-page spacing and updated action row.
+
+### Changes
+- Restructured `/dashboard` into a denser two-stage layout: compact full-width `Today's Focus` at top, then a responsive middle grid with `Application Pipeline` in a 2/3 main column and `Upcoming Dates` in a 1/3 side panel on large screens.
+- Removed awkward duplication by moving `Upcoming Dates` into the side panel and keeping `Recent Jobs` as a dedicated lower section.
+- Kept the custom SVG pipeline and Chart/Cards toggle, but changed desktop SVG rendering to width-driven scaling (`w-full h-auto`) so it fits the narrower 2/3 column with less dead vertical space.
+- Preserved all dashboard/job query behavior and user-scoped data boundaries; this pass is layout/presentation only.
+
+### Notes
+- This pass intentionally follows Stitch-like dashboard density and hierarchy without introducing synthetic data, new widgets, or non-existent product features.
+
+### Next Step
+- Re-capture dashboard screenshots to reflect the new 2/3 + 1/3 layout and improved first-viewport density.
+
+### Changes
+- Refined dashboard visual density after adding `Today's Focus` by tightening vertical spacing and reducing oversized card internals without changing query logic or feature scope.
+- Reduced `Application Pipeline` card vertical footprint while preserving the same custom SVG visualization and Chart/Cards toggle behavior.
+- Lowered desktop chart render height and trimmed wrapper/header padding so the pipeline remains readable but no longer dominates the first viewport.
+- Kept pipeline nodes, branch labels (`Rejected` / `Archived`), and mobile fallback structure intact to avoid prior squish regressions.
+- Compacted `Today's Focus` card internals (lighter header/bottom padding and shorter per-card item lists) so users can see focus + pipeline + more downstream content sooner.
+
+### Notes
+- This is a presentation/density polish pass only. The SVG concept, pipeline data logic, dashboard query behavior, and user ownership boundaries were unchanged.
+
+### Next Step
+- Re-capture dashboard screenshots to reflect the tighter first-viewport hierarchy and updated density.
+
+### Changes
 - Added a new `Today's Focus` section near the top of `/dashboard` to surface actionable daily priorities before the Application Pipeline.
 - Extended dashboard query boundaries (without schema changes) to derive four user-scoped focus buckets from existing active job data: follow-ups due (today/overdue), deadlines within 7 days, active jobs missing AI analysis, and interview-prep opportunities (`INTERVIEWING`/`OFFER`).
 - Added urgency-based sorting and compact display limits (top 3 jobs per focus card) so the dashboard stays actionable without becoming noisy.

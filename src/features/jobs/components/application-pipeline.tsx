@@ -14,11 +14,15 @@ import {
 
 const primaryStages = ["SAVED", "APPLIED", "INTERVIEWING", "OFFER"] as const;
 const secondaryStages = ["REJECTED", "ARCHIVED"] as const;
+const allPipelineStages = [
+  ...primaryStages,
+  ...secondaryStages,
+] as const satisfies readonly ApplicationStatus[];
 const chartWidth = 1240;
 const chartHeight = 520;
 const PIPELINE_VIEW_STORAGE_KEY = "application-pipeline-view";
 
-type PipelineView = "chart" | "cards";
+type PipelineView = "flow" | "bars" | "cards";
 
 type SvgNodeLayout = {
   x: number;
@@ -251,18 +255,21 @@ function ViewToggle({
       aria-label="Application pipeline view"
       className="inline-flex items-center rounded-full border border-slate-200 bg-slate-100/80 p-1 dark:border-slate-700 dark:bg-slate-900/70"
     >
-      {(["chart", "cards"] as const).map((option) => {
-        const isActive = view === option;
-        const label = option[0].toUpperCase() + option.slice(1);
+      {([
+        { value: "flow", label: "Flow" },
+        { value: "bars", label: "Bars" },
+        { value: "cards", label: "Cards" },
+      ] as const).map((option) => {
+        const isActive = view === option.value;
 
         return (
           <button
-            key={option}
+            key={option.value}
             type="button"
             role="tab"
             aria-selected={isActive}
-            aria-label={`${label} view`}
-            onClick={() => onChange(option)}
+            aria-label={`${option.label} view`}
+            onClick={() => onChange(option.value)}
             className={[
               "rounded-full border px-3 py-1.5 text-xs font-semibold transition-[background-color,border-color,box-shadow,color] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/70 focus-visible:ring-offset-2 dark:focus-visible:ring-sky-400/70 dark:focus-visible:ring-offset-slate-950",
               isActive
@@ -270,7 +277,7 @@ function ViewToggle({
                 : "border-transparent bg-transparent text-slate-600 hover:bg-white/80 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800/80 dark:hover:text-slate-100",
             ].join(" ")}
           >
-            {label}
+            {option.label}
           </button>
         );
       })}
@@ -459,12 +466,12 @@ function DesktopFlowChart({
 
   return (
     <div className="hidden lg:block">
-      <div className="rounded-[28px] bg-slate-50/55 px-1 pb-1 pt-2 dark:bg-slate-950/30">
+      <div className="rounded-[24px] bg-slate-50/55 px-1 pb-1 pt-1.5 dark:bg-slate-950/30">
         <div className="overflow-hidden rounded-[24px]">
           <svg
             viewBox={`0 0 ${chartWidth} ${chartHeight}`}
             aria-hidden="true"
-            className="block h-[31rem] w-full"
+            className="block h-auto w-full"
             preserveAspectRatio="xMidYMid meet"
           >
             <path
@@ -604,7 +611,7 @@ function CardsPipelineView({
   statusCounts,
 }: ApplicationPipelineProps) {
   return (
-    <div className="rounded-2xl bg-slate-50/55 p-3 dark:bg-slate-950/30">
+    <div className="rounded-2xl bg-slate-50/55 p-2.5 dark:bg-slate-950/30">
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <StatusGridCard
           label="Active jobs"
@@ -646,11 +653,75 @@ function CardsPipelineView({
   );
 }
 
+function BarsPipelineView({
+  statusCounts,
+  maxCount,
+}: {
+  statusCounts: Record<ApplicationStatus, number>;
+  maxCount: number;
+}) {
+  const plottingAreaHeight = 156;
+  const maxBarHeight = 144;
+  const minBarHeight = 32;
+  const zeroBarHeight = 4;
+
+  return (
+    <div className="rounded-2xl bg-slate-50/55 p-2.5 dark:bg-slate-950/30">
+      <div className="rounded-xl border border-slate-200/80 bg-white/70 p-3 dark:border-slate-700 dark:bg-slate-900/60">
+        <div className="overflow-x-auto">
+          <div className="min-w-[28rem]">
+            <div className="h-60 rounded-lg bg-gradient-to-b from-slate-100/70 to-slate-50/40 p-3 dark:from-slate-900/60 dark:to-slate-900/20">
+              <div className="grid h-full grid-cols-6 gap-3">
+                {allPipelineStages.map((status) => {
+                  const count = statusCounts[status];
+                  const barHeightPx =
+                    count === 0
+                      ? zeroBarHeight
+                      : Math.max(
+                          minBarHeight,
+                          Math.round((count / Math.max(maxCount, 1)) * maxBarHeight),
+                        );
+
+                  return (
+                    <div key={status} className="grid min-h-0 grid-rows-[auto_1fr_auto] gap-1.5">
+                      <p className="text-center text-[11px] font-semibold text-slate-600 dark:text-slate-300">
+                        {count}
+                      </p>
+                      <div
+                        className="relative border-b border-slate-300/80 dark:border-slate-600"
+                        style={{ height: `${plottingAreaHeight}px` }}
+                      >
+                        <div className="absolute inset-x-0 bottom-0 flex justify-center">
+                          <div
+                            className={[
+                              "w-full max-w-10 rounded-t-md bg-gradient-to-t from-black/10 to-transparent transition-[height]",
+                              stageClasses[status].meter,
+                            ].join(" ")}
+                            style={{ height: `${barHeightPx}px` }}
+                            aria-hidden="true"
+                          />
+                        </div>
+                      </div>
+                      <p className="text-center text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500 dark:text-slate-400">
+                        {statusLabels[status]} ({count})
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function ApplicationPipeline({
   activeTotal,
   statusCounts,
 }: ApplicationPipelineProps) {
-  const [view, setView] = useState<PipelineView>("chart");
+  const [view, setView] = useState<PipelineView>("flow");
   const hasLoadedStoredView = useRef(false);
   const totalTracked = Object.values(statusCounts).reduce(
     (total, count) => total + count,
@@ -661,7 +732,10 @@ export function ApplicationPipeline({
   useEffect(() => {
     Promise.resolve().then(() => {
       const storedView = window.localStorage.getItem(PIPELINE_VIEW_STORAGE_KEY);
-      if (storedView === "chart" || storedView === "cards") {
+      // Backward-compat for previously persisted "chart" view.
+      if (storedView === "chart") {
+        setView("flow");
+      } else if (storedView === "flow" || storedView === "bars" || storedView === "cards") {
         setView(storedView);
       }
       hasLoadedStoredView.current = true;
@@ -678,7 +752,7 @@ export function ApplicationPipeline({
 
   return (
     <Card>
-      <CardHeader className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <CardHeader className="mb-3 flex flex-col gap-2.5 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <div className="flex items-center gap-2">
             <CardTitle>Application Pipeline</CardTitle>
@@ -697,7 +771,7 @@ export function ApplicationPipeline({
       </CardHeader>
 
       {totalTracked === 0 ? (
-        <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50/80 p-8 text-center dark:border-slate-700 dark:bg-slate-950/40">
+        <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50/80 p-6 text-center dark:border-slate-700 dark:bg-slate-950/40">
           <p className="text-base font-semibold text-slate-950 dark:text-slate-100">
             No roles in your pipeline yet
           </p>
@@ -710,7 +784,7 @@ export function ApplicationPipeline({
         </div>
       ) : (
         <>
-          {view === "chart" ? (
+          {view === "flow" ? (
             <>
               <DesktopFlowChart
                 statusCounts={statusCounts}
@@ -724,6 +798,11 @@ export function ApplicationPipeline({
                 totalTracked={totalTracked}
               />
             </>
+          ) : view === "bars" ? (
+            <BarsPipelineView
+              statusCounts={statusCounts}
+              maxCount={maxCount}
+            />
           ) : (
             <CardsPipelineView activeTotal={activeTotal} statusCounts={statusCounts} />
           )}
