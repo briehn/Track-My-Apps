@@ -14,6 +14,7 @@ type JobMatchCardProps = {
   hasJobAnalysis: boolean;
   hasProfile: boolean;
   hasResumeText: boolean;
+  isJobAnalysisStale: boolean;
   jobId: string;
 };
 
@@ -58,6 +59,7 @@ export function JobMatchCard({
   hasJobAnalysis,
   hasProfile,
   hasResumeText,
+  isJobAnalysisStale,
   jobId,
 }: JobMatchCardProps) {
   const [state, formAction, isPending] = useActionState(
@@ -126,6 +128,11 @@ export function JobMatchCard({
         {!hasResumeText ? (
           <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
             Your profile does not include saved resume text, so the match report may be less complete.
+          </p>
+        ) : null}
+        {isJobAnalysisStale ? (
+          <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-200">
+            This match may be using outdated job analysis. Re-run job analysis first for best results.
           </p>
         ) : null}
 

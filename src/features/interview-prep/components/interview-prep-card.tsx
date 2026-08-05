@@ -13,6 +13,7 @@ type InterviewPrepCardProps = {
   hasJobAnalysis: boolean;
   hasProfile: boolean;
   hasResumeText: boolean;
+  isJobAnalysisStale: boolean;
   jobId: string;
 };
 
@@ -99,6 +100,7 @@ export function InterviewPrepCard({
   hasJobAnalysis,
   hasProfile,
   hasResumeText,
+  isJobAnalysisStale,
   jobId,
 }: InterviewPrepCardProps) {
   const [state, formAction, isPending] = useActionState(
@@ -156,6 +158,11 @@ export function InterviewPrepCard({
           <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-200">
             Your profile does not include saved resume text, so personalization may be
             less complete.
+          </p>
+        ) : null}
+        {isJobAnalysisStale ? (
+          <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-200">
+            Interview prep may be based on outdated job analysis. Re-run analysis for the latest guidance.
           </p>
         ) : null}
 

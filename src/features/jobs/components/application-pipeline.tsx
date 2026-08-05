@@ -236,7 +236,7 @@ function StageCard({
 
 function SummaryChip({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-600 dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-300">
+    <div className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-600 dark:bg-slate-800/80 dark:text-slate-300">
       {label}: {value}
     </div>
   );
@@ -253,7 +253,7 @@ function ViewToggle({
     <div
       role="tablist"
       aria-label="Application pipeline view"
-      className="inline-flex items-center rounded-full border border-slate-200 bg-slate-100/80 p-1 dark:border-slate-700 dark:bg-slate-900/70"
+      className="inline-flex items-center rounded-full bg-slate-100 p-1 dark:bg-slate-900/70"
     >
       {([
         { value: "flow", label: "Flow" },
@@ -271,10 +271,10 @@ function ViewToggle({
             aria-label={`${option.label} view`}
             onClick={() => onChange(option.value)}
             className={[
-              "rounded-full border px-3 py-1.5 text-xs font-semibold transition-[background-color,border-color,box-shadow,color] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/70 focus-visible:ring-offset-2 dark:focus-visible:ring-sky-400/70 dark:focus-visible:ring-offset-slate-950",
+              "rounded-full px-3 py-1.5 text-xs font-semibold transition-[background-color,box-shadow,color] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/70 focus-visible:ring-offset-2 dark:focus-visible:ring-sky-400/70 dark:focus-visible:ring-offset-slate-950",
               isActive
-                ? "border-slate-300 bg-white text-slate-900 shadow-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
-                : "border-transparent bg-transparent text-slate-600 hover:bg-white/80 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800/80 dark:hover:text-slate-100",
+                ? "bg-white text-slate-900 shadow-sm dark:bg-slate-800 dark:text-slate-100"
+                : "bg-transparent text-slate-600 hover:bg-white/80 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800/80 dark:hover:text-slate-100",
             ].join(" ")}
           >
             {option.label}
@@ -466,8 +466,7 @@ function DesktopFlowChart({
 
   return (
     <div className="hidden lg:block">
-      <div className="rounded-[24px] bg-slate-50/55 px-1 pb-1 pt-1.5 dark:bg-slate-950/30">
-        <div className="overflow-hidden rounded-[24px]">
+      <div className="overflow-hidden rounded-2xl bg-slate-50/70 p-2 dark:bg-slate-950/35">
           <svg
             viewBox={`0 0 ${chartWidth} ${chartHeight}`}
             aria-hidden="true"
@@ -549,7 +548,6 @@ function DesktopFlowChart({
               />
             ))}
           </svg>
-        </div>
       </div>
     </div>
   );
@@ -562,7 +560,7 @@ function MobilePipeline({
 }: ApplicationPipelineProps & { maxCount: number; totalTracked: number }) {
   return (
     <div className="space-y-3 lg:hidden">
-      <div className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-3 dark:border-slate-700 dark:bg-slate-950/40">
+      <div className="rounded-2xl bg-slate-50/80 p-3 dark:bg-slate-950/40">
         <div className="space-y-2">
           {primaryStages.map((status, index) => (
             <div key={status} className="flex gap-3">
@@ -585,7 +583,7 @@ function MobilePipeline({
         </div>
       </div>
 
-      <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50/80 p-3 dark:border-slate-700 dark:bg-slate-950/40">
+      <div className="rounded-2xl bg-slate-50/80 p-3 dark:bg-slate-950/40">
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
           Side Paths
         </p>
@@ -667,7 +665,7 @@ function BarsPipelineView({
 
   return (
     <div className="rounded-2xl bg-slate-50/55 p-2.5 dark:bg-slate-950/30">
-      <div className="rounded-xl border border-slate-200/80 bg-white/70 p-3 dark:border-slate-700 dark:bg-slate-900/60">
+      <div className="rounded-xl bg-white/70 p-3 dark:bg-slate-900/60">
         <div className="overflow-x-auto">
           <div className="min-w-[28rem]">
             <div className="h-60 rounded-lg bg-gradient-to-b from-slate-100/70 to-slate-50/40 p-3 dark:from-slate-900/60 dark:to-slate-900/20">
@@ -751,8 +749,8 @@ export function ApplicationPipeline({
   }, [view]);
 
   return (
-    <Card>
-      <CardHeader className="mb-3 flex flex-col gap-2.5 sm:flex-row sm:items-end sm:justify-between">
+    <Card className="rounded-2xl bg-white py-5 shadow-xl shadow-slate-950/[0.07] ring-slate-950/10 dark:bg-slate-900 dark:ring-white/10">
+      <CardHeader className="mb-2 flex flex-col gap-3 px-5 sm:flex-row sm:items-end sm:justify-between sm:px-6">
         <div>
           <div className="flex items-center gap-2">
             <CardTitle>Application Pipeline</CardTitle>
@@ -771,7 +769,7 @@ export function ApplicationPipeline({
       </CardHeader>
 
       {totalTracked === 0 ? (
-        <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50/80 p-6 text-center dark:border-slate-700 dark:bg-slate-950/40">
+        <div className="mx-5 rounded-xl bg-slate-50/80 p-5 text-center dark:bg-slate-950/40 sm:mx-6">
           <p className="text-base font-semibold text-slate-950 dark:text-slate-100">
             No roles in your pipeline yet
           </p>
@@ -786,25 +784,31 @@ export function ApplicationPipeline({
         <>
           {view === "flow" ? (
             <>
-              <DesktopFlowChart
-                statusCounts={statusCounts}
-                maxCount={maxCount}
-                totalTracked={totalTracked}
-              />
-              <MobilePipeline
-                activeTotal={activeTotal}
-                statusCounts={statusCounts}
-                maxCount={maxCount}
-                totalTracked={totalTracked}
-              />
+              <div className="px-3 pb-3 sm:px-4 sm:pb-4">
+                <DesktopFlowChart
+                  statusCounts={statusCounts}
+                  maxCount={maxCount}
+                  totalTracked={totalTracked}
+                />
+                <MobilePipeline
+                  activeTotal={activeTotal}
+                  statusCounts={statusCounts}
+                  maxCount={maxCount}
+                  totalTracked={totalTracked}
+                />
+              </div>
             </>
           ) : view === "bars" ? (
-            <BarsPipelineView
-              statusCounts={statusCounts}
-              maxCount={maxCount}
-            />
+            <div className="px-3 pb-3 sm:px-4 sm:pb-4">
+              <BarsPipelineView
+                statusCounts={statusCounts}
+                maxCount={maxCount}
+              />
+            </div>
           ) : (
-            <CardsPipelineView activeTotal={activeTotal} statusCounts={statusCounts} />
+            <div className="px-3 pb-3 sm:px-4 sm:pb-4">
+              <CardsPipelineView activeTotal={activeTotal} statusCounts={statusCounts} />
+            </div>
           )}
         </>
       )}

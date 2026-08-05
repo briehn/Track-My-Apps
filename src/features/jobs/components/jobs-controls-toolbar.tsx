@@ -53,8 +53,8 @@ export function JobsControlsToolbar({
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white p-2 dark:border-slate-700 dark:bg-slate-900">
-        <div className="inline-flex w-fit flex-wrap gap-2 p-1" aria-label="Job list views">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-slate-100/80 p-1.5 dark:bg-slate-900/65">
+        <div className="inline-flex w-fit flex-wrap gap-1 rounded-lg bg-white p-1 shadow-sm ring-1 ring-slate-950/5 dark:bg-slate-950 dark:ring-white/10" aria-label="Job list views">
           <Link
             href={activeViewHref}
             aria-current={!isArchivedView ? "page" : undefined}
@@ -83,7 +83,7 @@ export function JobsControlsToolbar({
 
         <div className="flex flex-wrap items-center gap-2">
           <div
-            className="hidden w-fit rounded-lg border border-slate-200 bg-white p-1 dark:border-slate-700 dark:bg-slate-900 md:inline-flex"
+            className="hidden w-fit rounded-lg bg-white p-1 shadow-sm ring-1 ring-slate-950/5 dark:bg-slate-950 dark:ring-white/10 md:inline-flex"
             aria-label="Jobs layout toggle"
           >
             <Link

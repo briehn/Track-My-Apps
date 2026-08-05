@@ -91,39 +91,47 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
               : "Track and organize your applications."}
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <LinkButton href="/jobs/import" variant="secondary">
-            Import jobs
-          </LinkButton>
-          {hasExportableJobs ? (
-            <>
-              <LinkButton href={csvExportHref} variant="secondary">
-                Export CSV
-              </LinkButton>
-              <LinkButton href={xlsxExportHref} variant="secondary">
-                Export XLSX
-              </LinkButton>
-            </>
-          ) : (
-            <>
-              <Button
-                variant="secondary"
-                disabled
-                title={exportUnavailableMessage}
-                aria-label={`Export CSV unavailable. ${exportUnavailableMessage}.`}
-              >
-                Export CSV
-              </Button>
-              <Button
-                variant="secondary"
-                disabled
-                title={exportUnavailableMessage}
-                aria-label={`Export XLSX unavailable. ${exportUnavailableMessage}.`}
-              >
-                Export XLSX
-              </Button>
-            </>
-          )}
+        <div className="flex flex-wrap items-center gap-2">
+          <div
+            className="flex flex-wrap items-center gap-1 rounded-lg bg-slate-100 p-1 dark:bg-slate-900"
+            aria-label="Import and export jobs"
+          >
+            <LinkButton href="/jobs/import" variant="ghost" className="px-3 py-1.5">
+              Import
+            </LinkButton>
+            <span aria-hidden="true" className="h-5 w-px bg-slate-200 dark:bg-slate-700" />
+            {hasExportableJobs ? (
+              <>
+                <LinkButton href={csvExportHref} variant="ghost" className="px-3 py-1.5">
+                  CSV
+                </LinkButton>
+                <LinkButton href={xlsxExportHref} variant="ghost" className="px-3 py-1.5">
+                  XLSX
+                </LinkButton>
+              </>
+            ) : (
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled
+                  title={exportUnavailableMessage}
+                  aria-label={`Export CSV unavailable. ${exportUnavailableMessage}.`}
+                >
+                  CSV
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled
+                  title={exportUnavailableMessage}
+                  aria-label={`Export XLSX unavailable. ${exportUnavailableMessage}.`}
+                >
+                  XLSX
+                </Button>
+              </>
+            )}
+          </div>
           <LinkButton href="/jobs/new">
             Add job
           </LinkButton>

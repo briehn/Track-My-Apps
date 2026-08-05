@@ -6,6 +6,41 @@ It should document what changed, why it mattered, and what the next step is. It 
 
 ---
 
+## 2026-08-05
+
+### Changes
+- Polished the Jobs page Cards view into denser, scan-friendly application cards with title-first hierarchy, subdued metadata, and status/date context grouped alongside each role.
+- Grouped import/export controls into one secondary action cluster while preserving `Add job` as the primary page action; kept layout toggles visually separate inside the list toolbar.
+- Restored the shared semantic status-badge variants expected by Jobs and job-detail views, resolving the existing production TypeScript build failure without changing status behavior.
+- Polished the dashboard hierarchy without changing its data, navigation, or interaction behavior.
+- Reframed `Today's Focus` as four compact, color-accented action summaries and removed nested bordered job tiles.
+- Elevated the `Application Pipeline` into the dominant dashboard surface with clearer spacing, quieter controls, and fewer nested containers.
+- Converted Upcoming Dates and Recent Jobs into lighter supporting views; Recent Jobs now uses a divided activity-feed treatment rather than repeated bordered cards.
+- Replaced oversized dashboard empty states with concise, context-appropriate messages that collapse when there is no actionable content.
+
+### Notes
+- The Jobs pass preserves all data, filters, URLs, navigation, import/export actions, and responsive Table/Cards behavior.
+- The dashboard pass is intentionally dashboard-local; no Motion or dependencies were added.
+
+### Next Step
+- Perform visual QA across the dashboard and Jobs Cards/Table layouts at desktop and mobile widths, then decide whether the Jobs filter drawer needs a separate density pass.
+
+## 2026-06-02
+
+### Changes
+- Added a focused stale-AI first slice for job detail `AI Insights` using existing timestamps, without changing Prisma schema or AI persistence behavior.
+- Introduced a pure `isJobAnalysisStale()` helper and test coverage for no-analysis, older-analysis, newer-analysis, and equal-timestamp cases.
+- Wired job-detail rendering to compare `Job.updatedAt` against saved `JobAnalysis.updatedAt`, then surface subtle warning states in `Job Analysis`, `Profile Match`, and `Interview Prep`.
+- Kept saved analysis visible and existing transient match/prep generation behavior unchanged; warnings guide re-analysis rather than blocking workflows.
+- Updated `docs/roadmap.md` to mark stale-output detection as implemented first-slice work under AI polish / guidance.
+
+### Notes
+- This first slice intentionally uses job-level `updatedAt`, so non-description edits can also mark analysis as stale. That tradeoff avoids a schema migration and keeps invalidation logic easy to explain.
+- Dashboard `Today's Focus` was left unchanged in this pass to keep the feature narrow and low-risk.
+
+### Next Step
+- If stale warnings prove useful, add a description-specific invalidation signal later so editing unrelated job fields does not mark analysis stale.
+
 ## 2026-05-20
 
 ### Changes

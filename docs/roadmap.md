@@ -118,10 +118,15 @@ Track My Apps now has a complete, deployed MVP with several post-MVP slices alre
 
 ### Phase 16: AI Analysis Polish
 
+- Implemented first slice.
+- Added stale-analysis detection using existing `Job.updatedAt` and `JobAnalysis.updatedAt` timestamps.
+- Job detail `AI Insights` now warns when saved analysis may be outdated and carries compact warnings into Profile Match and Interview Prep.
+- Limitation: this first slice invalidates on any job edit, not only job-description edits, because no description-specific timestamp or hash is stored yet.
+- Remaining follow-up:
 - Improve prompts based on real job descriptions.
 - Improve UI for long analysis results and dense postings.
 - Track model and cost metadata later if needed.
-- Add stale-analysis detection if the job description changes.
+- Narrow stale detection to description-specific changes only if the extra schema complexity becomes justified.
 
 ### Phase 17: Resume/Profile Foundation
 
@@ -210,11 +215,11 @@ Track My Apps now has a complete, deployed MVP with several post-MVP slices alre
 
 ### Phase 25: Job Search Guidance Layer
 
-- Implemented first slice: dashboard `Today's Focus` action queue.
+- Implemented first slices: dashboard `Today's Focus` action queue and stale AI output warnings in job detail AI workflows.
 - Follow-up command center.
 - Overdue follow-up detection.
 - Application priority signals.
-- Stale AI output detection when job descriptions or profile data change.
+- Broader stale AI output detection when job descriptions or profile data change.
 - Dashboard guidance that tells users what to do next.
 
 ### Phase 26: Resume Tailoring and Prep Workspace

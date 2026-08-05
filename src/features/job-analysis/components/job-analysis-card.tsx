@@ -25,6 +25,7 @@ type JobAnalysisCardProps = {
   } | null;
   hasAnalyzableDescription: boolean;
   isDescriptionTooLong: boolean;
+  isStale: boolean;
   descriptionLength: number;
   jobId: string;
 };
@@ -77,6 +78,7 @@ export function JobAnalysisCard({
   analysis,
   hasAnalyzableDescription,
   isDescriptionTooLong,
+  isStale,
   descriptionLength,
   jobId,
 }: JobAnalysisCardProps) {
@@ -151,6 +153,11 @@ export function JobAnalysisCard({
 
       {hasAnalysis && analysis ? (
         <div className="space-y-4">
+          {isStale ? (
+            <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-200">
+              This job was updated after the last AI analysis. Re-run analysis to keep insights accurate. This first slice uses the job&apos;s last-updated time, so non-description edits can also mark analysis as stale.
+            </div>
+          ) : null}
           <div className="space-y-3 rounded-md border border-slate-200 bg-white p-4">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <h3 className="text-sm font-medium text-slate-950">Latest analysis</h3>

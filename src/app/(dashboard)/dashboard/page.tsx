@@ -1,20 +1,13 @@
 import Link from "next/link";
 
-import { EmptyState } from "@/components/empty-states/empty-state";
-import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { LinkButton } from "@/components/ui/link-button";
 import { ApplicationPipeline } from "@/features/jobs/components/application-pipeline";
+import { DashboardFocusSummary } from "@/features/jobs/components/dashboard-focus-summary";
 import {
   type DashboardSummary,
   getDashboardSummaryForCurrentUser,
 } from "@/features/jobs/dashboard-queries";
-import { statusBadgeVariants, statusLabels } from "@/features/jobs/status";
+import { statusLabels, type ApplicationStatus } from "@/features/jobs/status";
 
 const dateFormatter = new Intl.DateTimeFormat("en", {
   month: "short",
@@ -26,116 +19,24 @@ function formatDate(date: Date) {
   return dateFormatter.format(date);
 }
 
+const statusClasses: Record<ApplicationStatus, string> = {
+  SAVED: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300",
+  APPLIED: "bg-sky-100 text-sky-700 dark:bg-sky-400/10 dark:text-sky-300",
+  INTERVIEWING: "bg-amber-100 text-amber-700 dark:bg-amber-400/10 dark:text-amber-300",
+  OFFER: "bg-emerald-100 text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-300",
+  REJECTED: "bg-rose-100 text-rose-700 dark:bg-rose-400/10 dark:text-rose-300",
+  ARCHIVED: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300",
+};
+
 export default async function DashboardPage() {
   const summary: DashboardSummary = await getDashboardSummaryForCurrentUser();
   const todayFocus = summary.todayFocus;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-8 lg:space-y-10">
       <h1 className="sr-only">Dashboard</h1>
 
-      <section className="space-y-2.5">
-        <div>
-          <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-100">Today&apos;s Focus</h2>
-          <p className="text-sm text-slate-600 dark:text-slate-300">
-            Priority actions to keep your search moving today.
-          </p>
-        </div>
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <Card>
-            <CardHeader className="pb-4">
-              <CardTitle className="text-base">Follow-ups Due</CardTitle>
-              <CardDescription>{todayFocus.followUpsDue.count} job(s) need attention.</CardDescription>
-            </CardHeader>
-            <div className="space-y-2 px-6 pb-5">
-              {todayFocus.followUpsDue.jobs.length > 0 ? (
-                <>
-                  <p className="text-xs text-slate-600 dark:text-slate-300">Follow up on overdue or due-today check-ins.</p>
-                  {todayFocus.followUpsDue.jobs.slice(0, 2).map((job) => (
-                    <Link key={job.id} href={`/jobs/${job.id}`} className="block rounded-md border border-slate-200 p-2 text-sm transition hover:border-slate-300 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 dark:border-slate-700 dark:hover:bg-slate-800/60">
-                      <p className="font-medium text-slate-900 dark:text-slate-100">{job.title}</p>
-                      <p className="text-xs text-slate-600 dark:text-slate-300">{job.company}</p>
-                    </Link>
-                  ))}
-                </>
-              ) : (
-                <p className="text-sm text-slate-600 dark:text-slate-300">No follow-ups due.</p>
-              )}
-            </div>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-4">
-              <CardTitle className="text-base">Upcoming Deadlines</CardTitle>
-              <CardDescription>{todayFocus.upcomingDeadlines.count} deadline(s) in 7 days.</CardDescription>
-            </CardHeader>
-            <div className="space-y-2 px-6 pb-5">
-              {todayFocus.upcomingDeadlines.jobs.length > 0 ? (
-                <>
-                  <p className="text-xs text-slate-600 dark:text-slate-300">Handle the closest deadlines first.</p>
-                  {todayFocus.upcomingDeadlines.jobs.slice(0, 2).map((job) => (
-                    <Link key={job.id} href={`/jobs/${job.id}`} className="block rounded-md border border-slate-200 p-2 text-sm transition hover:border-slate-300 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 dark:border-slate-700 dark:hover:bg-slate-800/60">
-                      <p className="font-medium text-slate-900 dark:text-slate-100">{job.title}</p>
-                      <p className="text-xs text-slate-600 dark:text-slate-300">
-                        {job.company}
-                        {job.deadline ? ` - Due ${formatDate(job.deadline)}` : ""}
-                      </p>
-                    </Link>
-                  ))}
-                </>
-              ) : (
-                <p className="text-sm text-slate-600 dark:text-slate-300">No upcoming deadlines.</p>
-              )}
-            </div>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-4">
-              <CardTitle className="text-base">Missing AI Analysis</CardTitle>
-              <CardDescription>{todayFocus.missingAnalysis.count} active job(s) without analysis.</CardDescription>
-            </CardHeader>
-            <div className="space-y-2 px-6 pb-5">
-              {todayFocus.missingAnalysis.jobs.length > 0 ? (
-                <>
-                  <p className="text-xs text-slate-600 dark:text-slate-300">Open a job to run AI analysis before tailoring.</p>
-                  {todayFocus.missingAnalysis.jobs.slice(0, 2).map((job) => (
-                    <Link key={job.id} href={`/jobs/${job.id}`} className="block rounded-md border border-slate-200 p-2 text-sm transition hover:border-slate-300 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 dark:border-slate-700 dark:hover:bg-slate-800/60">
-                      <p className="font-medium text-slate-900 dark:text-slate-100">{job.title}</p>
-                      <p className="text-xs text-slate-600 dark:text-slate-300">{job.company}</p>
-                    </Link>
-                  ))}
-                </>
-              ) : (
-                <p className="text-sm text-slate-600 dark:text-slate-300">All active jobs have analysis.</p>
-              )}
-            </div>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-4">
-              <CardTitle className="text-base">Interview Prep Opportunities</CardTitle>
-              <CardDescription>{todayFocus.interviewPrepOpportunities.count} role(s) ready for prep.</CardDescription>
-            </CardHeader>
-            <div className="space-y-2 px-6 pb-5">
-              {todayFocus.interviewPrepOpportunities.jobs.length > 0 ? (
-                <>
-                  <p className="text-xs text-slate-600 dark:text-slate-300">Open these roles and use Interview Prep.</p>
-                  {todayFocus.interviewPrepOpportunities.jobs.slice(0, 2).map((job) => (
-                    <Link key={job.id} href={`/jobs/${job.id}`} className="block rounded-md border border-slate-200 p-2 text-sm transition hover:border-slate-300 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 dark:border-slate-700 dark:hover:bg-slate-800/60">
-                      <p className="font-medium text-slate-900 dark:text-slate-100">{job.title}</p>
-                      <p className="text-xs text-slate-600 dark:text-slate-300">
-                        {job.company} - {statusLabels[job.status]}
-                      </p>
-                    </Link>
-                  ))}
-                </>
-              ) : (
-                <p className="text-sm text-slate-600 dark:text-slate-300">No interview-prep opportunities yet.</p>
-              )}
-            </div>
-          </Card>
-        </div>
-      </section>
+      <DashboardFocusSummary focus={todayFocus} />
 
       <section className="grid gap-5 xl:grid-cols-3">
         <div className="xl:col-span-2">
@@ -145,13 +46,13 @@ export default async function DashboardPage() {
           />
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Upcoming Dates</CardTitle>
-            <CardDescription>Deadlines and follow-ups.</CardDescription>
-          </CardHeader>
+        <section aria-labelledby="upcoming-dates-heading" className="rounded-2xl bg-slate-100/60 p-5 dark:bg-slate-900/45">
+          <div>
+            <h2 id="upcoming-dates-heading" className="text-sm font-semibold text-slate-900 dark:text-slate-100">Upcoming Dates</h2>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Deadlines and follow-ups.</p>
+          </div>
           {summary.upcomingJobs.length > 0 ? (
-            <div className="space-y-3">
+            <div className="mt-4 divide-y divide-slate-200/80 dark:divide-slate-800">
               {summary.upcomingJobs.map((job) => {
                 const date = job.deadline ?? job.followUpAt;
                 const label = job.deadline ? "Deadline" : "Follow-up";
@@ -160,14 +61,14 @@ export default async function DashboardPage() {
                 <Link
                   key={job.id}
                   href={`/jobs/${job.id}`}
-                  className="block rounded-xl border border-slate-200 p-3 transition hover:border-slate-300 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
+                  className="block rounded-md py-3 transition-colors first:pt-0 last:pb-0 hover:bg-white/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 dark:hover:bg-slate-800/70 dark:focus-visible:ring-sky-400 dark:focus-visible:ring-offset-slate-950"
                 >
-                    <p className="text-sm font-medium text-slate-950">
+                    <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
                       {job.title}
                     </p>
-                    <p className="mt-1 text-sm text-slate-600">{job.company}</p>
+                    <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{job.company}</p>
                     {date ? (
-                      <p className="mt-2 text-xs font-medium text-slate-500">
+                      <p className="mt-2 text-xs font-medium text-sky-700 dark:text-sky-300">
                         {label} {formatDate(date)}
                       </p>
                     ) : null}
@@ -176,57 +77,51 @@ export default async function DashboardPage() {
               })}
             </div>
           ) : (
-            <EmptyState
-              title="No upcoming dates"
-              description="Deadlines and follow-ups for active jobs will appear here."
-            />
+            <p className="mt-4 text-sm leading-6 text-slate-500 dark:text-slate-400">No upcoming dates.</p>
           )}
-        </Card>
+        </section>
       </section>
 
-      <section>
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Jobs</CardTitle>
-            <CardDescription>Latest active roles.</CardDescription>
-          </CardHeader>
+      <section aria-labelledby="recent-jobs-heading">
+        <div>
+          <h2 id="recent-jobs-heading" className="text-base font-semibold tracking-tight text-slate-950 dark:text-slate-100">Recent Jobs</h2>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Latest active roles.</p>
+        </div>
+        <div className="mt-4 divide-y divide-slate-200/90 dark:divide-slate-800">
           {summary.recentJobs.length > 0 ? (
-            <div className="space-y-3">
-              {summary.recentJobs.map((job) => (
+            summary.recentJobs.map((job) => (
                 <Link
                   key={job.id}
                   href={`/jobs/${job.id}`}
-                  className="block rounded-xl border border-slate-200 p-3 transition hover:border-slate-300 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
+                  className="block rounded-md py-4 transition-colors first:pt-0 last:pb-0 hover:bg-slate-100/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 dark:hover:bg-slate-900/70 dark:focus-visible:ring-sky-400 dark:focus-visible:ring-offset-slate-950"
                 >
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                     <div>
-                      <p className="text-sm font-medium text-slate-950">
+                      <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
                         {job.title}
                       </p>
-                      <p className="mt-1 text-sm text-slate-600">
+                      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                         {job.company}
                       </p>
                     </div>
                     <div className="flex flex-col gap-1 sm:items-end">
-                      <Badge variant={statusBadgeVariants[job.status]}>
+                      <span className={["inline-flex w-fit rounded-full px-2 py-0.5 text-xs font-medium", statusClasses[job.status]].join(" ")}>
                         {statusLabels[job.status]}
-                      </Badge>
-                      <p className="text-xs text-slate-500">
+                      </span>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
                         Saved {formatDate(job.createdAt)}
                       </p>
                     </div>
                   </div>
                 </Link>
-              ))}
-            </div>
+              ))
           ) : (
-            <EmptyState
-              title="No active jobs yet"
-              description="Add your first job to start tracking your search."
-              action={<LinkButton href="/jobs/new">Add job</LinkButton>}
-            />
+            <div className="flex flex-wrap items-center justify-between gap-4 py-3">
+              <p className="text-sm text-slate-500 dark:text-slate-400">No active jobs yet. Add your first role to start tracking your search.</p>
+              <LinkButton href="/jobs/new">Add job</LinkButton>
+            </div>
           )}
-        </Card>
+        </div>
       </section>
     </div>
   );

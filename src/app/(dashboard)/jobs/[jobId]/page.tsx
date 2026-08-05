@@ -14,6 +14,7 @@ import {
   hasAnalyzableJobDescription,
   isJobDescriptionTooLong,
 } from "@/features/job-analysis/schemas";
+import { isJobAnalysisStale } from "@/features/job-analysis/staleness";
 import { JobMatchCard } from "@/features/job-match/components/job-match-card";
 import { InterviewPrepCard } from "@/features/interview-prep/components/interview-prep-card";
 import { JobManagementActions } from "@/features/jobs/components/job-management-actions";
@@ -102,6 +103,8 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
   }
 
   const safeJobUrl = job.url && isSafeExternalUrl(job.url) ? job.url : null;
+  const hasJobAnalysis = Boolean(job.analysis);
+  const isAnalysisStale = isJobAnalysisStale(job.updatedAt, job.analysis?.updatedAt);
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
@@ -212,23 +215,26 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
                   isDescriptionTooLong={
                     job.description ? isJobDescriptionTooLong(job.description) : false
                   }
+                  isStale={isAnalysisStale}
                   descriptionLength={job.description?.length ?? 0}
                   jobId={job.id}
                 />
               }
               matchContent={
                 <JobMatchCard
-                  hasJobAnalysis={Boolean(job.analysis)}
+                  hasJobAnalysis={hasJobAnalysis}
                   hasProfile={Boolean(profile)}
                   hasResumeText={Boolean(profile?.resumeText?.trim())}
+                  isJobAnalysisStale={isAnalysisStale}
                   jobId={job.id}
                 />
               }
               prepContent={
                 <InterviewPrepCard
-                  hasJobAnalysis={Boolean(job.analysis)}
+                  hasJobAnalysis={hasJobAnalysis}
                   hasProfile={Boolean(profile)}
                   hasResumeText={Boolean(profile?.resumeText?.trim())}
+                  isJobAnalysisStale={isAnalysisStale}
                   jobId={job.id}
                 />
               }
