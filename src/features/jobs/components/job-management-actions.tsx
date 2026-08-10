@@ -34,12 +34,12 @@ export function JobManagementActions({
     <div className="space-y-5">
       <form
         action={archiveAction}
-        className="space-y-3 rounded-md border border-slate-200 bg-slate-50 p-4"
+        className="space-y-3 rounded-xl bg-slate-100/70 p-4 dark:bg-slate-900/60"
       >
         <input type="hidden" name="jobId" value={jobId} />
         <div className="space-y-1">
-          <p className="text-sm font-medium text-slate-950">Archive Job</p>
-          <p className="text-sm text-slate-600">
+          <p className="text-sm font-medium text-slate-950 dark:text-slate-100">Archive Job</p>
+          <p className="text-sm text-slate-600 dark:text-slate-400">
             Archived jobs leave the active list but remain available from the archived view.
           </p>
         </div>
@@ -49,7 +49,7 @@ export function JobManagementActions({
           </p>
         ) : null}
         {isArchived ? (
-          <p className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
+          <p className="rounded-md bg-emerald-100/70 px-3 py-2 text-sm text-emerald-800 dark:bg-emerald-400/10 dark:text-emerald-200">
             This job is archived. You can move it back to active using the status control above.
           </p>
         ) : (
@@ -59,8 +59,8 @@ export function JobManagementActions({
         )}
       </form>
 
-      <details className="rounded-md border border-red-200 bg-red-50/50 p-4">
-        <summary className="cursor-pointer text-sm font-medium text-red-800">
+      <details className="rounded-xl bg-red-50/70 p-4 dark:bg-red-500/10">
+        <summary className="cursor-pointer rounded-md text-sm font-medium text-red-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/50 focus-visible:ring-offset-2 dark:text-red-200 dark:focus-visible:ring-offset-slate-950">
           Danger Zone: Permanent Delete
         </summary>
         <form action={deleteAction} className="mt-4 space-y-3">
@@ -72,7 +72,7 @@ export function JobManagementActions({
               type="checkbox"
               className="mt-1 h-4 w-4 rounded border-slate-300 text-slate-950 focus:ring-slate-400"
             />
-            <label htmlFor="confirmDelete" className="text-sm text-slate-700">
+            <label htmlFor="confirmDelete" className="text-sm text-slate-700 dark:text-slate-300">
               I understand this permanently deletes the job and its related data.
             </label>
           </div>
@@ -85,7 +85,7 @@ export function JobManagementActions({
             type="submit"
             variant="secondary"
             disabled={isDeleting}
-            className="w-full border-red-200 text-red-700 hover:bg-red-100 sm:w-auto"
+            className="w-full text-red-700 hover:bg-red-100 dark:text-red-300 dark:hover:bg-red-500/20 sm:w-auto"
           >
             {isDeleting ? "Deleting..." : "Permanent Delete"}
           </Button>

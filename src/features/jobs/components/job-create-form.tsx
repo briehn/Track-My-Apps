@@ -1,18 +1,31 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { createJob, type CreateJobActionState } from "@/features/jobs/actions";
 import { JobFormFields } from "@/features/jobs/components/job-form-fields";
+import {
+  getFirstInvalidJobFormField,
+  type JobFormValues,
+} from "@/features/jobs/job-form-state";
 
 const initialState: CreateJobActionState = {};
 
 export function JobCreateForm() {
+  const [values, setValues] = useState<JobFormValues>({});
   const [state, formAction, isPending] = useActionState(
     createJob,
     initialState,
   );
+
+  useEffect(() => {
+    const firstInvalidField = getFirstInvalidJobFormField(state.fieldErrors);
+
+    if (firstInvalidField) {
+      document.getElementById(firstInvalidField)?.focus();
+    }
+  }, [state.fieldErrors]);
 
   return (
     <form action={formAction} className="space-y-6">
@@ -22,7 +35,16 @@ export function JobCreateForm() {
         </div>
       ) : null}
 
-      <JobFormFields errors={state.fieldErrors} />
+      <JobFormFields
+        errors={state.fieldErrors}
+        values={values}
+        onValueChange={(fieldName, value) => {
+          setValues((currentValues) => ({
+            ...currentValues,
+            [fieldName]: value,
+          }));
+        }}
+      />
 
       <div className="flex justify-end">
         <Button type="submit" disabled={isPending}>

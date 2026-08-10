@@ -6,6 +6,16 @@ It should document what changed, why it mattered, and what the next step is. It 
 
 ---
 
+## 2026-08-09
+
+### Changes
+- Preserved Add Job draft values after server-side validation failures and moved focus to the first invalid field.
+- Restored Job Details spacing by using the shared card content boundary and reduced nested borders in favor of tonal surfaces and dividers.
+- Moved the Jobs return navigation to the upper-left as an accessible Back to Jobs link.
+
+### Next Step
+- Retake the Job Details screenshot after a short light/dark and mobile visual smoke pass.
+
 ## 2026-08-05
 
 ### Changes

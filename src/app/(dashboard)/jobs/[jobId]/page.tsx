@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
+  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
@@ -82,10 +83,12 @@ function formatSalary(job: JobDetail) {
 function DetailItem({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">
+      <dt className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
         {label}
       </dt>
-      <dd className="mt-1 text-sm leading-6 text-slate-700">{value}</dd>
+      <dd className="mt-1 text-sm leading-6 text-slate-700 dark:text-slate-300">
+        {value}
+      </dd>
     </div>
   );
 }
@@ -108,33 +111,40 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="space-y-4">
         <Link
           href="/jobs"
-          className="inline-flex text-sm font-medium text-slate-600 hover:text-slate-950"
+          className="group inline-flex items-center gap-1 rounded-md px-1 py-1 text-sm font-medium text-slate-600 transition-colors hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/70 focus-visible:ring-offset-2 dark:text-slate-400 dark:hover:text-slate-100 dark:focus-visible:ring-sky-400 dark:focus-visible:ring-offset-slate-950"
         >
-          Back to jobs
+          <span aria-hidden="true" className="transition-transform group-hover:-translate-x-0.5">
+            ←
+          </span>
+          Back to Jobs
         </Link>
-        <LinkButton href={`/jobs/${job.id}/edit`} variant="secondary">
-          Edit job
-        </LinkButton>
-      </div>
-
-      <Card>
-        <div className="grid gap-6 lg:grid-cols-[1fr_18rem]">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <div className="flex flex-wrap items-center gap-2">
-              <p className="text-sm font-medium uppercase tracking-wide text-slate-500">
+              <p className="text-sm font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
                 {job.company}
               </p>
               <Badge variant={statusBadgeVariants[job.status]}>
                 {statusLabels[job.status]}
               </Badge>
             </div>
-            <h1 className="mt-2 text-3xl font-semibold text-slate-950">
+            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950 dark:text-slate-100">
               {job.title}
             </h1>
-            <dl className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          </div>
+          <LinkButton href={`/jobs/${job.id}/edit`} variant="secondary">
+            Edit job
+          </LinkButton>
+        </div>
+      </div>
+
+      <Card className="gap-0">
+        <CardContent className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_18rem]">
+          <div>
+            <dl className="grid gap-x-6 gap-y-5 sm:grid-cols-2 xl:grid-cols-3">
               <DetailItem label="Location" value={job.location ?? "Not provided"} />
               <DetailItem
                 label="Work mode"
@@ -151,16 +161,16 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
               <DetailItem label="Salary" value={formatSalary(job)} />
               <DetailItem label="Source" value={job.source ?? "Not provided"} />
               <div>
-                <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                <dt className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
                   Job URL
                 </dt>
-                <dd className="mt-1 text-sm leading-6 text-slate-700">
+                <dd className="mt-1 text-sm leading-6 text-slate-700 dark:text-slate-300">
                   {safeJobUrl ? (
                     <a
                       href={safeJobUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="break-all text-slate-950 underline underline-offset-4 hover:text-slate-700"
+                      className="break-all font-medium text-slate-950 underline underline-offset-4 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/70 focus-visible:ring-offset-2 dark:text-slate-100 dark:hover:text-slate-300 dark:focus-visible:ring-sky-400 dark:focus-visible:ring-offset-slate-950"
                     >
                       Open posting
                     </a>
@@ -171,31 +181,35 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
               </div>
             </dl>
 
-            <div className="mt-5 space-y-2 border-t border-slate-200 pt-5">
-              <h2 className="text-sm font-medium text-slate-950">Job Description</h2>
+            <div className="mt-7 space-y-3 border-t border-slate-200/80 pt-6 dark:border-slate-800">
+              <h2 className="text-sm font-semibold text-slate-950 dark:text-slate-100">
+                Job Description
+              </h2>
               {job.description ? (
-                <div className="max-h-80 overflow-auto rounded-md border border-slate-200 bg-slate-50 p-4">
-                  <p className="whitespace-pre-wrap text-sm leading-7 text-slate-700">
+                <div className="max-h-80 overflow-auto rounded-xl bg-slate-100/70 p-4 dark:bg-slate-900/60">
+                  <p className="whitespace-pre-wrap text-sm leading-7 text-slate-700 dark:text-slate-300">
                     {job.description}
                   </p>
                 </div>
               ) : (
-                <p className="text-sm text-slate-600">Not provided</p>
+                <p className="text-sm text-slate-600 dark:text-slate-400">
+                  Not provided
+                </p>
               )}
             </div>
           </div>
 
-          <div className="space-y-4 rounded-md border border-slate-200 bg-slate-50 p-4">
+          <aside className="space-y-5 rounded-2xl bg-slate-100/70 p-4 dark:bg-slate-900/60">
             <JobStatusForm jobId={job.id} currentStatus={job.status} />
-            <dl className="grid gap-3 border-t border-slate-200 pt-4">
+            <dl className="grid gap-3 border-t border-slate-200/80 pt-5 dark:border-slate-800">
               <DetailItem label="Saved" value={formatDate(job.createdAt)} />
               <DetailItem label="Updated" value={formatDate(job.updatedAt)} />
               <DetailItem label="Deadline" value={formatDate(job.deadline)} />
               <DetailItem label="Applied" value={formatDate(job.appliedAt)} />
               <DetailItem label="Follow-up" value={formatDate(job.followUpAt)} />
             </dl>
-          </div>
-        </div>
+          </aside>
+        </CardContent>
       </Card>
 
       <div className="grid gap-6 xl:grid-cols-[1fr_24rem]">
@@ -207,38 +221,40 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
                 Run job analysis and profile matching without letting AI details dominate the page.
               </CardDescription>
             </CardHeader>
-            <AIInsightsPanel
-              analysisContent={
-                <JobAnalysisCard
-                  analysis={job.analysis}
-                  hasAnalyzableDescription={hasAnalyzableJobDescription(job.description)}
-                  isDescriptionTooLong={
-                    job.description ? isJobDescriptionTooLong(job.description) : false
-                  }
-                  isStale={isAnalysisStale}
-                  descriptionLength={job.description?.length ?? 0}
-                  jobId={job.id}
-                />
-              }
-              matchContent={
-                <JobMatchCard
-                  hasJobAnalysis={hasJobAnalysis}
-                  hasProfile={Boolean(profile)}
-                  hasResumeText={Boolean(profile?.resumeText?.trim())}
-                  isJobAnalysisStale={isAnalysisStale}
-                  jobId={job.id}
-                />
-              }
-              prepContent={
-                <InterviewPrepCard
-                  hasJobAnalysis={hasJobAnalysis}
-                  hasProfile={Boolean(profile)}
-                  hasResumeText={Boolean(profile?.resumeText?.trim())}
-                  isJobAnalysisStale={isAnalysisStale}
-                  jobId={job.id}
-                />
-              }
-            />
+            <CardContent>
+              <AIInsightsPanel
+                analysisContent={
+                  <JobAnalysisCard
+                    analysis={job.analysis}
+                    hasAnalyzableDescription={hasAnalyzableJobDescription(job.description)}
+                    isDescriptionTooLong={
+                      job.description ? isJobDescriptionTooLong(job.description) : false
+                    }
+                    isStale={isAnalysisStale}
+                    descriptionLength={job.description?.length ?? 0}
+                    jobId={job.id}
+                  />
+                }
+                matchContent={
+                  <JobMatchCard
+                    hasJobAnalysis={hasJobAnalysis}
+                    hasProfile={Boolean(profile)}
+                    hasResumeText={Boolean(profile?.resumeText?.trim())}
+                    isJobAnalysisStale={isAnalysisStale}
+                    jobId={job.id}
+                  />
+                }
+                prepContent={
+                  <InterviewPrepCard
+                    hasJobAnalysis={hasJobAnalysis}
+                    hasProfile={Boolean(profile)}
+                    hasResumeText={Boolean(profile?.resumeText?.trim())}
+                    isJobAnalysisStale={isAnalysisStale}
+                    jobId={job.id}
+                  />
+                }
+              />
+            </CardContent>
           </Card>
 
           <Card>
@@ -248,21 +264,21 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
                 Capture recruiter updates, interview notes, and decision context.
               </CardDescription>
             </CardHeader>
-            <div className="space-y-5">
+            <CardContent className="space-y-5">
               <NoteForm jobId={job.id} />
               {notes.length > 0 ? (
                 <NotesList jobId={job.id} notes={notes} />
               ) : (
-                <div className="rounded-md border border-dashed border-slate-300 bg-slate-50 p-6 text-center">
-                  <p className="text-sm font-medium text-slate-950">
+                <div className="rounded-xl bg-slate-100/70 p-6 text-center dark:bg-slate-900/60">
+                  <p className="text-sm font-medium text-slate-950 dark:text-slate-100">
                     No notes yet
                   </p>
-                  <p className="mt-1 text-sm text-slate-600">
+                  <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
                     Add the first note to keep context with this job.
                   </p>
                 </div>
               )}
-            </div>
+            </CardContent>
           </Card>
         </div>
 
@@ -274,7 +290,12 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
                 Archive this role or permanently remove it from your tracker.
               </CardDescription>
             </CardHeader>
-            <JobManagementActions jobId={job.id} isArchived={job.status === "ARCHIVED"} />
+            <CardContent>
+              <JobManagementActions
+                jobId={job.id}
+                isArchived={job.status === "ARCHIVED"}
+              />
+            </CardContent>
           </Card>
         </div>
       </div>
