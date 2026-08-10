@@ -6,6 +6,15 @@ It should document what changed, why it mattered, and what the next step is. It 
 
 ---
 
+## 2026-08-10
+
+### Changes
+- Rewrote the README as a recruiter-facing product overview centered on the live app, current product screenshots, grouped capabilities, and a compact technical summary.
+- Removed duplicated implementation, setup, deployment, status, and roadmap detail while retaining links to the deeper documentation in `docs/`.
+
+### Next Step
+- Keep the README screenshots aligned with the deployed product after future UI polish passes.
+
 ## 2026-08-09
 
 ### Changes
