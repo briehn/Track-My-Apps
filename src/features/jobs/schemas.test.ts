@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   createJobSchema,
+  deleteJobSchema,
   jobImportSeedSchema,
   jobDraftSchema,
   updateJobStatusSchema,
@@ -175,5 +176,14 @@ describe("updateJobStatusSchema", () => {
         status: "PENDING",
       }).success,
     ).toBe(false);
+  });
+});
+
+describe("deleteJobSchema", () => {
+  it("keeps permanent deletion behind an explicit confirmation value", () => {
+    expect(deleteJobSchema.safeParse({ jobId: "job_123" }).success).toBe(false);
+    expect(
+      deleteJobSchema.safeParse({ jobId: "job_123", confirmDelete: "on" }).success,
+    ).toBe(true);
   });
 });

@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { normalizeImportedHtmlToPlainText } from "@/features/jobs/importers/html-to-plain-text";
+import { normalizeImportedEmploymentType } from "@/features/jobs/importers/employment-type";
 import type { LeverJobSource } from "@/features/jobs/importers/job-url";
 import type { JobImportResult, JobImportWarning } from "@/features/jobs/importers/types";
 import { inferImportedRemoteType } from "@/features/jobs/importers/work-mode";
@@ -88,31 +89,6 @@ async function fetchLeverJson(url: URL): Promise<unknown> {
   }
 }
 
-function normalizeEmploymentType(value: string | null | undefined) {
-  const normalizedValue = value?.toLocaleLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
-
-  switch (normalizedValue) {
-    case "full time":
-    case "fulltime":
-    case "salaried full time":
-      return "FULL_TIME" as const;
-    case "part time":
-    case "parttime":
-      return "PART_TIME" as const;
-    case "contract":
-    case "contractor":
-      return "CONTRACT" as const;
-    case "intern":
-    case "internship":
-      return "INTERNSHIP" as const;
-    case "temp":
-    case "temporary":
-      return "TEMPORARY" as const;
-    default:
-      return undefined;
-  }
-}
-
 function normalizeLeverUrl(value: string | null | undefined, fallback: string) {
   if (!value) {
     return { url: fallback, warning: undefined };
@@ -156,7 +132,7 @@ function toJobImportSeed(
   const normalizedUrl = normalizeLeverUrl(response.hostedUrl, source.canonicalUrl);
   const description = response.descriptionPlain?.trim() ||
     (response.description ? normalizeImportedHtmlToPlainText(response.description) : undefined);
-  const employmentType = normalizeEmploymentType(response.categories?.commitment);
+  const employmentType = normalizeImportedEmploymentType(response.categories?.commitment);
   const remoteType = inferImportedRemoteType({
     description,
     location: response.categories?.location,

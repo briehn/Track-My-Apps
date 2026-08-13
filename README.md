@@ -13,8 +13,8 @@ Track My Apps is a private job-search workspace for organizing applications, sta
 - **Private workspace:** Google sign-in and account-scoped application data.
 - **Application tracking:** Save roles, update statuses, add notes and dates, then archive or remove applications.
 - **Search focus:** A dashboard surfaces follow-ups, upcoming deadlines, missing analysis, interview preparation, and pipeline progress.
-- **Flexible job views:** Browse active or archived applications in card or table layouts, with search, filters, and sorting.
-- **Portable data:** Review imported CSV rows or supported Greenhouse/Lever job URLs before explicitly saving, and export applications as CSV or formatted XLSX.
+- **Flexible job views:** Browse active or archived applications in card or table layouts, with search, filters, sorting, and inline status/archive/delete actions.
+- **Portable data:** Review imported CSV rows or supported Greenhouse, Lever, and public `JobPosting` JSON-LD URLs before explicitly saving, and export applications as CSV or formatted XLSX.
 - **Career profile and resume intake:** Maintain a canonical profile and import text, DOCX, or PDF resumes for review-first profile suggestions.
 - **Contextual AI tools:** Analyze saved job descriptions, compare them with a profile, and generate interview-preparation guidance with production usage limits.
 

@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { safeExternalUrlSchema } from "@/lib/url";
+import { APPLICATION_STATUSES } from "@/features/jobs/status";
 
 const containsLetter = /[A-Za-z]/;
 
@@ -114,7 +115,7 @@ export type DeleteJobInput = z.infer<typeof deleteJobSchema>;
 
 export const updateJobStatusSchema = z.object({
   jobId: z.string().min(1, "Job is required."),
-  status: z.enum(["SAVED", "APPLIED", "INTERVIEWING", "OFFER", "REJECTED", "ARCHIVED"]),
+  status: z.enum(APPLICATION_STATUSES),
 });
 
 export type UpdateJobStatusInput = z.infer<typeof updateJobStatusSchema>;

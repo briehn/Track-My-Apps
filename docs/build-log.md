@@ -20,12 +20,15 @@ It should document what changed, why it mattered, and what the next step is. It 
 - Introduced source-independent `JobImportSeed` for review-stage data. It lets Lever populate reliable fields while leaving its unavailable company value blank; the existing `JobDraft`/create-job validation still requires the user to provide Company before saving.
 - Corrected Lever response compatibility for the real-world `workplaceType: "onsite"` variant and normalized `Salaried, full-time` to the existing full-time enum, with a regression fixture from a public posting.
 - Lever imports now add a conservatively formatted company suggestion from the hosted URL's site token and require the user to verify it through a non-blocking review warning.
+- Added a compact per-job quick-actions menu to both Jobs Cards and Table views. It reuses the existing user-scoped status, archive, and delete server actions, keeps external posting links safe, and confirms permanent deletion before submission.
+- Added public `JobPosting` JSON-LD importing behind a dedicated server-side safe-fetch boundary. It uses DNS/IP validation, pinned resolved addresses, redirect revalidation, short timeouts, HTML-only content checks, and a response-size cap before extracting deterministic JSON-LD into the existing review flow.
+- Fixed the pinned DNS lookup callback for Node's `all: true` connection mode. The safe fetcher now returns the correct validated address shape in both lookup modes without re-resolving DNS or weakening SSRF protections.
 
 ### Notes
 - Both adapters use known public API origins, which keeps URL imports deterministic and avoids generic HTML fetching or browser automation.
 
 ### Next Step
-- Perform a manual authenticated Lever review-and-save smoke test before considering a broader deterministic source such as JSON-LD.
+- Perform an authenticated smoke test on a few public JSON-LD job pages before considering a broader extraction path.
 
 ## 2026-08-10
 

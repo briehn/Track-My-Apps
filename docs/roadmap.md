@@ -162,9 +162,10 @@ Track My Apps now has a complete, deployed MVP with several post-MVP slices alre
 
 ### Phase 20: Job URL Importing
 
-- Allow pasting a job URL to prefill job details.
-- Keep a manual review and edit step before saving.
-- Keep this narrow and manual-review focused because scraping can become unreliable.
+- Implemented a review-first URL import path for Greenhouse, Lever, and public pages that expose schema.org `JobPosting` JSON-LD.
+- Keep manual review and explicit save in the existing Add Job form; importers never write directly to the database.
+- Public-page retrieval is constrained by a server-side safe-fetch boundary rather than generic browser scraping.
+- Future work can add more deterministic adapters before considering unreliable visual scraping or browser automation.
 - Consider future `JobPosting` and `UserSavedJob` normalization if the feature expands.
 
 ### Phase 21: Search, Filtering, and Organization

@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
+import { JobQuickActions } from "@/features/jobs/components/job-quick-actions";
 import type { JobListItem } from "@/features/jobs/queries";
 import { statusBadgeVariants, statusLabels } from "@/features/jobs/status";
 
@@ -80,12 +81,15 @@ export function JobsTable({ jobs }: JobsTableProps) {
                 {formatDate(job.createdAt)}
               </td>
               <td className="px-3 py-3">
-                <Link
-                  href={`/jobs/${job.id}`}
-                  className="text-sm font-medium text-slate-900 underline-offset-2 hover:underline focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 dark:text-slate-100"
-                >
-                  View
-                </Link>
+                <div className="flex items-center justify-end gap-1">
+                  <Link
+                    href={`/jobs/${job.id}`}
+                    className="text-sm font-medium text-slate-900 underline-offset-2 hover:underline focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 dark:text-slate-100"
+                  >
+                    View
+                  </Link>
+                  <JobQuickActions job={job} />
+                </div>
               </td>
             </tr>
           ))}

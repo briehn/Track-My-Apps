@@ -4,7 +4,7 @@ import { useActionState, useRef } from "react";
 
 import { updateJobStatus, type UpdateJobStatusActionState } from "@/features/jobs/actions";
 import type { JobDetail } from "@/features/jobs/queries";
-import { statusLabels } from "@/features/jobs/status";
+import { applicationStatusOptions } from "@/features/jobs/status";
 
 type JobStatusFormProps = {
   jobId: string;
@@ -12,15 +12,6 @@ type JobStatusFormProps = {
 };
 
 const initialState: UpdateJobStatusActionState = {};
-
-const statusOptions: Array<{ value: JobDetail["status"]; label: string }> = [
-  { value: "SAVED", label: statusLabels.SAVED },
-  { value: "APPLIED", label: statusLabels.APPLIED },
-  { value: "INTERVIEWING", label: statusLabels.INTERVIEWING },
-  { value: "OFFER", label: statusLabels.OFFER },
-  { value: "REJECTED", label: statusLabels.REJECTED },
-  { value: "ARCHIVED", label: statusLabels.ARCHIVED },
-];
 
 export function JobStatusForm({
   jobId,
@@ -49,7 +40,7 @@ export function JobStatusForm({
         }}
         className="mt-1 h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-950 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500"
       >
-        {statusOptions.map((option) => (
+        {applicationStatusOptions.map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}
           </option>

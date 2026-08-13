@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   APPLICATION_STATUSES,
+  applicationStatusOptions,
   isApplicationStatus,
   statusBadgeVariants,
   statusLabels,
@@ -24,6 +25,12 @@ describe("status metadata", () => {
   it("covers every application status with a badge variant", () => {
     expect(Object.keys(statusBadgeVariants).sort()).toEqual(
       [...APPLICATION_STATUSES].sort(),
+    );
+  });
+
+  it("provides menu options from the same canonical status set", () => {
+    expect(applicationStatusOptions.map(({ value }) => value)).toEqual(
+      APPLICATION_STATUSES,
     );
   });
 });

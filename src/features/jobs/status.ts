@@ -31,6 +31,11 @@ export const statusLabels: Record<JobStatus, string> = {
   ARCHIVED: "Archived",
 };
 
+export const applicationStatusOptions = APPLICATION_STATUSES.map((value) => ({
+  value,
+  label: statusLabels[value],
+}));
+
 export const statusBadgeVariants: Record<
   JobStatus,
   "neutral" | "success" | "warning" | "danger" | "info"

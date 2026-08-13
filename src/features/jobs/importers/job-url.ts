@@ -26,13 +26,22 @@ export type LeverJobSource = {
   submittedUrl: string;
 };
 
-export type DetectedJobImportSource = GreenhouseJobSource | LeverJobSource;
+export type JsonLdJobSource = {
+  canonicalUrl: string;
+  kind: "JSON_LD";
+  submittedUrl: string;
+};
+
+export type DetectedJobImportSource =
+  | GreenhouseJobSource
+  | LeverJobSource
+  | JsonLdJobSource;
 
 export type JobUrlDetectionResult =
   | { source: DetectedJobImportSource; success: true }
   | {
       error: {
-        code: "INVALID_URL" | "UNSUPPORTED_SOURCE";
+        code: "INVALID_URL" | "UNSAFE_URL" | "UNSUPPORTED_SOURCE";
         message: string;
       };
       success: false;
@@ -123,6 +132,15 @@ export function detectJobImportSource(submittedUrl: string): JobUrlDetectionResu
   }
 
   const url = new URL(parsedUrl.data);
+  if (url.username || url.password) {
+    return {
+      error: {
+        code: "UNSAFE_URL",
+        message: "This URL can't be imported.",
+      },
+      success: false,
+    };
+  }
   const greenhouseSource = getGreenhouseJobSource(url, parsedUrl.data);
 
   if (greenhouseSource) {
@@ -135,11 +153,25 @@ export function detectJobImportSource(submittedUrl: string): JobUrlDetectionResu
     return { source: leverSource, success: true };
   }
 
+  if (
+    GREENHOUSE_JOB_HOSTS.has(url.hostname.toLocaleLowerCase()) ||
+    LEVER_JOB_HOSTS.has(url.hostname.toLocaleLowerCase())
+  ) {
+    return {
+      error: {
+        code: "UNSUPPORTED_SOURCE",
+        message: "This job URL source is not supported yet.",
+      },
+      success: false,
+    };
+  }
+
   return {
-    error: {
-      code: "UNSUPPORTED_SOURCE",
-      message: "This job URL source is not supported yet.",
+    source: {
+      canonicalUrl: toCanonicalUrl(url),
+      kind: "JSON_LD",
+      submittedUrl: parsedUrl.data,
     },
-    success: false,
+    success: true,
   };
 }

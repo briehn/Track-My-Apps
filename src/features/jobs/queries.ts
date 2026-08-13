@@ -102,6 +102,7 @@ export async function getJobsForCurrentUser(
       location: true,
       remoteType: true,
       employmentType: true,
+      url: true,
       status: true,
       deadline: true,
       followUpAt: true,

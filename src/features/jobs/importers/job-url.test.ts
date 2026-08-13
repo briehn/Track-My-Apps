@@ -63,11 +63,22 @@ describe("detectJobImportSource", () => {
     });
   });
 
-  it("reports valid but unsupported URLs distinctly", () => {
-    expect(detectJobImportSource("https://jobs.example.com/openings/42")).toEqual({
+  it("routes other valid public job URLs to the JSON-LD importer", () => {
+    expect(detectJobImportSource("https://jobs.example.com/openings/42#apply")).toEqual({
+      source: {
+        canonicalUrl: "https://jobs.example.com/openings/42",
+        kind: "JSON_LD",
+        submittedUrl: "https://jobs.example.com/openings/42#apply",
+      },
+      success: true,
+    });
+  });
+
+  it("rejects embedded URL credentials before selecting an importer", () => {
+    expect(detectJobImportSource("https://user:pass@jobs.example.com/openings/42")).toEqual({
       error: {
-        code: "UNSUPPORTED_SOURCE",
-        message: "This job URL source is not supported yet.",
+        code: "UNSAFE_URL",
+        message: "This URL can't be imported.",
       },
       success: false,
     });
