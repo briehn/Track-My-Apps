@@ -4,9 +4,9 @@ import { describe, expect, it } from "vitest";
 
 import {
   importGreenhouseJob,
-  inferGreenhouseRemoteType,
-  normalizeGreenhouseDescription,
 } from "@/features/jobs/importers/greenhouse";
+import { normalizeImportedHtmlToPlainText } from "@/features/jobs/importers/html-to-plain-text";
+import { inferImportedRemoteType } from "@/features/jobs/importers/work-mode";
 import { detectJobImportSource } from "@/features/jobs/importers/job-url";
 
 async function loadFixture() {
@@ -42,7 +42,7 @@ describe("importGreenhouseJob", () => {
       return;
     }
 
-    expect(result.draft).toMatchObject({
+    expect(result.seed).toMatchObject({
       company: "Acme Labs",
       description: "About the role\n\nBuild reliable product experiences with a collaborative engineering team.",
       location: "New York, NY (Hybrid)",
@@ -51,7 +51,7 @@ describe("importGreenhouseJob", () => {
       title: "Senior Product Engineer",
       url: "https://boards.greenhouse.io/acmelabs/jobs/44444?gh_src=career_site",
     });
-    expect(result.draft.deadline?.toISOString()).toBe("2026-09-01T23:59:59.000Z");
+    expect(result.seed.deadline?.toISOString()).toBe("2026-09-01T23:59:59.000Z");
     expect(result.warnings).toEqual([]);
   });
 
@@ -67,7 +67,7 @@ describe("importGreenhouseJob", () => {
       return;
     }
 
-    expect(result.draft.deadline).toBeUndefined();
+    expect(result.seed.deadline).toBeUndefined();
     expect(result.warnings).toEqual([
       {
         code: "INVALID_APPLICATION_DEADLINE",
@@ -102,17 +102,17 @@ describe("importGreenhouseJob", () => {
       return;
     }
 
-    expect(result.draft.description).toBe(
+    expect(result.seed.description).toBe(
       "At Algolia — build search experiences & collaborate with teams.\n\nYour role will consist of:\n\n- Building solutions\n- Running experiments\n  - Measuring results\n\nWe support remote and hybrid employees through a flexible workplace strategy.",
     );
-    expect(result.draft.remoteType).toBe("REMOTE");
+    expect(result.seed.remoteType).toBe("REMOTE");
   });
 });
 
-describe("normalizeGreenhouseDescription", () => {
+describe("normalizeImportedHtmlToPlainText", () => {
   it("preserves paragraphs, lists, bold text, entities, and normalized whitespace", () => {
     expect(
-      normalizeGreenhouseDescription(
+      normalizeImportedHtmlToPlainText(
         "<p>  Build <strong>reliable</strong>&nbsp;systems &amp; services &mdash; together. </p><ul><li>First item</li><li>Second item<ul><li>Nested item</li></ul></li></ul>",
       ),
     ).toBe(
@@ -121,36 +121,36 @@ describe("normalizeGreenhouseDescription", () => {
   });
 });
 
-describe("inferGreenhouseRemoteType", () => {
+describe("inferImportedRemoteType", () => {
   it.each(["Remote US", "US - Remote", "Remote", "Remote, United States"])(
     "infers REMOTE from the structured location %s",
     (location) => {
-      expect(inferGreenhouseRemoteType(location)).toBe("REMOTE");
+      expect(inferImportedRemoteType({ location })).toBe("REMOTE");
     },
   );
 
   it("keeps a remote location authoritative over generic hybrid boilerplate", () => {
     expect(
-      inferGreenhouseRemoteType(
-        "Remote US",
-        "We support remote and hybrid employees through a flexible workplace strategy.",
-      ),
+      inferImportedRemoteType({
+        description: "We support remote and hybrid employees through a flexible workplace strategy.",
+        location: "Remote US",
+      }),
     ).toBe("REMOTE");
   });
 
   it("infers HYBRID from explicit role location or narrowly phrased role requirements", () => {
-    expect(inferGreenhouseRemoteType("New York, NY (Hybrid)")).toBe("HYBRID");
-    expect(inferGreenhouseRemoteType("Hybrid - 3 days in office")).toBe("HYBRID");
+    expect(inferImportedRemoteType({ location: "New York, NY (Hybrid)" })).toBe("HYBRID");
+    expect(inferImportedRemoteType({ location: "Hybrid - 3 days in office" })).toBe("HYBRID");
     expect(
-      inferGreenhouseRemoteType(
-        "New York, NY",
-        "This role requires three days per week in our NYC office.",
-      ),
+      inferImportedRemoteType({
+        description: "This role requires three days per week in our NYC office.",
+        location: "New York, NY",
+      }),
     ).toBe("HYBRID");
   });
 
   it("leaves onsite and ambiguous locations undefined without reliable work-mode evidence", () => {
-    expect(inferGreenhouseRemoteType("New York, NY")).toBeUndefined();
-    expect(inferGreenhouseRemoteType("United States")).toBeUndefined();
+    expect(inferImportedRemoteType({ location: "New York, NY" })).toBeUndefined();
+    expect(inferImportedRemoteType({ location: "United States" })).toBeUndefined();
   });
 });

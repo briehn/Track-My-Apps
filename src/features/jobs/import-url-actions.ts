@@ -7,12 +7,12 @@ import {
 } from "@/features/jobs/importers/duplicate-detection";
 import { importJobFromUrl } from "@/features/jobs/importers/import-job-url";
 import type { JobImportWarning } from "@/features/jobs/importers/types";
-import type { JobDraft } from "@/features/jobs/schemas";
+import type { JobImportSeed } from "@/features/jobs/schemas";
 import { prisma } from "@/server/db/prisma";
 
 export type JobUrlImportActionResult =
   | {
-      draft: JobDraft;
+      seed: JobImportSeed;
       duplicate?: JobImportDuplicateWarning;
       success: true;
       warnings: JobImportWarning[];
@@ -61,12 +61,12 @@ export async function importJobUrlForCurrentUser(
 
   const duplicate = await findJobImportDuplicateForUser(
     user.id,
-    result.draft,
+    result.seed,
     getJobsForDuplicateDetection,
   );
 
   return {
-    draft: result.draft,
+    seed: result.seed,
     ...(duplicate ? { duplicate } : {}),
     success: true,
     warnings: result.warnings,

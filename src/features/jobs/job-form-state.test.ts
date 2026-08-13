@@ -84,4 +84,16 @@ describe("mergeImportedJobDraft", () => {
       title: "My Title",
     });
   });
+
+  it("keeps a source-missing company blank so the existing save validation requires review", () => {
+    expect(
+      mergeImportedJobDraft({}, {
+        source: "Lever",
+        title: "Platform Engineer",
+      }),
+    ).toEqual({
+      source: "Lever",
+      title: "Platform Engineer",
+    });
+  });
 });

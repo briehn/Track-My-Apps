@@ -16,12 +16,16 @@ It should document what changed, why it mattered, and what the next step is. It 
 - Added authenticated, user-scoped duplicate warnings that prefer canonical URL matches and use company/title only when an imported URL is unavailable.
 - Normalized Greenhouse job descriptions from raw or entity-encoded HTML into safe readable plain text, preserving paragraph and nested-list structure without rendering external markup.
 - Added deterministic Greenhouse work-mode inference that prioritizes structured location signals (`Remote`, `Hybrid`) and ignores generic workplace boilerplate in descriptions.
+- Added Lever URL importing through Lever's constrained public postings APIs, including global and EU hosted job URLs, structured work-mode/salary/employment-type mapping, and fixture-backed validation.
+- Introduced source-independent `JobImportSeed` for review-stage data. It lets Lever populate reliable fields while leaving its unavailable company value blank; the existing `JobDraft`/create-job validation still requires the user to provide Company before saving.
+- Corrected Lever response compatibility for the real-world `workplaceType: "onsite"` variant and normalized `Salaried, full-time` to the existing full-time enum, with a regression fixture from a public posting.
+- Lever imports now add a conservatively formatted company suggestion from the hosted URL's site token and require the user to verify it through a non-blocking review warning.
 
 ### Notes
-- The first adapter uses Greenhouse's known public API origin, which keeps this initial extraction path deterministic and avoids introducing generic HTML fetching or browser automation.
+- Both adapters use known public API origins, which keeps URL imports deterministic and avoids generic HTML fetching or browser automation.
 
 ### Next Step
-- Perform a manual authenticated smoke test of the Add Job import/review flow before considering a second importer source.
+- Perform a manual authenticated Lever review-and-save smoke test before considering a broader deterministic source such as JSON-LD.
 
 ## 2026-08-10
 

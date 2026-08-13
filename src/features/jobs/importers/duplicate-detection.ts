@@ -1,4 +1,4 @@
-import type { JobDraft } from "@/features/jobs/schemas";
+import type { JobImportSeed } from "@/features/jobs/schemas";
 
 type ExistingJobForDuplicateDetection = {
   company: string;
@@ -42,7 +42,7 @@ export function normalizeJobUrl(value: string | undefined | null) {
 }
 
 export function findJobDraftDuplicate(
-  draft: JobDraft,
+  draft: JobImportSeed,
   existingJobs: ExistingJobForDuplicateDetection[],
 ): JobImportDuplicateWarning | undefined {
   const normalizedDraftUrl = normalizeJobUrl(draft.url);
@@ -55,6 +55,10 @@ export function findJobDraftDuplicate(
     return duplicateByUrl
       ? { jobId: duplicateByUrl.id, reason: "URL" }
       : undefined;
+  }
+
+  if (!draft.company || !draft.title) {
+    return undefined;
   }
 
   const normalizedDraftCompanyTitle = `${normalizeLabel(draft.company)}::${normalizeLabel(draft.title)}`;
@@ -71,7 +75,7 @@ export function findJobDraftDuplicate(
 
 export async function findJobImportDuplicateForUser(
   userId: string,
-  draft: JobDraft,
+  draft: JobImportSeed,
   findJobsForUser: FindJobsForUser,
 ) {
   const existingJobs = await findJobsForUser(userId);

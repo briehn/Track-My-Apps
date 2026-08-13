@@ -4,6 +4,10 @@ const GREENHOUSE_JOB_HOSTS = new Set([
   "boards.greenhouse.io",
   "job-boards.greenhouse.io",
 ]);
+const LEVER_JOB_HOSTS: ReadonlyMap<string, "EU" | "GLOBAL"> = new Map([
+  ["jobs.lever.co", "GLOBAL"],
+  ["jobs.eu.lever.co", "EU"],
+] as const);
 
 export type GreenhouseJobSource = {
   boardToken: string;
@@ -13,7 +17,16 @@ export type GreenhouseJobSource = {
   submittedUrl: string;
 };
 
-export type DetectedJobImportSource = GreenhouseJobSource;
+export type LeverJobSource = {
+  canonicalUrl: string;
+  instance: "EU" | "GLOBAL";
+  kind: "LEVER";
+  postingId: string;
+  site: string;
+  submittedUrl: string;
+};
+
+export type DetectedJobImportSource = GreenhouseJobSource | LeverJobSource;
 
 export type JobUrlDetectionResult =
   | { source: DetectedJobImportSource; success: true }
@@ -66,6 +79,36 @@ function getGreenhouseJobSource(
   };
 }
 
+function getLeverJobSource(url: URL, submittedUrl: string): LeverJobSource | null {
+  const instance = LEVER_JOB_HOSTS.get(url.hostname.toLocaleLowerCase());
+  const pathSegments = url.pathname.split("/").filter(Boolean);
+
+  if (!instance || pathSegments.length !== 2 || !/^[A-Za-z0-9-]+$/.test(pathSegments[1])) {
+    return null;
+  }
+
+  let site: string;
+
+  try {
+    site = decodeURIComponent(pathSegments[0]);
+  } catch {
+    return null;
+  }
+
+  if (!site) {
+    return null;
+  }
+
+  return {
+    canonicalUrl: toCanonicalUrl(url),
+    instance,
+    kind: "LEVER",
+    postingId: pathSegments[1],
+    site,
+    submittedUrl,
+  };
+}
+
 export function detectJobImportSource(submittedUrl: string): JobUrlDetectionResult {
   const parsedUrl = safeExternalUrlSchema.safeParse(submittedUrl);
 
@@ -84,6 +127,12 @@ export function detectJobImportSource(submittedUrl: string): JobUrlDetectionResu
 
   if (greenhouseSource) {
     return { source: greenhouseSource, success: true };
+  }
+
+  const leverSource = getLeverJobSource(url, parsedUrl.data);
+
+  if (leverSource) {
+    return { source: leverSource, success: true };
   }
 
   return {

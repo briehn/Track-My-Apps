@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   createJobSchema,
+  jobImportSeedSchema,
   jobDraftSchema,
   updateJobStatusSchema,
 } from "@/features/jobs/schemas";
@@ -32,6 +33,21 @@ describe("jobDraftSchema", () => {
   it("requires company and title", () => {
     expect(jobDraftSchema.safeParse({ company: "Acme" }).success).toBe(false);
     expect(jobDraftSchema.safeParse({ title: "Engineer" }).success).toBe(false);
+  });
+});
+
+describe("jobImportSeedSchema", () => {
+  it("accepts review-stage imported values when a source cannot provide company", () => {
+    expect(
+      jobImportSeedSchema.parse({
+        source: "Lever",
+        title: "Platform Engineer",
+        url: "https://jobs.lever.co/acme/123",
+      }),
+    ).toMatchObject({
+      source: "Lever",
+      title: "Platform Engineer",
+    });
   });
 });
 

@@ -1,6 +1,7 @@
-import { parseDocument } from "htmlparser2";
 import { z } from "zod";
 
+import { normalizeImportedHtmlToPlainText } from "@/features/jobs/importers/html-to-plain-text";
+import { inferImportedRemoteType } from "@/features/jobs/importers/work-mode";
 import { jobDraftSchema, type JobDraft } from "@/features/jobs/schemas";
 import type { GreenhouseJobSource } from "@/features/jobs/importers/job-url";
 import type { JobImportResult, JobImportWarning } from "@/features/jobs/importers/types";
@@ -8,23 +9,6 @@ import type { JobImportResult, JobImportWarning } from "@/features/jobs/importer
 const GREENHOUSE_API_ORIGIN = "https://boards-api.greenhouse.io";
 const GREENHOUSE_REQUEST_TIMEOUT_MS = 10_000;
 const GREENHOUSE_MAX_RESPONSE_BYTES = 1_000_000;
-
-const BLOCK_TAGS = new Set([
-  "article",
-  "div",
-  "h1",
-  "h2",
-  "h3",
-  "h4",
-  "h5",
-  "h6",
-  "p",
-  "pre",
-  "section",
-]);
-const IGNORED_TAGS = new Set(["script", "style", "noscript"]);
-
-type GreenhouseHtmlNode = ReturnType<typeof parseDocument>["children"][number];
 
 const greenhouseJobResponseSchema = z.object({
   absolute_url: z.string().optional(),
@@ -41,147 +25,6 @@ const greenhouseJobResponseSchema = z.object({
 });
 
 export type GreenhouseJsonFetcher = (url: URL) => Promise<unknown>;
-
-function hasEncodedHtmlTag(value: string) {
-  return /&(?:amp;)?lt;\s*\/?\s*[a-z][a-z0-9:-]*(?:\s|&(?:amp;)?gt;)/i.test(value);
-}
-
-function decodeEncodedMarkupLayer(value: string) {
-  const entities: Record<string, string> = {
-    "#39": "'",
-    amp: "&",
-    apos: "'",
-    gt: ">",
-    lt: "<",
-    quot: '"',
-  };
-
-  return value.replace(/&(amp|lt|gt|quot|apos|#39);/gi, (entity) => {
-    return entities[entity.slice(1, -1).toLocaleLowerCase()] ?? entity;
-  });
-}
-
-function unwrapEncodedGreenhouseMarkup(value: string) {
-  let normalizedValue = value;
-
-  // Greenhouse sometimes entity-encodes the entire HTML document. Unwrap only
-  // enough layers to expose markup to the parser, never repeatedly decode text.
-  for (let depth = 0; depth < 2 && hasEncodedHtmlTag(normalizedValue); depth += 1) {
-    normalizedValue = decodeEncodedMarkupLayer(normalizedValue);
-  }
-
-  return normalizedValue;
-}
-
-function normalizePlainText(value: string) {
-  const lines = value.replace(/\u00a0/g, " ").replace(/\r\n?/g, "\n").split("\n");
-  const normalizedLines = lines.map((line) => {
-    const leadingWhitespace = /^\s*/.exec(line)?.[0] ?? "";
-    const normalizedContent = line.slice(leadingWhitespace.length).replace(/\s+/g, " ").trim();
-
-    if (!normalizedContent) {
-      return "";
-    }
-
-    return `${leadingWhitespace ? "  " : ""}${normalizedContent}`;
-  });
-
-  return normalizedLines.join("\n").replace(/\n{3,}/g, "\n\n").trim();
-}
-
-export function normalizeGreenhouseDescription(content: string) {
-  const document = parseDocument(unwrapEncodedGreenhouseMarkup(content), {
-    decodeEntities: true,
-  });
-  let output = "";
-
-  const appendText = (value: string) => {
-    output += value;
-  };
-  const appendBreak = (count = 1) => {
-    if (!output.endsWith("\n".repeat(count))) {
-      output = output.replace(/\n+$/, "") + "\n".repeat(count);
-    }
-  };
-
-  const visit = (nodes: GreenhouseHtmlNode[], listDepth = 0): void => {
-    for (const node of nodes) {
-      if (node.type === "text") {
-        appendText(node.data);
-        continue;
-      }
-
-      if (node.type !== "tag") {
-        continue;
-      }
-
-      const tagName = node.name.toLocaleLowerCase();
-
-      if (IGNORED_TAGS.has(tagName)) {
-        continue;
-      }
-
-      if (tagName === "br") {
-        appendBreak();
-        continue;
-      }
-
-      if (tagName === "ul" || tagName === "ol") {
-        const listBreakCount = listDepth > 0 ? 1 : 2;
-        appendBreak(listBreakCount);
-        visit(node.children, listDepth + 1);
-        appendBreak(listBreakCount);
-        continue;
-      }
-
-      if (tagName === "li") {
-        appendBreak();
-        appendText(`${"  ".repeat(Math.max(0, listDepth - 1))}- `);
-        visit(node.children, listDepth);
-        appendBreak();
-        continue;
-      }
-
-      if (BLOCK_TAGS.has(tagName)) {
-        appendBreak(2);
-        visit(node.children, listDepth);
-        appendBreak(2);
-        continue;
-      }
-
-      visit(node.children, listDepth);
-    }
-  };
-
-  visit(document.children);
-  return normalizePlainText(output);
-}
-
-export function inferGreenhouseRemoteType(
-  location: string | null | undefined,
-  description?: string | null,
-) {
-  const normalizedLocation = location?.toLocaleLowerCase() ?? "";
-
-  if (/\bremote\b/.test(normalizedLocation)) {
-    return "REMOTE" as const;
-  }
-
-  if (/\bhybrid\b/.test(normalizedLocation)) {
-    return "HYBRID" as const;
-  }
-
-  const normalizedDescription = description?.toLocaleLowerCase() ?? "";
-  const hasExplicitHybridRoleStatement =
-    /\b(?:this|the)\s+(?:role|position|job)\s+(?:is|will be|requires?)\b[^.\n]{0,120}\bhybrid\b/.test(
-      normalizedDescription,
-    ) ||
-    /\b(?:this|the)\s+(?:role|position|job)\s+requires?\b[^.\n]{0,120}\b(?:day|days|week)\b[^.\n]{0,120}\b(?:in[- ]office|office)\b/.test(
-      normalizedDescription,
-    );
-
-  return hasExplicitHybridRoleStatement ? "HYBRID" : undefined;
-}
 
 function getGreenhouseApiUrl(source: GreenhouseJobSource) {
   const apiUrl = new URL(
@@ -282,7 +125,10 @@ function toJobDraft(
   const warnings: JobImportWarning[] = [];
   const normalizedUrl = normalizeGreenhouseUrl(response.absolute_url, source.canonicalUrl);
   const normalizedDeadline = normalizeDeadline(response.application_deadline);
-  const remoteType = inferGreenhouseRemoteType(response.location?.name, response.content);
+  const remoteType = inferImportedRemoteType({
+    description: response.content,
+    location: response.location?.name,
+  });
 
   if (normalizedUrl.warning) {
     warnings.push(normalizedUrl.warning);
@@ -298,7 +144,7 @@ function toJobDraft(
     source: "Greenhouse",
     url: normalizedUrl.url,
     ...(response.location?.name ? { location: response.location.name } : {}),
-    ...(response.content ? { description: normalizeGreenhouseDescription(response.content) } : {}),
+    ...(response.content ? { description: normalizeImportedHtmlToPlainText(response.content) } : {}),
     ...(remoteType ? { remoteType } : {}),
     ...(normalizedDeadline.deadline ? { deadline: normalizedDeadline.deadline } : {}),
   };
@@ -338,7 +184,7 @@ export async function importGreenhouseJob(
     }
 
     return {
-      draft: parsedDraft.data,
+      seed: parsedDraft.data,
       source,
       success: true,
       warnings,

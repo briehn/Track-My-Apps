@@ -1,5 +1,6 @@
 import { importGreenhouseJob } from "@/features/jobs/importers/greenhouse";
 import { detectJobImportSource } from "@/features/jobs/importers/job-url";
+import { importLeverJob } from "@/features/jobs/importers/lever";
 import type { JobImportResult } from "@/features/jobs/importers/types";
 
 export async function importJobFromUrl(submittedUrl: string): Promise<JobImportResult> {
@@ -12,5 +13,7 @@ export async function importJobFromUrl(submittedUrl: string): Promise<JobImportR
     };
   }
 
-  return importGreenhouseJob(detectedSource.source);
+  return detectedSource.source.kind === "GREENHOUSE"
+    ? importGreenhouseJob(detectedSource.source)
+    : importLeverJob(detectedSource.source);
 }

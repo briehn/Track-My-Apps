@@ -35,45 +35,58 @@ const optionalDate = z.preprocess((value) => {
   return trimmedValue === "" ? undefined : new Date(`${trimmedValue}T00:00:00.000Z`);
 }, z.date().optional());
 
-const jobDetailsSchema = z
-  .object({
-    company: humanReadableRequiredString(
-      "Company is required.",
-      "Company must include at least one letter.",
-    ),
-    title: humanReadableRequiredString(
-      "Title is required.",
-      "Job title must include at least one letter.",
-    ),
-    location: optionalTrimmedString,
-    remoteType: z.enum(["ONSITE", "HYBRID", "REMOTE"]).optional(),
-    employmentType: z
-      .enum(["FULL_TIME", "PART_TIME", "CONTRACT", "INTERNSHIP", "TEMPORARY"])
-      .optional(),
-    source: optionalTrimmedString,
-    url: optionalUrl,
-    salaryMin: optionalInteger,
-    salaryMax: optionalInteger,
-    salaryCurrency: optionalTrimmedString,
-    description: optionalTrimmedString,
-    deadline: optionalDate,
-  })
-  .refine(
-    (input) =>
-      input.salaryMin === undefined ||
-      input.salaryMax === undefined ||
-      input.salaryMin <= input.salaryMax,
-    {
-      message: "Minimum salary must be less than or equal to maximum salary.",
-      path: ["salaryMax"],
-    },
+const jobDetailsFields = {
+  company: humanReadableRequiredString(
+    "Company is required.",
+    "Company must include at least one letter.",
+  ),
+  title: humanReadableRequiredString(
+    "Title is required.",
+    "Job title must include at least one letter.",
+  ),
+  location: optionalTrimmedString,
+  remoteType: z.enum(["ONSITE", "HYBRID", "REMOTE"]).optional(),
+  employmentType: z
+    .enum(["FULL_TIME", "PART_TIME", "CONTRACT", "INTERNSHIP", "TEMPORARY"])
+    .optional(),
+  source: optionalTrimmedString,
+  url: optionalUrl,
+  salaryMin: optionalInteger,
+  salaryMax: optionalInteger,
+  salaryCurrency: optionalTrimmedString,
+  description: optionalTrimmedString,
+  deadline: optionalDate,
+};
+
+function hasValidSalaryRange(input: { salaryMax?: number; salaryMin?: number }) {
+  return (
+    input.salaryMin === undefined ||
+    input.salaryMax === undefined ||
+    input.salaryMin <= input.salaryMax
   );
+}
+
+const salaryRangeRefinement = {
+  message: "Minimum salary must be less than or equal to maximum salary.",
+  path: ["salaryMax"],
+};
+
+const jobDetailsSchema = z.object(jobDetailsFields).refine(hasValidSalaryRange, salaryRangeRefinement);
 
 // This is the source-independent, validated job data contract. Importers can
 // produce it without depending on a form, database client, or user identity.
 export const jobDraftSchema = jobDetailsSchema;
 
 export type JobDraft = z.infer<typeof jobDraftSchema>;
+
+// Importers may not have every required job field. A seed is review-stage data
+// only; the existing create-job schema remains the ready-to-save boundary.
+export const jobImportSeedSchema = z
+  .object(jobDetailsFields)
+  .partial()
+  .refine(hasValidSalaryRange, salaryRangeRefinement);
+
+export type JobImportSeed = z.infer<typeof jobImportSeedSchema>;
 
 export const createJobSchema = jobDraftSchema;
 

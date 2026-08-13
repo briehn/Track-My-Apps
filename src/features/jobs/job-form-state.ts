@@ -1,3 +1,5 @@
+import type { JobImportSeed } from "@/features/jobs/schemas";
+
 export const jobFormFieldNames = [
   "company",
   "title",
@@ -25,20 +27,20 @@ function toDateInputValue(date: Date | undefined) {
   return date?.toISOString().slice(0, 10);
 }
 
-export function toJobFormValues(draft: JobDraft): JobFormValues {
+export function toJobFormValues(seed: JobImportSeed): JobFormValues {
   return {
-    company: draft.company,
-    title: draft.title,
-    location: draft.location,
-    remoteType: draft.remoteType,
-    employmentType: draft.employmentType,
-    source: draft.source,
-    url: draft.url,
-    salaryMin: draft.salaryMin?.toString(),
-    salaryMax: draft.salaryMax?.toString(),
-    salaryCurrency: draft.salaryCurrency,
-    description: draft.description,
-    deadline: toDateInputValue(draft.deadline),
+    company: seed.company,
+    title: seed.title,
+    location: seed.location,
+    remoteType: seed.remoteType,
+    employmentType: seed.employmentType,
+    source: seed.source,
+    url: seed.url,
+    salaryMin: seed.salaryMin?.toString(),
+    salaryMax: seed.salaryMax?.toString(),
+    salaryCurrency: seed.salaryCurrency,
+    description: seed.description,
+    deadline: toDateInputValue(seed.deadline),
   };
 }
 
@@ -48,7 +50,7 @@ function hasMeaningfulValue(value: string | undefined) {
 
 export function mergeImportedJobDraft(
   currentValues: JobFormValues,
-  importedDraft: JobDraft,
+  importedDraft: JobImportSeed,
 ): JobFormValues {
   const importedValues = toJobFormValues(importedDraft);
   const mergedValues = { ...currentValues };
@@ -67,4 +69,3 @@ export function mergeImportedJobDraft(
 export function getFirstInvalidJobFormField(errors?: JobFormFieldErrors) {
   return jobFormFieldNames.find((fieldName) => errors?.[fieldName]?.length);
 }
-import type { JobDraft } from "@/features/jobs/schemas";

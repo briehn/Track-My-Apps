@@ -73,7 +73,7 @@ export function JobCreateForm() {
       setImportResult(result);
 
       if (result.success) {
-        setValues((currentValues) => mergeImportedJobDraft(currentValues, result.draft));
+        setValues((currentValues) => mergeImportedJobDraft(currentValues, result.seed));
       }
     });
   };
@@ -101,7 +101,7 @@ export function JobCreateForm() {
             value={importUrl}
             onChange={(event) => setImportUrl(event.currentTarget.value)}
             type="url"
-            placeholder="https://boards.greenhouse.io/..."
+            placeholder="https://..."
             className="h-10 min-w-0 flex-1 rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-950 placeholder:text-slate-400 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200"
           />
           <Button type="button" onClick={handleImport} disabled={isImporting || !importUrl.trim()}>
