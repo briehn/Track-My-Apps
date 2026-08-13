@@ -1,0 +1,16 @@
+{
+  "id": 44444,
+  "title": "Senior Product Engineer",
+  "company_name": "Acme Labs",
+  "first_published": "2026-07-15T14:00:00Z",
+  "updated_at": "2026-08-01T09:30:00Z",
+  "application_deadline": "2026-09-01T23:59:59Z",
+  "requisition_id": "ENG-442",
+  "location": {
+    "name": "New York, NY (Hybrid)"
+  },
+  "content": "<h2>About the role</h2><p>Build reliable product experiences with a collaborative engineering team.</p>",
+  "absolute_url": "https://boards.greenhouse.io/acmelabs/jobs/44444?gh_src=career_site#apply",
+  "language": "en",
+  "internal_job_id": 55555
+}

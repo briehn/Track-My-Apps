@@ -2,8 +2,38 @@ import { describe, expect, it } from "vitest";
 
 import {
   createJobSchema,
+  jobDraftSchema,
   updateJobStatusSchema,
 } from "@/features/jobs/schemas";
+
+describe("jobDraftSchema", () => {
+  it("accepts a normalized draft with the existing job creation fields", () => {
+    const result = jobDraftSchema.parse({
+      company: "  Acme Corp  ",
+      title: "  Platform Engineer  ",
+      remoteType: "REMOTE",
+      employmentType: "FULL_TIME",
+      salaryMin: 100_000,
+      salaryMax: 150_000,
+      url: " https://example.com/jobs/42 ",
+    });
+
+    expect(result).toMatchObject({
+      company: "Acme Corp",
+      employmentType: "FULL_TIME",
+      remoteType: "REMOTE",
+      salaryMax: 150_000,
+      salaryMin: 100_000,
+      title: "Platform Engineer",
+      url: "https://example.com/jobs/42",
+    });
+  });
+
+  it("requires company and title", () => {
+    expect(jobDraftSchema.safeParse({ company: "Acme" }).success).toBe(false);
+    expect(jobDraftSchema.safeParse({ title: "Engineer" }).success).toBe(false);
+  });
+});
 
 describe("createJobSchema", () => {
   it("accepts valid input and converts optional blank strings to undefined", () => {

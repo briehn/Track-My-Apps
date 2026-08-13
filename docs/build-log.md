@@ -6,6 +6,23 @@ It should document what changed, why it mattered, and what the next step is. It 
 
 ---
 
+## 2026-08-12
+
+### Changes
+- Added the source-independent `JobDraft` Zod contract and inferred TypeScript type while preserving the existing manual Add Job validation behavior.
+- Added a constrained URL-importing foundation with Greenhouse URL detection and API-only extraction; it does not fetch the submitted URL directly, write to Prisma, or change the UI.
+- Added fixture-backed tests for Greenhouse extraction, malformed optional and required external values, URL validation, fragment removal, and unsupported sources.
+- Added a compact URL import control to the existing Add Job form. Successful imports prefill only blank controlled fields, retain all manual editing and explicit save behavior, and surface non-blocking extraction warnings.
+- Added authenticated, user-scoped duplicate warnings that prefer canonical URL matches and use company/title only when an imported URL is unavailable.
+- Normalized Greenhouse job descriptions from raw or entity-encoded HTML into safe readable plain text, preserving paragraph and nested-list structure without rendering external markup.
+- Added deterministic Greenhouse work-mode inference that prioritizes structured location signals (`Remote`, `Hybrid`) and ignores generic workplace boilerplate in descriptions.
+
+### Notes
+- The first adapter uses Greenhouse's known public API origin, which keeps this initial extraction path deterministic and avoids introducing generic HTML fetching or browser automation.
+
+### Next Step
+- Perform a manual authenticated smoke test of the Add Job import/review flow before considering a second importer source.
+
 ## 2026-08-10
 
 ### Changes

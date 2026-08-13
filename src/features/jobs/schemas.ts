@@ -69,7 +69,13 @@ const jobDetailsSchema = z
     },
   );
 
-export const createJobSchema = jobDetailsSchema;
+// This is the source-independent, validated job data contract. Importers can
+// produce it without depending on a form, database client, or user identity.
+export const jobDraftSchema = jobDetailsSchema;
+
+export type JobDraft = z.infer<typeof jobDraftSchema>;
+
+export const createJobSchema = jobDraftSchema;
 
 export type CreateJobInput = z.infer<typeof createJobSchema>;
 

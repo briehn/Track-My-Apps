@@ -33,7 +33,7 @@ Track My Apps is a private job-search workspace for organizing applications, sta
 - Next.js App Router, React, TypeScript, Tailwind CSS
 - Prisma and PostgreSQL
 - NextAuth with Google OAuth
-- OpenAI, Zod, Vitest
+- OpenAI, Zod, Vitest, htmlparser2 (safe external-description text normalization)
 - Upstash Redis for production rate limiting
 
 ## Engineering
