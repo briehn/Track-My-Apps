@@ -7,6 +7,7 @@ import {
 } from "@/features/jobs/importers/duplicate-detection";
 import { importJobFromUrl } from "@/features/jobs/importers/import-job-url";
 import type { JobImportWarning } from "@/features/jobs/importers/types";
+import { getJobImportFailureMessage } from "@/features/jobs/job-import-error-message";
 import type { JobImportSeed } from "@/features/jobs/schemas";
 import { prisma } from "@/server/db/prisma";
 
@@ -21,22 +22,6 @@ export type JobUrlImportActionResult =
       message: string;
       success: false;
     };
-
-function getImportFailureMessage(code: string) {
-  if (code === "INVALID_URL") {
-    return "Enter a valid http:// or https:// job URL.";
-  }
-
-  if (code === "UNSAFE_URL") {
-    return "This URL can't be imported.";
-  }
-
-  if (code === "UNSUPPORTED_SOURCE") {
-    return "This job site isn't supported for automatic import yet. You can still add the job manually.";
-  }
-
-  return "We couldn't import this posting. You can try again or enter the details manually.";
-}
 
 async function getJobsForDuplicateDetection(userId: string) {
   return prisma.job.findMany({
@@ -58,7 +43,7 @@ export async function importJobUrlForCurrentUser(
 
   if (!result.success) {
     return {
-      message: getImportFailureMessage(result.error.code),
+      message: getJobImportFailureMessage(result.error.code),
       success: false,
     };
   }

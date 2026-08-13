@@ -13,6 +13,7 @@ export type { JobFormFieldErrors, JobFormValues } from "@/features/jobs/job-form
 type JobFormFieldsProps = {
   errors?: JobFormFieldErrors;
   defaultValues?: JobFormValues;
+  idPrefix?: string;
   values?: JobFormValues;
   onValueChange?: (fieldName: JobFormFieldName, value: string) => void;
 };
@@ -28,6 +29,7 @@ function FieldError({ errors }: { errors?: string[] }) {
 export function JobFormFields({
   errors,
   defaultValues,
+  idPrefix = "",
   values,
   onValueChange,
 }: JobFormFieldsProps) {
@@ -45,19 +47,20 @@ export function JobFormFields({
           },
         }
       : { defaultValue: defaultValues?.[fieldName] };
+  const getFieldId = (fieldName: JobFormFieldName) => `${idPrefix}${fieldName}`;
 
   return (
     <>
       <div className="grid gap-4 md:grid-cols-2">
         <div>
           <label
-            htmlFor="company"
+            htmlFor={getFieldId("company")}
             className="text-sm font-medium text-slate-950"
           >
             Company
           </label>
           <Input
-            id="company"
+            id={getFieldId("company")}
             name="company"
             autoComplete="organization"
             {...getInputProps("company")}
@@ -66,11 +69,11 @@ export function JobFormFields({
         </div>
 
         <div>
-          <label htmlFor="title" className="text-sm font-medium text-slate-950">
+          <label htmlFor={getFieldId("title")} className="text-sm font-medium text-slate-950">
             Job title
           </label>
           <Input
-            id="title"
+            id={getFieldId("title")}
             name="title"
             autoComplete="organization-title"
             {...getInputProps("title")}
@@ -82,13 +85,13 @@ export function JobFormFields({
       <div className="grid gap-4 md:grid-cols-2">
         <div>
           <label
-            htmlFor="location"
+            htmlFor={getFieldId("location")}
             className="text-sm font-medium text-slate-950"
           >
             Location
           </label>
           <Input
-            id="location"
+            id={getFieldId("location")}
             name="location"
             autoComplete="address-level2"
             {...getInputProps("location")}
@@ -97,11 +100,11 @@ export function JobFormFields({
         </div>
 
         <div>
-          <label htmlFor="url" className="text-sm font-medium text-slate-950">
+          <label htmlFor={getFieldId("url")} className="text-sm font-medium text-slate-950">
             Job URL
           </label>
           <Input
-            id="url"
+            id={getFieldId("url")}
             name="url"
             type="url"
             placeholder="https://..."
@@ -114,13 +117,13 @@ export function JobFormFields({
       <div className="grid gap-4 md:grid-cols-2">
         <div>
           <label
-            htmlFor="remoteType"
+            htmlFor={getFieldId("remoteType")}
             className="text-sm font-medium text-slate-950"
           >
             Work mode
           </label>
           <select
-            id="remoteType"
+            id={getFieldId("remoteType")}
             name="remoteType"
             {...getInputProps("remoteType")}
             className="mt-1 h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-950 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200"
@@ -135,13 +138,13 @@ export function JobFormFields({
 
         <div>
           <label
-            htmlFor="employmentType"
+            htmlFor={getFieldId("employmentType")}
             className="text-sm font-medium text-slate-950"
           >
             Employment type
           </label>
           <select
-            id="employmentType"
+            id={getFieldId("employmentType")}
             name="employmentType"
             {...getInputProps("employmentType")}
             className="mt-1 h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-950 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200"
@@ -160,13 +163,13 @@ export function JobFormFields({
       <div className="grid gap-4 md:grid-cols-3">
         <div>
           <label
-            htmlFor="salaryMin"
+            htmlFor={getFieldId("salaryMin")}
             className="text-sm font-medium text-slate-950"
           >
             Salary min
           </label>
           <Input
-            id="salaryMin"
+            id={getFieldId("salaryMin")}
             name="salaryMin"
             type="number"
             min="0"
@@ -177,13 +180,13 @@ export function JobFormFields({
 
         <div>
           <label
-            htmlFor="salaryMax"
+            htmlFor={getFieldId("salaryMax")}
             className="text-sm font-medium text-slate-950"
           >
             Salary max
           </label>
           <Input
-            id="salaryMax"
+            id={getFieldId("salaryMax")}
             name="salaryMax"
             type="number"
             min="0"
@@ -194,13 +197,13 @@ export function JobFormFields({
 
         <div>
           <label
-            htmlFor="salaryCurrency"
+            htmlFor={getFieldId("salaryCurrency")}
             className="text-sm font-medium text-slate-950"
           >
             Currency
           </label>
           <Input
-            id="salaryCurrency"
+            id={getFieldId("salaryCurrency")}
             name="salaryCurrency"
             placeholder="USD"
             {...getInputProps("salaryCurrency")}
@@ -212,13 +215,13 @@ export function JobFormFields({
       <div className="grid gap-4 md:grid-cols-2">
         <div>
           <label
-            htmlFor="source"
+            htmlFor={getFieldId("source")}
             className="text-sm font-medium text-slate-950"
           >
             Source
           </label>
           <Input
-            id="source"
+            id={getFieldId("source")}
             name="source"
             placeholder="LinkedIn, company site"
             {...getInputProps("source")}
@@ -228,13 +231,13 @@ export function JobFormFields({
 
         <div>
           <label
-            htmlFor="deadline"
+            htmlFor={getFieldId("deadline")}
             className="text-sm font-medium text-slate-950"
           >
             Application deadline
           </label>
           <Input
-            id="deadline"
+            id={getFieldId("deadline")}
             name="deadline"
             type="date"
             {...getInputProps("deadline")}
@@ -245,13 +248,13 @@ export function JobFormFields({
 
       <div>
         <label
-          htmlFor="description"
+          htmlFor={getFieldId("description")}
           className="text-sm font-medium text-slate-950"
         >
           Job description
         </label>
         <Textarea
-          id="description"
+          id={getFieldId("description")}
           name="description"
           {...getInputProps("description")}
         />

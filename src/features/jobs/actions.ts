@@ -6,12 +6,13 @@ import { z } from "zod";
 
 import { requireUser } from "@/features/auth/require-user";
 import {
-  createJobSchema,
   deleteJobSchema,
   jobIdSchema,
   updateJobSchema,
   updateJobStatusSchema,
 } from "@/features/jobs/schemas";
+import { createJobSchema } from "@/features/jobs/schemas";
+import { createJobForUser } from "@/features/jobs/job-persistence";
 import { prisma } from "@/server/db/prisma";
 
 export type CreateJobActionState = {
@@ -25,7 +26,7 @@ export async function createJob(
 ): Promise<CreateJobActionState> {
   const user = await requireUser();
 
-  const parsedInput = createJobSchema.safeParse({
+  const createInput = {
     company: formData.get("company"),
     title: formData.get("title"),
     location: formData.get("location"),
@@ -38,20 +39,15 @@ export async function createJob(
     salaryCurrency: formData.get("salaryCurrency"),
     description: formData.get("description"),
     deadline: formData.get("deadline"),
-  });
+  };
 
-  if (!parsedInput.success) {
+  const createResult = await createJobForUser(user.id, createInput);
+
+  if (!createResult.success) {
     return {
-      fieldErrors: parsedInput.error.flatten().fieldErrors,
+      fieldErrors: createResult.fieldErrors,
     };
   }
-
-  await prisma.job.create({
-    data: {
-      ...parsedInput.data,
-      userId: user.id,
-    },
-  });
 
   redirect("/jobs");
 }

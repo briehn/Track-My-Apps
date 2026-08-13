@@ -1,6 +1,7 @@
 import { EmptyState } from "@/components/empty-states/empty-state";
 import { Button } from "@/components/ui/button";
 import { LinkButton } from "@/components/ui/link-button";
+import { AddJobMenu } from "@/features/jobs/components/add-job-menu";
 import { JobsControlsToolbar } from "@/features/jobs/components/jobs-controls-toolbar";
 import { JobList } from "@/features/jobs/components/job-list";
 import { JobsTable } from "@/features/jobs/components/jobs-table";
@@ -132,9 +133,7 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
               </>
             )}
           </div>
-          <LinkButton href="/jobs/new">
-            Add job
-          </LinkButton>
+          <AddJobMenu />
         </div>
       </div>
 
@@ -178,9 +177,7 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
           description={emptyDescription}
           action={
             isArchivedView || hasAppliedFiltersWithNoResults ? null : (
-              <LinkButton href="/jobs/new">
-                Add job
-              </LinkButton>
+              <AddJobMenu />
             )
           }
         />

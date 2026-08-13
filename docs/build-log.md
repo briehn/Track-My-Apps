@@ -23,12 +23,15 @@ It should document what changed, why it mattered, and what the next step is. It 
 - Added a compact per-job quick-actions menu to both Jobs Cards and Table views. It reuses the existing user-scoped status, archive, and delete server actions, keeps external posting links safe, and confirms permanent deletion before submission.
 - Added public `JobPosting` JSON-LD importing behind a dedicated server-side safe-fetch boundary. It uses DNS/IP validation, pinned resolved addresses, redirect revalidation, short timeouts, HTML-only content checks, and a response-size cap before extracting deterministic JSON-LD into the existing review flow.
 - Fixed the pinned DNS lookup callback for Node's `all: true` connection mode. The safe fetcher now returns the correct validated address shape in both lookup modes without re-resolving DNS or weakening SSRF protections.
+- Added review-first bulk job URL importing to the existing Import page. It accepts up to 20 pasted URLs, reuses the Greenhouse, Lever, and JSON-LD importer chain with concurrency capped at three, keeps each URL failure isolated, and never persists until the user explicitly selects reviewed jobs.
+- Added user-scoped saved-job duplicate warnings, canonical-URL in-batch duplicate flags, editable compact review items, and independent multi-save results. Each save shares the canonical create-job schema and server-derived user identity, so one failed item does not roll back successful jobs.
+- Moved bulk URL importing under the Jobs page’s `Add Job` menu, with separate one-job and bulk-URL routes. The Import destination is again dedicated to CSV/XLSX application-data import, keeping creation and file-migration concepts distinct.
 
 ### Notes
 - Both adapters use known public API origins, which keeps URL imports deterministic and avoids generic HTML fetching or browser automation.
 
 ### Next Step
-- Perform an authenticated smoke test on a few public JSON-LD job pages before considering a broader extraction path.
+- Perform an authenticated bulk-import smoke test across mixed supported, incomplete, duplicate, and unsupported URLs before considering a broader extraction path.
 
 ## 2026-08-10
 
