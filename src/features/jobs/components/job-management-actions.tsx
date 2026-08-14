@@ -31,15 +31,12 @@ export function JobManagementActions({
   );
 
   return (
-    <div className="space-y-5">
-      <form
-        action={archiveAction}
-        className="space-y-3 rounded-xl bg-slate-100/70 p-4 dark:bg-slate-900/60"
-      >
+    <div className="space-y-4">
+      <form action={archiveAction} className="space-y-2">
         <input type="hidden" name="jobId" value={jobId} />
         <div className="space-y-1">
-          <p className="text-sm font-medium text-slate-950 dark:text-slate-100">Archive Job</p>
-          <p className="text-sm text-slate-600 dark:text-slate-400">
+          <p className="text-sm font-medium text-slate-950 dark:text-slate-100">Archive job</p>
+          <p className="text-xs leading-5 text-slate-600 dark:text-slate-400">
             Archived jobs leave the active list but remain available from the archived view.
           </p>
         </div>
@@ -49,19 +46,19 @@ export function JobManagementActions({
           </p>
         ) : null}
         {isArchived ? (
-          <p className="rounded-md bg-emerald-100/70 px-3 py-2 text-sm text-emerald-800 dark:bg-emerald-400/10 dark:text-emerald-200">
+          <p className="text-sm text-emerald-800 dark:text-emerald-200">
             This job is archived. You can move it back to active using the status control above.
           </p>
         ) : (
-          <Button type="submit" disabled={isArchiving} className="w-full sm:w-auto">
+          <Button type="submit" variant="secondary" size="sm" disabled={isArchiving}>
             {isArchiving ? "Archiving..." : "Archive Job"}
           </Button>
         )}
       </form>
 
-      <details className="rounded-xl bg-red-50/70 p-4 dark:bg-red-500/10">
+      <details className="border-t border-slate-200/80 pt-3 dark:border-slate-800">
         <summary className="cursor-pointer rounded-md text-sm font-medium text-red-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/50 focus-visible:ring-offset-2 dark:text-red-200 dark:focus-visible:ring-offset-slate-950">
-          Danger Zone: Permanent Delete
+          Permanently delete
         </summary>
         <form action={deleteAction} className="mt-4 space-y-3">
           <input type="hidden" name="jobId" value={jobId} />
@@ -85,7 +82,8 @@ export function JobManagementActions({
             type="submit"
             variant="secondary"
             disabled={isDeleting}
-            className="w-full text-red-700 hover:bg-red-100 dark:text-red-300 dark:hover:bg-red-500/20 sm:w-auto"
+            size="sm"
+            className="text-red-700 hover:bg-red-100 dark:text-red-300 dark:hover:bg-red-500/20"
           >
             {isDeleting ? "Deleting..." : "Permanent Delete"}
           </Button>

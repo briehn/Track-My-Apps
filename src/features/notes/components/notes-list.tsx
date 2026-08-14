@@ -49,11 +49,11 @@ function DeleteNoteForm({ jobId, noteId }: { jobId: string; noteId: string }) {
 
 export function NotesList({ jobId, notes }: NotesListProps) {
   return (
-    <div className="space-y-4">
+    <div className="divide-y divide-slate-200/80 border-y border-slate-200/80 dark:divide-slate-800 dark:border-slate-800">
       {notes.map((note) => (
         <article
           key={note.id}
-          className="rounded-md border border-slate-200 bg-slate-50 p-4"
+          className="py-3 first:pt-0 last:pb-0"
         >
           <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
             <time className="text-xs font-medium text-slate-500">
@@ -61,7 +61,7 @@ export function NotesList({ jobId, notes }: NotesListProps) {
             </time>
             <DeleteNoteForm jobId={jobId} noteId={note.id} />
           </div>
-          <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-slate-700">
+          <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-700 dark:text-slate-300">
             {note.body}
           </p>
         </article>

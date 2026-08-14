@@ -20,6 +20,7 @@ import { JobMatchCard } from "@/features/job-match/components/job-match-card";
 import { InterviewPrepCard } from "@/features/interview-prep/components/interview-prep-card";
 import { JobManagementActions } from "@/features/jobs/components/job-management-actions";
 import { AIInsightsPanel } from "@/features/jobs/components/ai-insights-panel";
+import { JobDescription } from "@/features/jobs/components/job-description";
 import { JobStatusForm } from "@/features/jobs/components/job-status-form";
 import { getJobForCurrentUser, type JobDetail } from "@/features/jobs/queries";
 import { statusBadgeVariants, statusLabels } from "@/features/jobs/status";
@@ -113,8 +114,8 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
   const isAnalysisStale = isJobAnalysisStale(job.updatedAt, job.analysis?.updatedAt);
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
-      <div className="space-y-4">
+    <div className="mx-auto max-w-6xl space-y-5">
+      <div className="space-y-3">
         <Link
           href="/jobs"
           className="group inline-flex items-center gap-1 rounded-md px-1 py-1 text-sm font-medium text-slate-600 transition-colors hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/70 focus-visible:ring-offset-2 dark:text-slate-400 dark:hover:text-slate-100 dark:focus-visible:ring-sky-400 dark:focus-visible:ring-offset-slate-950"
@@ -144,25 +145,26 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
         </div>
       </div>
 
-      <Card className="gap-0">
-        <CardContent className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_18rem]">
+      <Card size="sm" className="gap-0">
+        <CardContent className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_16rem]">
           <div>
-            <dl className="grid gap-x-6 gap-y-5 sm:grid-cols-2 xl:grid-cols-3">
-              <DetailItem label="Location" value={job.location ?? "Not provided"} />
-              <DetailItem
-                label="Work mode"
-                value={job.remoteType ? remoteTypeLabels[job.remoteType] : "Not provided"}
-              />
-              <DetailItem
-                label="Employment"
-                value={
-                  job.employmentType
-                    ? employmentTypeLabels[job.employmentType]
-                    : "Not provided"
-                }
-              />
+            <ul className="flex flex-wrap gap-x-3 gap-y-1 text-sm text-slate-600 dark:text-slate-400" aria-label="Job metadata">
+              {[
+                job.location,
+                job.remoteType ? remoteTypeLabels[job.remoteType] : null,
+                job.employmentType ? employmentTypeLabels[job.employmentType] : null,
+                job.source ? `Source: ${job.source}` : null,
+              ]
+                .filter((value): value is string => Boolean(value))
+                .map((value) => (
+                  <li key={value} className="after:ml-3 after:text-slate-300 after:content-['·'] last:after:hidden dark:after:text-slate-700">
+                    {value}
+                  </li>
+                ))}
+            </ul>
+
+            <dl className="mt-4 grid gap-4 sm:grid-cols-2">
               <DetailItem label="Salary" value={formatSalary(job)} />
-              <DetailItem label="Source" value={job.source ?? "Not provided"} />
               <div>
                 <dt className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
                   Job URL
@@ -184,16 +186,12 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
               </div>
             </dl>
 
-            <div className="mt-7 space-y-3 border-t border-slate-200/80 pt-6 dark:border-slate-800">
+            <div className="mt-5 space-y-2 border-t border-slate-200/80 pt-4 dark:border-slate-800">
               <h2 className="text-sm font-semibold text-slate-950 dark:text-slate-100">
                 Job Description
               </h2>
               {job.description ? (
-                <div className="max-h-80 overflow-auto rounded-xl bg-slate-100/70 p-4 dark:bg-slate-900/60">
-                  <p className="whitespace-pre-wrap text-sm leading-7 text-slate-700 dark:text-slate-300">
-                    {job.description}
-                  </p>
-                </div>
+                <JobDescription description={job.description} jobId={job.id} />
               ) : (
                 <p className="text-sm text-slate-600 dark:text-slate-400">
                   Not provided
@@ -202,9 +200,9 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
             </div>
           </div>
 
-          <aside className="space-y-5 rounded-2xl bg-slate-100/70 p-4 dark:bg-slate-900/60">
+          <aside className="space-y-4 border-t border-slate-200/80 pt-4 dark:border-slate-800 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-6">
             <JobStatusForm jobId={job.id} currentStatus={job.status} />
-            <dl className="grid gap-3 border-t border-slate-200/80 pt-5 dark:border-slate-800">
+            <dl className="grid gap-2.5 border-t border-slate-200/80 pt-4 dark:border-slate-800">
               <DetailItem label="Saved" value={formatDate(job.createdAt)} />
               <DetailItem label="Updated" value={formatDate(job.updatedAt)} />
               <DetailItem label="Deadline" value={formatDate(job.deadline)} />
@@ -215,9 +213,9 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
         </CardContent>
       </Card>
 
-      <div className="grid gap-6 xl:grid-cols-[1fr_24rem]">
-        <div className="space-y-6">
-          <Card>
+      <div className="grid gap-5 xl:grid-cols-[1fr_20rem]">
+        <div className="space-y-5">
+          <Card size="sm">
             <CardHeader>
               <CardTitle>AI Insights</CardTitle>
               <CardDescription>
@@ -267,47 +265,33 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
             contacts={contacts}
           />
 
-          <Card>
+          <Card size="sm">
             <CardHeader>
               <CardTitle>Notes</CardTitle>
               <CardDescription>
                 Capture recruiter updates, interview notes, and decision context.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-5">
+            <CardContent className="space-y-4">
               <NoteForm jobId={job.id} />
               {notes.length > 0 ? (
                 <NotesList jobId={job.id} notes={notes} />
               ) : (
-                <div className="rounded-xl bg-slate-100/70 p-6 text-center dark:bg-slate-900/60">
-                  <p className="text-sm font-medium text-slate-950 dark:text-slate-100">
-                    No notes yet
-                  </p>
-                  <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-                    Add the first note to keep context with this job.
-                  </p>
-                </div>
+                <p className="text-sm text-slate-600 dark:text-slate-400">No notes yet.</p>
               )}
             </CardContent>
           </Card>
         </div>
 
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Manage Job</CardTitle>
-              <CardDescription>
-                Archive this role or permanently remove it from your tracker.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <JobManagementActions
-                jobId={job.id}
-                isArchived={job.status === "ARCHIVED"}
-              />
-            </CardContent>
-          </Card>
-        </div>
+        <aside className="border-t border-slate-200/80 pt-4 dark:border-slate-800 xl:border-t-0 xl:border-l xl:pl-5 xl:pt-0">
+          <h2 className="text-sm font-semibold text-slate-950 dark:text-slate-100">Manage job</h2>
+          <div className="mt-3">
+            <JobManagementActions
+              jobId={job.id}
+              isArchived={job.status === "ARCHIVED"}
+            />
+          </div>
+        </aside>
       </div>
     </div>
   );

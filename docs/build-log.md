@@ -13,6 +13,8 @@ It should document what changed, why it mattered, and what the next step is. It 
 - Added normalized, authenticated `JobContact` persistence with manual contact entry, safe profile URLs, optional user-entered email, relevance notes, outreach state, and contact-specific follow-up dates.
 - Kept discovery deliberately manual: no LinkedIn scraping or automation, profile metadata retrieval, email enrichment, or automatic outreach was introduced.
 - Added focused coverage for contact validation, date persistence, deterministic search-query generation, and create/edit/delete/status ownership boundaries.
+- Condensed the Networking card into public-search actions and a saved-contact-first view, replacing repeated category explanations and inline forms with compact rows and the existing accessible sheet workflow.
+- Reduced Job Details visual density with inline metadata, a constrained expandable description, divider-based notes, and compact management actions while preserving all existing workflows.
 
 ### Notes
 - Contact follow-ups are visible and ordered within Job Details. Dashboard Today's Focus remains limited to job-level follow-ups in this milestone to preserve its established scope.
