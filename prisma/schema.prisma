@@ -20,6 +20,7 @@ model User {
   profile       UserProfile?
   jobs          Job[]
   notes         Note[]
+  contacts      JobContact[]
   analysisRuns  JobAnalysisRun[]
   matchRuns     JobMatchRun[]
 }
@@ -105,6 +106,7 @@ model Job {
 
   user           User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   notes          Note[]
+  contacts       JobContact[]
   analysis       JobAnalysis?
   analysisRuns   JobAnalysisRun[]
   matchRuns      JobMatchRun[]
@@ -142,6 +144,32 @@ model JobAnalysis {
   updatedAt        DateTime @updatedAt
 
   job              Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+}
+
+model JobContact {
+  id              String         @id @default(cuid())
+  userId          String
+  jobId           String
+  name            String
+  title           String?
+  company         String?
+  profileUrl      String?
+  email           String?
+  contactType     JobContactType
+  relevanceNotes  String?
+  outreachStatus  OutreachStatus @default(NOT_CONTACTED)
+  lastContactedAt DateTime?
+  followUpAt      DateTime?
+  notes           String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job             Job            @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([jobId])
+  @@index([userId, followUpAt])
 }
 
 model JobAnalysisRun {
@@ -203,4 +231,21 @@ enum EmploymentType {
   CONTRACT
   INTERNSHIP
   TEMPORARY
+}
+
+enum JobContactType {
+  RECRUITER
+  HIRING_MANAGER
+  ENGINEER
+  CONNECTION
+  LEADERSHIP
+  OTHER
+}
+
+enum OutreachStatus {
+  NOT_CONTACTED
+  CONTACTED
+  RESPONDED
+  FOLLOW_UP_NEEDED
+  CLOSED
 }

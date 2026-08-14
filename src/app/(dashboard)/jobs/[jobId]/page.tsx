@@ -23,6 +23,8 @@ import { AIInsightsPanel } from "@/features/jobs/components/ai-insights-panel";
 import { JobStatusForm } from "@/features/jobs/components/job-status-form";
 import { getJobForCurrentUser, type JobDetail } from "@/features/jobs/queries";
 import { statusBadgeVariants, statusLabels } from "@/features/jobs/status";
+import { NetworkingCard } from "@/features/contacts/components/networking-card";
+import { getJobContactsForCurrentUser } from "@/features/contacts/queries";
 import { NoteForm } from "@/features/notes/components/note-form";
 import { NotesList } from "@/features/notes/components/notes-list";
 import { getNotesForJobForCurrentUser } from "@/features/notes/queries";
@@ -95,10 +97,11 @@ function DetailItem({ label, value }: { label: string; value: string }) {
 
 export default async function JobDetailPage({ params }: JobDetailPageProps) {
   const { jobId } = await params;
-  const [job, notes, profile] = await Promise.all([
+  const [job, notes, profile, contacts] = await Promise.all([
     getJobForCurrentUser(jobId),
     getNotesForJobForCurrentUser(jobId),
     getProfileForCurrentUser(),
+    getJobContactsForCurrentUser(jobId),
   ]);
 
   if (!job) {
@@ -256,6 +259,13 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
               />
             </CardContent>
           </Card>
+
+          <NetworkingCard
+            jobId={job.id}
+            company={job.company}
+            title={job.title}
+            contacts={contacts}
+          />
 
           <Card>
             <CardHeader>

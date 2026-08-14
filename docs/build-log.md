@@ -6,6 +6,20 @@ It should document what changed, why it mattered, and what the next step is. It 
 
 ---
 
+## 2026-08-14
+
+### Changes
+- Added a job-scoped Networking card to Job Details with deterministic public web-search suggestions for recruiters, likely managers, engineers, existing connections, and smaller-company leaders.
+- Added normalized, authenticated `JobContact` persistence with manual contact entry, safe profile URLs, optional user-entered email, relevance notes, outreach state, and contact-specific follow-up dates.
+- Kept discovery deliberately manual: no LinkedIn scraping or automation, profile metadata retrieval, email enrichment, or automatic outreach was introduced.
+- Added focused coverage for contact validation, date persistence, deterministic search-query generation, and create/edit/delete/status ownership boundaries.
+
+### Notes
+- Contact follow-ups are visible and ordered within Job Details. Dashboard Today's Focus remains limited to job-level follow-ups in this milestone to preserve its established scope.
+
+### Next Step
+- Consider a narrowly scoped outreach-draft assist grounded in the saved job, contact role, and user profile only after manual contact management is proven useful.
+
 ## 2026-08-12
 
 ### Changes

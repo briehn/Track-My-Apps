@@ -17,6 +17,7 @@ model User {
   profile       UserProfile?
   jobs          Job[]
   notes         Note[]
+  contacts      JobContact[]
   analysisRuns  JobAnalysisRun[]
   matchRuns     JobMatchRun[]
 }
@@ -63,6 +64,7 @@ model Job {
 
   user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   notes           Note[]
+  contacts        JobContact[]
   analysis        JobAnalysis?
   analysisRuns    JobAnalysisRun[]
   matchRuns       JobMatchRun[]
@@ -85,6 +87,32 @@ model Note {
 
   @@index([userId])
   @@index([jobId])
+}
+
+model JobContact {
+  id              String         @id @default(cuid())
+  userId          String
+  jobId           String
+  name            String
+  title           String?
+  company         String?
+  profileUrl      String?
+  email           String?
+  contactType     JobContactType
+  relevanceNotes  String?
+  outreachStatus  OutreachStatus @default(NOT_CONTACTED)
+  lastContactedAt DateTime?
+  followUpAt      DateTime?
+  notes           String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job             Job            @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([jobId])
+  @@index([userId, followUpAt])
 }
 
 model JobAnalysis {
@@ -162,6 +190,23 @@ enum EmploymentType {
   INTERNSHIP
   TEMPORARY
 }
+
+enum JobContactType {
+  RECRUITER
+  HIRING_MANAGER
+  ENGINEER
+  CONNECTION
+  LEADERSHIP
+  OTHER
+}
+
+enum OutreachStatus {
+  NOT_CONTACTED
+  CONTACTED
+  RESPONDED
+  FOLLOW_UP_NEEDED
+  CLOSED
+}
 ```
 
 ## Authentication Models
@@ -177,16 +222,17 @@ User-owned data is the central security boundary.
 - `Job.userId` defines the owner of a saved job.
 - `UserProfile.userId` defines the owner of the canonical profile and enforces one profile per user.
 - `Note.userId` defines the owner of a note and should match the owner of the related job.
+- `JobContact.userId` defines the owner of a manually saved contact and must match the owner of its related job.
 - `JobAnalysis` is owned through its required one-to-one `Job` relation.
 - `JobAnalysisRun` and `JobMatchRun` are owned through both `userId` and the related `jobId`, and should only ever be created from authenticated server-side flows.
-- Every query that reads or mutates profiles, jobs, notes, or analysis must be scoped by the authenticated user's id.
+- Every query that reads or mutates profiles, jobs, notes, contacts, or analysis must be scoped by the authenticated user's id.
 - Authentication proves who the user is. Authorization still needs explicit ownership checks in queries and server actions.
 
-For note creation, validate both `jobId` and ownership before inserting the note. For profile saves, derive `userId` only from the authenticated session. Do not trust a submitted `userId` from form data.
+For note/contact creation, validate both `jobId` and ownership before inserting. Contact edits, status updates, and deletions must scope both the contact and its related job to the authenticated user. For profile saves, derive `userId` only from the authenticated session. Do not trust a submitted `userId` from form data.
 
 ## Cascades
 
-The schema uses cascade deletes from `User` to `UserProfile`, `Job`, `Note`, `JobAnalysisRun`, and `JobMatchRun`, and from `Job` to `Note`, `JobAnalysis`, `JobAnalysisRun`, and `JobMatchRun`.
+The schema uses cascade deletes from `User` to `UserProfile`, `Job`, `Note`, `JobContact`, `JobAnalysisRun`, and `JobMatchRun`, and from `Job` to `Note`, `JobContact`, `JobAnalysis`, `JobAnalysisRun`, and `JobMatchRun`.
 
 This is appropriate for MVP because the data is personal workspace data. If the product later adds team accounts, audit logs, or shared jobs, deletion rules should be revisited before shipping those features.
 
@@ -198,6 +244,7 @@ The MVP indexes support the first expected access patterns:
 - `@@index([userId, status])` for dashboard counts and status filtering.
 - `@@index([userId, createdAt])` for recent jobs.
 - `@@index([jobId])` on notes for loading the job detail page.
+- `@@index([jobId])` on contacts for loading the Job Details networking card, and `@@index([userId, followUpAt])` for a future owner-scoped contact reminder view.
 - `@@index([userId, createdAt])` on AI usage-run tables for efficient daily per-user limit checks.
 - `@@index([jobId])` on AI usage-run tables for job-scoped drill-in or cleanup operations.
 - `@unique` on `UserProfile.userId` for one canonical profile lookup per authenticated user.
@@ -221,4 +268,6 @@ Important validation cases:
 - URL format for `url` when provided.
 - Salary ranges where `salaryMin <= salaryMax` when both are provided.
 - Status transitions should use `ApplicationStatus`, not arbitrary strings.
+- Contact type and outreach state should use `JobContactType` and `OutreachStatus`, not arbitrary strings.
+- Contact profile URLs must be optional but restricted to safe HTTP(S) URLs; contact emails are manually entered only.
 - Date fields should be parsed and normalized intentionally before persistence.

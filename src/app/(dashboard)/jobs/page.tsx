@@ -1,7 +1,7 @@
 import { EmptyState } from "@/components/empty-states/empty-state";
-import { Button } from "@/components/ui/button";
 import { LinkButton } from "@/components/ui/link-button";
 import { AddJobMenu } from "@/features/jobs/components/add-job-menu";
+import { ExportJobMenu } from "@/features/jobs/components/export-job-menu";
 import { JobsControlsToolbar } from "@/features/jobs/components/jobs-controls-toolbar";
 import { JobList } from "@/features/jobs/components/job-list";
 import { JobsTable } from "@/features/jobs/components/jobs-table";
@@ -93,46 +93,15 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <div
-            className="flex flex-wrap items-center gap-1 rounded-lg bg-slate-100 p-1 dark:bg-slate-900"
-            aria-label="Import and export jobs"
-          >
-            <LinkButton href="/jobs/import" variant="ghost" className="px-3 py-1.5">
-              Import
-            </LinkButton>
-            <span aria-hidden="true" className="h-5 w-px bg-slate-200 dark:bg-slate-700" />
-            {hasExportableJobs ? (
-              <>
-                <LinkButton href={csvExportHref} variant="ghost" className="px-3 py-1.5">
-                  CSV
-                </LinkButton>
-                <LinkButton href={xlsxExportHref} variant="ghost" className="px-3 py-1.5">
-                  XLSX
-                </LinkButton>
-              </>
-            ) : (
-              <>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  disabled
-                  title={exportUnavailableMessage}
-                  aria-label={`Export CSV unavailable. ${exportUnavailableMessage}.`}
-                >
-                  CSV
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  disabled
-                  title={exportUnavailableMessage}
-                  aria-label={`Export XLSX unavailable. ${exportUnavailableMessage}.`}
-                >
-                  XLSX
-                </Button>
-              </>
-            )}
-          </div>
+          <LinkButton href="/jobs/import" variant="secondary">
+            Import
+          </LinkButton>
+          <ExportJobMenu
+            csvExportHref={csvExportHref}
+            disabled={!hasExportableJobs}
+            disabledMessage={exportUnavailableMessage}
+            xlsxExportHref={xlsxExportHref}
+          />
           <AddJobMenu />
         </div>
       </div>
