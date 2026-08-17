@@ -6,20 +6,23 @@ import {
   importGreenhouseJob,
 } from "@/features/jobs/importers/greenhouse";
 import { normalizeImportedHtmlToPlainText } from "@/features/jobs/importers/html-to-plain-text";
+import {
+  detectJobImportSource,
+  type GreenhouseJobSource,
+} from "@/features/jobs/importers/job-url";
 import { inferImportedRemoteType } from "@/features/jobs/importers/work-mode";
-import { detectJobImportSource } from "@/features/jobs/importers/job-url";
 
 async function loadFixture() {
   const fixtureUrl = new URL("./__fixtures__/greenhouse-job.json", import.meta.url);
   return JSON.parse(await readFile(fixtureUrl, "utf8")) as unknown;
 }
 
-function getGreenhouseSource() {
+function getGreenhouseSource(): GreenhouseJobSource {
   const result = detectJobImportSource(
     "https://boards.greenhouse.io/acmelabs/jobs/44444?gh_src=career_site#apply",
   );
 
-  if (!result.success) {
+  if (!result.success || result.source.kind !== "GREENHOUSE") {
     throw new Error("Expected the Greenhouse fixture URL to be detected.");
   }
 

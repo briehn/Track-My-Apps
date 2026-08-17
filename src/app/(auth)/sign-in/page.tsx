@@ -1,8 +1,7 @@
 import { redirect } from "next/navigation";
-import { getServerSession } from "next-auth";
 
 import { SignInWithGoogleButton } from "@/features/auth/components/auth-buttons";
-import { authOptions } from "@/features/auth/auth-options";
+import { auth } from "@/features/auth/auth";
 
 const highlights = [
   "Track applications in one place",
@@ -12,7 +11,7 @@ const highlights = [
 ];
 
 export default async function SignInPage() {
-  const session = await getServerSession(authOptions);
+  const session = await auth();
 
   if (session?.user) {
     redirect("/dashboard");

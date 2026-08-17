@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { getServerSession } from "next-auth";
 
 import { AiSection } from "@/components/marketing/ai-section";
 import { FeatureSection } from "@/components/marketing/feature-section";
@@ -10,7 +9,7 @@ import { MarketingHeader } from "@/components/marketing/marketing-header";
 import { ProblemPayoff } from "@/components/marketing/problem-payoff";
 import { ProductShowcase } from "@/components/marketing/product-showcase";
 import { WorkflowSection } from "@/components/marketing/workflow-section";
-import { authOptions } from "@/features/auth/auth-options";
+import { auth } from "@/features/auth/auth";
 
 export const metadata: Metadata = {
   title: "Track My Apps | Job application tracker for software engineers",
@@ -19,7 +18,7 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const session = await getServerSession(authOptions);
+  const session = await auth();
 
   if (session?.user) {
     redirect("/dashboard");

@@ -1,5 +1,5 @@
-import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import type { NextAuthOptions } from "next-auth";
+import { PrismaAdapter } from "@auth/prisma-adapter";
+import type { NextAuthConfig } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 
 import { prisma } from "@/server/db/prisma";
@@ -16,7 +16,7 @@ function requiredEnv(
   return value;
 }
 
-export const authOptions: NextAuthOptions = {
+export const authOptions = {
   adapter: PrismaAdapter(prisma),
   secret: requiredEnv("NEXTAUTH_SECRET"),
   providers: [
@@ -40,4 +40,4 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
   },
-};
+} satisfies NextAuthConfig;

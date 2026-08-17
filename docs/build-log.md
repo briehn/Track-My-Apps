@@ -6,6 +6,21 @@ It should document what changed, why it mattered, and what the next step is. It 
 
 ---
 
+## 2026-08-16
+
+### Changes
+- Upgraded Next.js and its matching ESLint configuration from 16.2.4 to 16.3.1, bringing the patched framework release and Sharp 0.35.3 into the lockfile.
+- Replaced NextAuth v4 and its legacy Prisma adapter with Auth.js 5.0.0-beta.32 and `@auth/prisma-adapter` 2.11.3 because the final stable v4 release still pins vulnerable `@auth/core` 0.34.3. The selected Auth.js release pins patched `@auth/core` 0.41.3.
+- Preserved the Google provider, database session strategy, session callback, and Prisma schema. Updated only the route/session integration to Auth.js v5's `handlers` and `auth()` APIs.
+- Corrected two existing job-import test fixtures so the production type check can verify their discriminated source unions.
+
+### Validation
+- `npm audit` now reports zero critical findings; the upgraded Next.js, NextAuth/Auth Core, and Sharp findings are resolved.
+- Lint, the full Vitest suite, and the production build pass.
+
+### Next Step
+- Manually smoke-test Google OAuth and a persisted database session in the deployed environment before release, then address the remaining ExcelJS and development-tooling advisories separately.
+
 ## 2026-08-14
 
 ### Changes

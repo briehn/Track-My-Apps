@@ -10,6 +10,37 @@ import {
   prepareBulkJobUrlImport,
   saveBulkJobUrlImports,
 } from "@/features/jobs/bulk-job-url-import-service";
+import type { DetectedJobImportSource } from "@/features/jobs/importers/job-url";
+import type { JobImportResult } from "@/features/jobs/importers/types";
+
+function createImportedJobSource(url: string): DetectedJobImportSource {
+  if (url.includes("greenhouse")) {
+    return {
+      boardToken: "board",
+      canonicalUrl: url,
+      jobId: "1",
+      kind: "GREENHOUSE",
+      submittedUrl: url,
+    };
+  }
+
+  if (url.includes("lever")) {
+    return {
+      canonicalUrl: url,
+      instance: "GLOBAL",
+      kind: "LEVER",
+      postingId: "id",
+      site: "site",
+      submittedUrl: url,
+    };
+  }
+
+  return {
+    canonicalUrl: url,
+    kind: "JSON_LD",
+    submittedUrl: url,
+  };
+}
 
 describe("parseBulkJobUrls", () => {
   it("trims URLs, ignores blank lines, and preserves submitted order", () => {
@@ -51,7 +82,7 @@ describe("prepareBulkJobUrlImport", () => {
   it("isolates malformed URLs and preserves mixed adapter results", async () => {
     const result = await prepareBulkJobUrlImport("https://greenhouse.example/job\nnot-a-url\nhttps://lever.example/job\nhttps://jsonld.example/job", {
       findExistingJobs: async () => [],
-      importJob: async (url) => {
+      importJob: async (url): Promise<JobImportResult> => {
         if (url === "not-a-url") {
           return {
             error: { code: "INVALID_URL", message: "ignored" },
@@ -65,12 +96,7 @@ describe("prepareBulkJobUrlImport", () => {
             title: "Engineer",
             url,
           },
-          source: {
-            canonicalUrl: url,
-            kind: url.includes("greenhouse") ? "GREENHOUSE" : url.includes("lever") ? "LEVER" : "JSON_LD",
-            submittedUrl: url,
-            ...(url.includes("greenhouse") ? { boardToken: "board", jobId: "1" } : url.includes("lever") ? { instance: "GLOBAL" as const, postingId: "id", site: "site" } : {}),
-          },
+          source: createImportedJobSource(url),
           success: true as const,
           warnings: [],
         };
