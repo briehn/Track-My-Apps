@@ -1,7 +1,9 @@
 import { z } from "zod";
+import { AI_USAGE_POLICY, AiUsageFeature } from "@/features/ai-usage/policy";
 
 export const MAX_JOB_MATCH_RESUME_TEXT_CHARS = 6_000;
-export const PRODUCTION_DAILY_JOB_MATCH_LIMIT = 5;
+export const PRODUCTION_DAILY_JOB_MATCH_LIMIT =
+  AI_USAGE_POLICY[AiUsageFeature.JOB_MATCH].dailyLimit;
 const MAX_JOB_MATCH_LIST_ITEMS = 8;
 
 export const analyzeJobMatchSchema = z.object({

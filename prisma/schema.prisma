@@ -23,6 +23,9 @@ model User {
   contacts      JobContact[]
   analysisRuns  JobAnalysisRun[]
   matchRuns     JobMatchRun[]
+  aiUsageDays         AiUsageDaily[]
+  aiUsageReservations AiUsageReservation[]
+  aiUsageConcurrency  AiUsageConcurrency?
 }
 
 model UserProfile {
@@ -202,6 +205,51 @@ model JobMatchRun {
   @@index([jobId])
 }
 
+model AiUsageDaily {
+  id           String       @id @default(cuid())
+  userId       String
+  quota        AiUsageQuota
+  day          DateTime
+  remaining    Int
+  inFlight     Int          @default(0)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  user         User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reservations AiUsageReservation[]
+
+  @@unique([userId, quota, day])
+  @@index([userId, day])
+}
+
+model AiUsageConcurrency {
+  userId         String   @id
+  activeRequests Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AiUsageReservation {
+  id           String                   @id @default(cuid())
+  userId       String
+  usageDayId   String
+  feature      AiUsageFeature
+  status       AiUsageReservationStatus @default(PENDING)
+  expiresAt    DateTime
+  completedAt  DateTime?
+  releasedAt   DateTime?
+  createdAt    DateTime                 @default(now())
+  updatedAt    DateTime                 @updatedAt
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  usageDay     AiUsageDaily @relation(fields: [usageDayId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status, expiresAt])
+  @@index([usageDayId, status])
+}
+
 enum ApplicationStatus {
   SAVED
   APPLIED
@@ -248,4 +296,24 @@ enum OutreachStatus {
   RESPONDED
   FOLLOW_UP_NEEDED
   CLOSED
+}
+
+enum AiUsageQuota {
+  JOB_ANALYSIS
+  CAREER_GUIDANCE
+  PROFILE_EXTRACTION
+}
+
+enum AiUsageFeature {
+  JOB_ANALYSIS
+  JOB_MATCH
+  INTERVIEW_PREP
+  PROFILE_EXTRACTION
+  RESUME_EXTRACTION
+}
+
+enum AiUsageReservationStatus {
+  PENDING
+  COMPLETED
+  RELEASED
 }

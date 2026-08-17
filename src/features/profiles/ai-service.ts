@@ -1,6 +1,6 @@
 import "server-only";
 
-import OpenAI, {
+import {
   APIError,
   APIConnectionError,
   APIConnectionTimeoutError,
@@ -8,6 +8,8 @@ import OpenAI, {
   RateLimitError,
 } from "openai";
 import { zodTextFormat } from "openai/helpers/zod";
+
+import { createOpenAiClient } from "@/features/ai-usage/openai-client";
 
 import {
   aiProfileExtractionResponseSchema,
@@ -105,9 +107,7 @@ function logProviderFailure(
 export async function extractProfileSuggestionsFromResumeText(
   resumeText: string,
 ): Promise<ProfileExtractionSuggestion> {
-  const openai = new OpenAI({
-    apiKey: requiredEnv("OPENAI_API_KEY"),
-  });
+  const openai = createOpenAiClient(requiredEnv("OPENAI_API_KEY"));
   const model = requiredEnv("OPENAI_MODEL");
   const normalizedResumeText = resumeText
     .replace(/\r\n/g, "\n")

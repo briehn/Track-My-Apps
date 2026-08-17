@@ -1,6 +1,6 @@
 import "server-only";
 
-import OpenAI, {
+import {
   APIError,
   APIConnectionError,
   APIConnectionTimeoutError,
@@ -8,6 +8,8 @@ import OpenAI, {
   RateLimitError,
 } from "openai";
 import { zodTextFormat } from "openai/helpers/zod";
+
+import { createOpenAiClient } from "@/features/ai-usage/openai-client";
 
 import {
   aiJobAnalysisResponseSchema,
@@ -125,9 +127,7 @@ function requiredEnv(name: "OPENAI_API_KEY" | "OPENAI_MODEL") {
 export async function analyzeJobDescriptionWithOpenAI(
   description: string,
 ): Promise<JobAnalysisResult> {
-  const openai = new OpenAI({
-    apiKey: requiredEnv("OPENAI_API_KEY"),
-  });
+  const openai = createOpenAiClient(requiredEnv("OPENAI_API_KEY"));
   const model = requiredEnv("OPENAI_MODEL");
   const normalizedDescription = description
     .replace(/\r\n/g, "\n")

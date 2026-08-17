@@ -5,19 +5,20 @@ import { revalidatePath } from "next/cache";
 
 import { requireUser } from "@/features/auth/require-user";
 import {
+  AiUsageFeature,
+  completeAiUsageReservation,
+  releaseAiUsageReservation,
+  reserveAiUsage,
+} from "@/features/ai-usage/quota";
+import {
   analyzeJobDescriptionSchema,
   hasAnalyzableJobDescription,
   isJobDescriptionTooLong,
-  PRODUCTION_DAILY_AI_ANALYSIS_LIMIT,
 } from "@/features/job-analysis/schemas";
 import {
   analyzeJobDescriptionWithOpenAI,
   JobAnalysisServiceError,
 } from "@/features/job-analysis/service";
-import {
-  getUtcDayRange,
-  hasReachedDailyAnalysisLimit,
-} from "@/features/job-analysis/usage-limits";
 import { prisma } from "@/server/db/prisma";
 
 export type AnalyzeJobDescriptionActionState = {
@@ -187,25 +188,15 @@ export async function analyzeJobDescription(
     };
   }
 
-  if (process.env.NODE_ENV === "production") {
-    const { dayStart, nextDayStart } = getUtcDayRange(new Date());
-
-    const runsToday = await prisma.jobAnalysisRun.count({
-      where: {
-        userId: user.id,
-        createdAt: {
-          gte: dayStart,
-          lt: nextDayStart,
-        },
-      },
-    });
-
-    if (hasReachedDailyAnalysisLimit(runsToday, PRODUCTION_DAILY_AI_ANALYSIS_LIMIT)) {
-      return {
-        formError: "You have reached today's AI analysis limit. Please try again tomorrow.",
-        canRetry: false,
-      };
-    }
+  const reservation = await reserveAiUsage(user.id, AiUsageFeature.JOB_ANALYSIS);
+  if (reservation.status === "rejected") {
+    return {
+      formError:
+        reservation.reason === "CONCURRENCY_LIMIT"
+          ? "Another AI request is already processing. Try again shortly."
+          : "You have reached today's AI analysis limit. Please try again tomorrow.",
+      canRetry: false,
+    };
   }
 
   let result: Awaited<ReturnType<typeof analyzeJobDescriptionWithOpenAI>>;
@@ -213,6 +204,7 @@ export async function analyzeJobDescription(
   try {
     result = await analyzeJobDescriptionWithOpenAI(job.description);
   } catch (error) {
+    await releaseAiUsageReservation(reservation.reservationId);
     if (error instanceof JobAnalysisServiceError) {
       console.error("Job analysis action failed", {
         code: error.code,
@@ -277,6 +269,16 @@ export async function analyzeJobDescription(
 
     return {
       formError: "There was an issue with the analysis. Please try again later.",
+      canRetry: true,
+    };
+  }
+
+  try {
+    await completeAiUsageReservation(reservation.reservationId);
+  } catch {
+    console.error("Job analysis usage completion failed", { jobId: job.id, userId: user.id });
+    return {
+      formError: "The AI analysis completed, but finalizing it failed. Please try again shortly.",
       canRetry: true,
     };
   }

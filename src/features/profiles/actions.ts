@@ -4,6 +4,12 @@ import { revalidatePath } from "next/cache";
 
 import { requireUser } from "@/features/auth/require-user";
 import {
+  AiUsageFeature,
+  completeAiUsageReservation,
+  releaseAiUsageReservation,
+  reserveAiUsage,
+} from "@/features/ai-usage/quota";
+import {
   extractProfileSuggestionsFromResumeText,
   ProfileExtractionServiceError,
 } from "@/features/profiles/ai-service";
@@ -143,8 +149,33 @@ export async function extractProfileDetails(
     };
   }
 
+  const reservation = await reserveAiUsage(
+    user.id,
+    AiUsageFeature.PROFILE_EXTRACTION,
+  );
+  if (reservation.status === "rejected") {
+    return {
+      formError:
+        reservation.reason === "CONCURRENCY_LIMIT"
+          ? "Another AI request is already processing. Try again shortly."
+          : "You've reached today's AI profile extraction limit. Try again tomorrow.",
+    };
+  }
+
   try {
     const suggestions = await extractProfileSuggestionsFromResumeText(profile.resumeText);
+
+    try {
+      await completeAiUsageReservation(reservation.reservationId);
+    } catch {
+      console.error("Profile extraction usage completion failed", {
+        profileId: profile.id,
+        userId: user.id,
+      });
+      return {
+        formError: "The AI extraction completed, but finalizing it failed. Please try again shortly.",
+      };
+    }
 
     if (!hasAnyProfileExtractionSuggestions(suggestions)) {
       return {
@@ -157,6 +188,7 @@ export async function extractProfileDetails(
       suggestions,
     };
   } catch (error) {
+    await releaseAiUsageReservation(reservation.reservationId);
     if (error instanceof ProfileExtractionServiceError) {
       console.error("Profile extraction action failed", {
         code: error.code,
@@ -188,12 +220,13 @@ export async function importResumeText(
   formData: FormData,
 ): Promise<ImportResumeTextActionState> {
   void _previousStateIgnored;
+  let reservationId: string | null = null;
 
   try {
     const { extractResumeTextFromUploadFile } = await import(
       "@/features/profiles/resume-import"
     );
-    await requireUser();
+    const user = await requireUser();
     const resumeFile = formData.get("resumeFile");
 
     if (!(resumeFile instanceof File)) {
@@ -209,9 +242,31 @@ export async function importResumeText(
       };
     }
 
+    const reservation = await reserveAiUsage(
+      user.id,
+      AiUsageFeature.RESUME_EXTRACTION,
+    );
+    if (reservation.status === "rejected") {
+      return {
+        formError:
+          reservation.reason === "CONCURRENCY_LIMIT"
+            ? "Another AI request is already processing. Try again shortly."
+            : "You've reached today's AI profile extraction limit. Try again tomorrow.",
+      };
+    }
+    reservationId = reservation.reservationId;
+
     const suggestions = await extractProfileSuggestionsFromResumeText(
       result.extractedText,
     );
+    try {
+      await completeAiUsageReservation(reservationId);
+    } catch {
+      console.error("Resume extraction usage completion failed", { userId: user.id });
+      return {
+        formError: "The AI extraction completed, but finalizing it failed. Please try again shortly.",
+      };
+    }
     if (!hasAnyProfileExtractionSuggestions(suggestions)) {
       return {
         formError: "No confident profile suggestions could be extracted from that resume file.",
@@ -226,6 +281,9 @@ export async function importResumeText(
       fileName: resumeFile.name,
     };
   } catch (error) {
+    if (reservationId) {
+      await releaseAiUsageReservation(reservationId);
+    }
     const resumeImportErrorCode =
       error &&
       typeof error === "object" &&

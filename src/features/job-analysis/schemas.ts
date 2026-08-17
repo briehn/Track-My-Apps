@@ -1,8 +1,10 @@
 import { z } from "zod";
+import { AI_USAGE_POLICY, AiUsageFeature } from "@/features/ai-usage/policy";
 
 export const MIN_JOB_DESCRIPTION_LENGTH = 80;
 export const MAX_JOB_DESCRIPTION_ANALYSIS_CHARS = 10_000;
-export const PRODUCTION_DAILY_AI_ANALYSIS_LIMIT = 3;
+export const PRODUCTION_DAILY_AI_ANALYSIS_LIMIT =
+  AI_USAGE_POLICY[AiUsageFeature.JOB_ANALYSIS].dailyLimit;
 const MAX_LIST_ITEMS = 15;
 
 export const analyzeJobDescriptionSchema = z.object({

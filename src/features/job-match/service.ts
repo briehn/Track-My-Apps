@@ -1,7 +1,7 @@
 import "server-only";
 
 import type { EmploymentType, ExperienceRange, RemoteType } from "@prisma/client";
-import OpenAI, {
+import {
   APIError,
   APIConnectionError,
   APIConnectionTimeoutError,
@@ -9,6 +9,8 @@ import OpenAI, {
   RateLimitError,
 } from "openai";
 import { zodTextFormat } from "openai/helpers/zod";
+
+import { createOpenAiClient } from "@/features/ai-usage/openai-client";
 
 import {
   aiJobMatchResponseSchema,
@@ -132,9 +134,7 @@ function logProviderFailure(
 export async function analyzeProfileJobMatchWithOpenAI(
   input: JobMatchServiceInput,
 ): Promise<JobMatchReport> {
-  const openai = new OpenAI({
-    apiKey: requiredEnv("OPENAI_API_KEY"),
-  });
+  const openai = createOpenAiClient(requiredEnv("OPENAI_API_KEY"));
   const model = requiredEnv("OPENAI_MODEL");
   const normalizedResumeText = normalizeResumeTextForJobMatch(input.profile.resumeText);
   const boundedJobMetadata = formatUntrustedContentBlock(

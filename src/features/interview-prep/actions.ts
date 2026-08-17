@@ -4,9 +4,11 @@ import type { EmploymentType, ExperienceRange, RemoteType } from "@prisma/client
 
 import { requireUser } from "@/features/auth/require-user";
 import {
-  getUtcDayRange,
-  hasReachedDailyUsageLimit,
-} from "@/features/job-analysis/usage-limits";
+  AiUsageFeature,
+  completeAiUsageReservation,
+  releaseAiUsageReservation,
+  reserveAiUsage,
+} from "@/features/ai-usage/quota";
 import {
   analyzeInterviewPrepSchema,
   mergeInterviewPrepWarnings,
@@ -16,7 +18,6 @@ import {
   generateInterviewPrepWithOpenAI,
   InterviewPrepServiceError,
 } from "@/features/interview-prep/service";
-import { PRODUCTION_DAILY_JOB_MATCH_LIMIT } from "@/features/job-match/schemas";
 import { prisma } from "@/server/db/prisma";
 
 export type GenerateInterviewPrepActionState = {
@@ -223,26 +224,15 @@ export async function generateInterviewPrep(
     };
   }
 
-  if (process.env.NODE_ENV === "production") {
-    const { dayStart, nextDayStart } = getUtcDayRange(new Date());
-
-    const runsToday = await prisma.jobMatchRun.count({
-      where: {
-        userId: user.id,
-        createdAt: {
-          gte: dayStart,
-          lt: nextDayStart,
-        },
-      },
-    });
-
-    if (hasReachedDailyUsageLimit(runsToday, PRODUCTION_DAILY_JOB_MATCH_LIMIT)) {
-      return {
-        canRetry: false,
-        formError:
-          "You have reached today's AI comparison/prep limit. Try again tomorrow.",
-      };
-    }
+  const reservation = await reserveAiUsage(user.id, AiUsageFeature.INTERVIEW_PREP);
+  if (reservation.status === "rejected") {
+    return {
+      canRetry: false,
+      formError:
+        reservation.reason === "CONCURRENCY_LIMIT"
+          ? "Another AI request is already processing. Try again shortly."
+          : "You have reached today's AI comparison/prep limit. Try again tomorrow.",
+    };
   }
 
   const normalizedJob: JobForInterviewPrep = {
@@ -289,6 +279,19 @@ export async function generateInterviewPrep(
       analysis: normalizedJob.analysis,
     });
 
+    try {
+      await completeAiUsageReservation(reservation.reservationId);
+    } catch {
+      console.error("Interview prep usage completion failed", {
+        jobId: normalizedJob.id,
+        userId: user.id,
+      });
+      return {
+        canRetry: true,
+        formError: "The AI interview prep completed, but finalizing it failed. Please try again shortly.",
+      };
+    }
+
     if (process.env.NODE_ENV === "production") {
       try {
         await prisma.jobMatchRun.create({
@@ -321,6 +324,7 @@ export async function generateInterviewPrep(
       report: mergeInterviewPrepWarnings(report, deterministicWarnings),
     };
   } catch (error) {
+    await releaseAiUsageReservation(reservation.reservationId);
     if (error instanceof InterviewPrepServiceError) {
       console.error("Interview prep action failed", {
         code: error.code,

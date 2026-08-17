@@ -13,13 +13,17 @@ It should document what changed, why it mattered, and what the next step is. It 
 - Replaced NextAuth v4 and its legacy Prisma adapter with Auth.js 5.0.0-beta.32 and `@auth/prisma-adapter` 2.11.3 because the final stable v4 release still pins vulnerable `@auth/core` 0.34.3. The selected Auth.js release pins patched `@auth/core` 0.41.3.
 - Preserved the Google provider, database session strategy, session callback, and Prisma schema. Updated only the route/session integration to Auth.js v5's `handlers` and `auth()` APIs.
 - Corrected two existing job-import test fixtures so the production type check can verify their discriminated source unions.
+- Added PostgreSQL-backed, atomic AI quota reservations before every OpenAI call. Job analysis remains limited to three daily requests; Job Match and Interview Prep share their existing five-request pool; profile and resume extraction now share a three-request pool.
+- Added a per-user distributed concurrency limit of one active AI request, a 30-second OpenAI SDK deadline with retries disabled, and safe refunds for provider failures and timeouts. Reservation records store enforcement metadata only, never prompts or AI content.
+- Added an opt-in PostgreSQL integration suite for final-slot concurrency, successful consumption, refunds, counter safety, user isolation, and the intentional Match/Prep shared pool, plus action-boundary tests confirming all OpenAI entry points reserve before provider invocation.
 
 ### Validation
 - `npm audit` now reports zero critical findings; the upgraded Next.js, NextAuth/Auth Core, and Sharp findings are resolved.
 - Lint, the full Vitest suite, and the production build pass.
+- The AI quota-focused Vitest tests pass; the PostgreSQL integration suite is intentionally enabled only with `RUN_DATABASE_INTEGRATION_TESTS=true` against a disposable migrated test database.
 
 ### Next Step
-- Manually smoke-test Google OAuth and a persisted database session in the deployed environment before release, then address the remaining ExcelJS and development-tooling advisories separately.
+- Apply the AI usage migration through the normal deployment process, run its PostgreSQL integration suite against a disposable test database, and manually verify one concurrent AI request is rejected while a second request is in flight.
 
 ## 2026-08-14
 
