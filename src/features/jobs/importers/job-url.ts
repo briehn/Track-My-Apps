@@ -9,6 +9,7 @@ const LEVER_JOB_HOSTS: ReadonlyMap<string, "EU" | "GLOBAL"> = new Map([
   ["jobs.eu.lever.co", "EU"],
 ] as const);
 const GEM_JOB_HOST = "jobs.gem.com";
+const RIPPLING_JOB_HOST = "ats.rippling.com";
 
 export type GreenhouseJobSource = {
   boardToken: string;
@@ -35,6 +36,14 @@ export type GemJobSource = {
   submittedUrl: string;
 };
 
+export type RipplingJobSource = {
+  canonicalUrl: string;
+  companySlug: string;
+  jobId: string;
+  kind: "RIPPLING";
+  submittedUrl: string;
+};
+
 export type JsonLdJobSource = {
   canonicalUrl: string;
   kind: "JSON_LD";
@@ -45,6 +54,7 @@ export type DetectedJobImportSource =
   | GreenhouseJobSource
   | LeverJobSource
   | GemJobSource
+  | RipplingJobSource
   | JsonLdJobSource;
 
 export type JobUrlDetectionResult =
@@ -152,6 +162,33 @@ function getGemJobSource(url: URL, submittedUrl: string): GemJobSource | null {
   };
 }
 
+function getRipplingJobSource(url: URL, submittedUrl: string): RipplingJobSource | null {
+  if (url.hostname.toLocaleLowerCase() !== RIPPLING_JOB_HOST) {
+    return null;
+  }
+
+  const pathSegments = url.pathname.split("/").filter(Boolean);
+
+  if (
+    pathSegments.length !== 3 ||
+    pathSegments[1] !== "jobs" ||
+    !/^[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*$/.test(pathSegments[0]) ||
+    !/^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$/.test(
+      pathSegments[2],
+    )
+  ) {
+    return null;
+  }
+
+  return {
+    canonicalUrl: toCanonicalUrl(url),
+    companySlug: pathSegments[0],
+    jobId: pathSegments[2],
+    kind: "RIPPLING",
+    submittedUrl,
+  };
+}
+
 export function detectJobImportSource(submittedUrl: string): JobUrlDetectionResult {
   const parsedUrl = safeExternalUrlSchema.safeParse(submittedUrl);
 
@@ -193,10 +230,17 @@ export function detectJobImportSource(submittedUrl: string): JobUrlDetectionResu
     return { source: gemSource, success: true };
   }
 
+  const ripplingSource = getRipplingJobSource(url, parsedUrl.data);
+
+  if (ripplingSource) {
+    return { source: ripplingSource, success: true };
+  }
+
   if (
     GREENHOUSE_JOB_HOSTS.has(url.hostname.toLocaleLowerCase()) ||
     LEVER_JOB_HOSTS.has(url.hostname.toLocaleLowerCase()) ||
-    url.hostname.toLocaleLowerCase() === GEM_JOB_HOST
+    url.hostname.toLocaleLowerCase() === GEM_JOB_HOST ||
+    url.hostname.toLocaleLowerCase() === RIPPLING_JOB_HOST
   ) {
     return {
       error: {

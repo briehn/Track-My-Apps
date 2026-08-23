@@ -96,6 +96,39 @@ describe("detectJobImportSource", () => {
     });
   });
 
+  it("detects supported Rippling URLs and preserves query parameters while removing fragments", () => {
+    const result = detectJobImportSource(
+      "https://ats.rippling.com/rancho-biosciences/jobs/4f28fa6c-fdd8-439e-b04d-c126648dcdfd?source=career_site#apply",
+    );
+
+    expect(result).toEqual({
+      source: {
+        canonicalUrl:
+          "https://ats.rippling.com/rancho-biosciences/jobs/4f28fa6c-fdd8-439e-b04d-c126648dcdfd?source=career_site",
+        companySlug: "rancho-biosciences",
+        jobId: "4f28fa6c-fdd8-439e-b04d-c126648dcdfd",
+        kind: "RIPPLING",
+        submittedUrl:
+          "https://ats.rippling.com/rancho-biosciences/jobs/4f28fa6c-fdd8-439e-b04d-c126648dcdfd?source=career_site#apply",
+      },
+      success: true,
+    });
+  });
+
+  it.each([
+    "https://ats.rippling.com/rancho-biosciences",
+    "https://ats.rippling.com/rancho-biosciences/jobs/not-a-uuid",
+    "https://ats.rippling.com/rancho-biosciences/jobs/4f28fa6c-fdd8-439e-b04d-c126648dcdfd/extra",
+  ])("rejects malformed Rippling URLs instead of routing them to generic JSON-LD", (submittedUrl) => {
+    expect(detectJobImportSource(submittedUrl)).toEqual({
+      error: {
+        code: "UNSUPPORTED_SOURCE",
+        message: "This job URL source is not supported yet.",
+      },
+      success: false,
+    });
+  });
+
   it("routes other valid public job URLs to the JSON-LD importer", () => {
     expect(detectJobImportSource("https://jobs.example.com/openings/42#apply")).toEqual({
       source: {

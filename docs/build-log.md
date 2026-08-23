@@ -16,14 +16,18 @@ It should document what changed, why it mattered, and what the next step is. It 
 - Added a first-class Gem Job Board adapter for the deterministic `jobs.gem.com/{board}/{postingId}` hosted URL pattern. It requests only Gem's fixed public API origin, validates JSON responses, and populates the existing review-first import flow without fetching Gem's client-rendered hosted page.
 - Reused existing description, employment, work-mode, and company-inference patterns. Gem uses `content_plain` before safe HTML-to-text normalization, maps its observed `in_office` location type, and provides a non-blocking editable company suggestion derived from the board identifier.
 - Added real-shaped Nominal fixture coverage for Gem URL detection, constrained API construction, JSON/content-type failures, optional-field handling, URL consistency, and review-seed normalization; updated the README's implemented import-source list.
+- Added a first-class Rippling ATS adapter for the exact `ats.rippling.com/{company-slug}/jobs/{uuid}` hosted URL pattern. It safely fetches only the canonical submitted page and reads the server-rendered `__NEXT_DATA__` payload at `props.pageProps.apiData.jobPost`; it does not depend on a mutable Next.js build ID or execute JavaScript.
+- Reused the existing safe HTML-to-text, employment-type, work-mode, company-inference, URL validation, duplicate, and review-before-save behavior. Structured `companyName` is authoritative; slug inference remains a warned editable fallback only when it is absent.
+- Added a real-shaped Rancho BioSciences fixture and focused coverage for strict URL routing, canonical safe fetch use, malformed/missing Next data, optional-field resilience, URL containment, normalized descriptions and employment/location fields, and intentionally conservative structured annual-salary handling.
 
 ### Notes
 - The fallback does not run for authorization, rate-limit, server, malformed-response, content-type, timeout, or retrieval failures.
 - No generic HTML scraping, browser execution, or additional ATS source support was added. The existing HTML response cap, redirect validation, DNS/IP checks, timeout, and content-type restrictions remain unchanged.
 - Gem does not add salary, department, office, persistence, duplicate, or review-flow behavior; it produces the same source-independent import seed used by the existing bulk and one-job workflows.
+- Rippling retains the existing HTML response cap, redirect revalidation, DNS/IP protections, timeout, content-type restrictions, and no-cookie/no-JavaScript behavior. Its observed Rancho BioSciences posting has no structured salary range, so salary is left blank.
 
 ### Next Step
-- Consider Rippling's deterministic public Next data response as the next source-specific adapter only after a separate design and fixture pass.
+- Diagnose Zoho Recruit's public careers data surface and size constraints before deciding whether a narrowly bounded deterministic adapter is justified.
 
 ## 2026-08-16
 

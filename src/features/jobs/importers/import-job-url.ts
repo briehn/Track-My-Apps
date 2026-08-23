@@ -3,6 +3,7 @@ import { importGreenhouseJob } from "@/features/jobs/importers/greenhouse";
 import { importJsonLdJob } from "@/features/jobs/importers/json-ld";
 import { detectJobImportSource } from "@/features/jobs/importers/job-url";
 import { importLeverJob } from "@/features/jobs/importers/lever";
+import { importRipplingJob } from "@/features/jobs/importers/rippling";
 import type { JobImportResult } from "@/features/jobs/importers/types";
 
 export async function importJobFromUrl(submittedUrl: string): Promise<JobImportResult> {
@@ -23,6 +24,9 @@ export async function importJobFromUrl(submittedUrl: string): Promise<JobImportR
   }
   if (detectedSource.source.kind === "GEM") {
     return importGemJob(detectedSource.source);
+  }
+  if (detectedSource.source.kind === "RIPPLING") {
+    return importRipplingJob(detectedSource.source);
   }
 
   return importJsonLdJob(detectedSource.source);
