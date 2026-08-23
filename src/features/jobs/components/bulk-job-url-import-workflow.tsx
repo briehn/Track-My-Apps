@@ -40,6 +40,14 @@ function getSourceLabel(item: Extract<BulkJobUrlImportItem, { status: "success" 
     return "Lever";
   }
 
+  if (item.source.kind === "GEM") {
+    return "Gem";
+  }
+
+  if (item.source.kind === "RIPPLING") {
+    return "Rippling";
+  }
+
   return "JobPosting JSON-LD";
 }
 

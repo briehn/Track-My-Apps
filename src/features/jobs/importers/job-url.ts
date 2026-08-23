@@ -61,7 +61,7 @@ export type JobUrlDetectionResult =
   | { source: DetectedJobImportSource; success: true }
   | {
       error: {
-        code: "INVALID_URL" | "UNSAFE_URL" | "UNSUPPORTED_SOURCE";
+        code: "INVALID_URL" | "MALFORMED_URL" | "UNSAFE_URL" | "UNSUPPORTED_SOURCE";
         message: string;
       };
       success: false;
@@ -197,6 +197,16 @@ export function detectJobImportSource(submittedUrl: string): JobUrlDetectionResu
       error: {
         code: "INVALID_URL",
         message: "Enter a valid http:// or https:// job URL.",
+      },
+      success: false,
+    };
+  }
+
+  if (parsedUrl.data.includes("\\")) {
+    return {
+      error: {
+        code: "MALFORMED_URL",
+        message: "Remove escaped backslashes from the job URL and paste the browser URL directly.",
       },
       success: false,
     };

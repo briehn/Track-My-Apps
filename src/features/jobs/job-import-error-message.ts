@@ -3,6 +3,10 @@ export function getJobImportFailureMessage(code: string) {
     return "Enter a valid http:// or https:// job URL.";
   }
 
+  if (code === "MALFORMED_URL") {
+    return "Remove escaped backslashes from the job URL and paste the browser URL directly.";
+  }
+
   if (code === "UNSAFE_URL") {
     return "This URL can't be imported.";
   }

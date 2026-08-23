@@ -149,4 +149,18 @@ describe("detectJobImportSource", () => {
       success: false,
     });
   });
+
+  it("rejects literal Markdown escape backslashes without reinterpreting a Gem posting ID", () => {
+    expect(
+      detectJobImportSource(
+        "https://jobs.gem.com/nominal/am9icG9zdDrl9lWhYeSFOCTw\\_muGyNcp",
+      ),
+    ).toEqual({
+      error: {
+        code: "MALFORMED_URL",
+        message: "Remove escaped backslashes from the job URL and paste the browser URL directly.",
+      },
+      success: false,
+    });
+  });
 });
