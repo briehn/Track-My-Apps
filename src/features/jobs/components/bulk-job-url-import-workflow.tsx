@@ -102,6 +102,23 @@ function ReviewItem({
 }) {
   const { item, values } = reviewItem;
 
+  if (item.status === "unavailable") {
+    return (
+      <article className="rounded-md border border-amber-200 bg-amber-50 p-4" aria-label={`Unavailable job posting on line ${item.lineNumber}`}>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="font-medium text-amber-900">Job posting is no longer available</p>
+            <p className="mt-1 break-all text-sm text-amber-800">{item.submittedUrl}</p>
+            <p className="mt-2 text-sm text-amber-800">This listing appears to have been removed or unpublished. It wasn&apos;t added.</p>
+          </div>
+          <Button type="button" size="sm" variant="ghost" onClick={onRemove}>
+            Remove
+          </Button>
+        </div>
+      </article>
+    );
+  }
+
   if (item.status === "failure") {
     return (
       <article className="rounded-md border border-red-200 bg-red-50 p-4" aria-label={`Import failed for line ${item.lineNumber}`}>
@@ -208,6 +225,7 @@ export function BulkJobUrlImportWorkflow() {
   const summary = useMemo(() => ({
     failed: visibleItems.filter((item) => item.item.status === "failure").length,
     ready: eligibleItems.length,
+    unavailable: visibleItems.filter((item) => item.item.status === "unavailable").length,
   }), [eligibleItems.length, visibleItems]);
 
   const reviewUrls = () => {
@@ -303,7 +321,7 @@ export function BulkJobUrlImportWorkflow() {
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="font-semibold text-slate-950">Review imports</h2>
-              <p className="mt-1 text-sm text-slate-600">{summary.ready} complete {summary.ready === 1 ? "job" : "jobs"} ready to select{summary.failed ? ` · ${summary.failed} could not be imported` : ""}.</p>
+              <p className="mt-1 text-sm text-slate-600">{summary.ready} complete {summary.ready === 1 ? "job" : "jobs"} ready to select{summary.unavailable ? ` · ${summary.unavailable} no longer available` : ""}{summary.failed ? ` · ${summary.failed} could not be imported` : ""}.</p>
               {ignoredBlankLineCount > 0 ? <p className="mt-1 text-sm text-slate-600">Ignored {ignoredBlankLineCount} blank {ignoredBlankLineCount === 1 ? "line" : "lines"}.</p> : null}
             </div>
             <Button type="button" size="sm" variant="secondary" onClick={selectAllEligible} disabled={isSaving || eligibleItems.length === 0}>

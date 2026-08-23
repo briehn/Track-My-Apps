@@ -20,6 +20,7 @@ export type JobUrlImportActionResult =
     }
   | {
       message: string;
+      unavailable?: true;
       success: false;
     };
 
@@ -44,6 +45,7 @@ export async function importJobUrlForCurrentUser(
   if (!result.success) {
     return {
       message: getJobImportFailureMessage(result.error.code),
+      ...(result.error.code === "POSTING_UNAVAILABLE" ? { unavailable: true } : {}),
       success: false,
     };
   }

@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   importGreenhouseJob,
@@ -28,6 +28,22 @@ function getGreenhouseSource(): GreenhouseJobSource {
 
   return result.source;
 }
+
+function getUnavailableGreenhouseSource(): GreenhouseJobSource {
+  const result = detectJobImportSource(
+    "https://job-boards.greenhouse.io/66degrees/jobs/6135129004",
+  );
+
+  if (!result.success || result.source.kind !== "GREENHOUSE") {
+    throw new Error("Expected the unavailable Greenhouse URL to be detected.");
+  }
+
+  return result.source;
+}
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 describe("importGreenhouseJob", () => {
   it("normalizes a realistic Greenhouse response into a validated JobDraft", async () => {
@@ -90,6 +106,52 @@ describe("importGreenhouseJob", () => {
       error: {
         code: "MALFORMED_EXTERNAL_DATA",
         message: "Greenhouse returned job data in an unexpected format.",
+      },
+      success: false,
+    });
+  });
+
+  it("reports a verified posting-level Greenhouse not-found response as unavailable", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({ error: "Job not found", status: 404 }), {
+        headers: { "content-type": "application/json" },
+        status: 404,
+      }),
+    );
+
+    const result = await importGreenhouseJob(getUnavailableGreenhouseSource());
+
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      new URL("https://boards-api.greenhouse.io/v1/boards/66degrees/jobs/6135129004"),
+      expect.objectContaining({ redirect: "error" }),
+    );
+    expect(result).toEqual({
+      error: {
+        code: "POSTING_UNAVAILABLE",
+        message: "This Greenhouse job posting is no longer available.",
+      },
+      success: false,
+    });
+  });
+
+  it.each(["server error", "timeout"])("keeps Greenhouse %s as a retrieval failure", async (scenario) => {
+    if (scenario === "server error") {
+      vi.spyOn(globalThis, "fetch").mockResolvedValue(
+        new Response(JSON.stringify({ error: "Internal server error" }), {
+          headers: { "content-type": "application/json" },
+          status: 500,
+        }),
+      );
+    } else {
+      vi.spyOn(globalThis, "fetch").mockRejectedValue(new Error("timeout"));
+    }
+
+    const result = await importGreenhouseJob(getUnavailableGreenhouseSource());
+
+    expect(result).toEqual({
+      error: {
+        code: "EXTRACTION_FAILED",
+        message: "The Greenhouse job could not be retrieved.",
       },
       success: false,
     });

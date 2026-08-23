@@ -110,6 +110,46 @@ describe("prepareBulkJobUrlImport", () => {
     });
   });
 
+  it("keeps unavailable postings separate from import failures and out of duplicate review", async () => {
+    const result = await prepareBulkJobUrlImport(
+      "https://job-boards.greenhouse.io/66degrees/jobs/6135129004\nnot-a-url",
+      {
+        findExistingJobs: async () => [],
+        importJob: async (url): Promise<JobImportResult> => {
+          if (url.includes("greenhouse")) {
+            return {
+              error: {
+                code: "POSTING_UNAVAILABLE",
+                message: "This Greenhouse job posting is no longer available.",
+              },
+              success: false,
+            };
+          }
+
+          return {
+            error: { code: "INVALID_URL", message: "ignored" },
+            success: false,
+          };
+        },
+      },
+    );
+
+    expect(result.items).toEqual([
+      {
+        lineNumber: 1,
+        message: "This job posting is no longer available. You can still enter the job manually if you previously applied to it.",
+        status: "unavailable",
+        submittedUrl: "https://job-boards.greenhouse.io/66degrees/jobs/6135129004",
+      },
+      {
+        lineNumber: 2,
+        message: "Enter a valid http:// or https:// job URL.",
+        status: "failure",
+        submittedUrl: "not-a-url",
+      },
+    ]);
+  });
+
   it("checks saved jobs through the supplied user-scoped candidate list", async () => {
     const requestedExistingJobs: string[] = [];
     const result = await prepareBulkJobUrlImport("https://example.com/jobs/1", {

@@ -40,6 +40,12 @@ export type BulkJobUrlImportItem =
       message: string;
       status: "failure";
       submittedUrl: string;
+    }
+  | {
+      lineNumber: number;
+      message: string;
+      status: "unavailable";
+      submittedUrl: string;
     };
 
 export type BulkJobUrlImportReviewResult = {
@@ -60,7 +66,7 @@ function toBulkImportItem(
     return {
       lineNumber: submitted.lineNumber,
       message: getJobImportFailureMessage(result.error.code),
-      status: "failure",
+      status: result.error.code === "POSTING_UNAVAILABLE" ? "unavailable" : "failure",
       submittedUrl: submitted.submittedUrl,
     };
   }
@@ -89,7 +95,7 @@ export async function prepareBulkJobUrlImport(
   const firstLineByCanonicalUrl = new Map<string, number>();
 
   const items = importedItems.map((item) => {
-    if (item.status === "failure") {
+    if (item.status !== "success") {
       return item;
     }
 

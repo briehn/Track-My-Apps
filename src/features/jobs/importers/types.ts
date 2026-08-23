@@ -27,6 +27,7 @@ export type JobImportResult =
           | "INVALID_DRAFT"
           | "MALFORMED_URL"
           | "MALFORMED_EXTERNAL_DATA"
+          | "POSTING_UNAVAILABLE"
           | "UNSAFE_URL"
           | "UNSUPPORTED_SOURCE";
         message: string;

@@ -10,6 +10,18 @@ const GREENHOUSE_API_ORIGIN = "https://boards-api.greenhouse.io";
 const GREENHOUSE_REQUEST_TIMEOUT_MS = 10_000;
 const GREENHOUSE_MAX_RESPONSE_BYTES = 1_000_000;
 
+const greenhouseJobNotFoundResponseSchema = z.object({
+  error: z.literal("Job not found"),
+  status: z.literal(404),
+});
+
+class GreenhousePostingUnavailableError extends Error {
+  constructor() {
+    super("Greenhouse reported that the requested job posting was not found.");
+    this.name = "GreenhousePostingUnavailableError";
+  }
+}
+
 const greenhouseJobResponseSchema = z.object({
   absolute_url: z.string().optional(),
   application_deadline: z.string().nullable().optional(),
@@ -48,10 +60,6 @@ async function fetchGreenhouseJson(url: URL): Promise<unknown> {
     signal: AbortSignal.timeout(GREENHOUSE_REQUEST_TIMEOUT_MS),
   });
 
-  if (!response.ok) {
-    throw new Error(`Greenhouse returned ${response.status}.`);
-  }
-
   const contentType = response.headers.get("content-type") ?? "";
   if (!contentType.toLocaleLowerCase().includes("application/json")) {
     throw new Error("Greenhouse returned an unexpected response type.");
@@ -67,11 +75,22 @@ async function fetchGreenhouseJson(url: URL): Promise<unknown> {
     throw new Error("Greenhouse returned a response that is too large.");
   }
 
+  let responseData: unknown;
   try {
-    return JSON.parse(new TextDecoder().decode(responseBytes));
+    responseData = JSON.parse(new TextDecoder().decode(responseBytes));
   } catch {
     throw new Error("Greenhouse returned malformed JSON.");
   }
+
+  if (response.status === 404 && greenhouseJobNotFoundResponseSchema.safeParse(responseData).success) {
+    throw new GreenhousePostingUnavailableError();
+  }
+
+  if (!response.ok) {
+    throw new Error(`Greenhouse returned ${response.status}.`);
+  }
+
+  return responseData;
 }
 
 function normalizeGreenhouseUrl(value: string | undefined, fallback: string) {
@@ -189,7 +208,17 @@ export async function importGreenhouseJob(
       success: true,
       warnings,
     };
-  } catch {
+  } catch (error) {
+    if (error instanceof GreenhousePostingUnavailableError) {
+      return {
+        error: {
+          code: "POSTING_UNAVAILABLE",
+          message: "This Greenhouse job posting is no longer available.",
+        },
+        success: false,
+      };
+    }
+
     return {
       error: {
         code: "EXTRACTION_FAILED",

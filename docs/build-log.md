@@ -24,6 +24,8 @@ It should document what changed, why it mattered, and what the next step is. It 
 - Added a first-class 4 Day Week importer for the exact `4dayweek.io/job/{slug}` URL shape. It calls only the documented fixed-origin `/api/v2/jobs/{slug}` endpoint and maps its public JSON into the existing review-first import seed.
 - Preserved the existing fixed-origin JSON request safeguards (HTTPS, redirects disabled, 10-second deadline, JSON-only content type, and 1 MB cap). The adapter uses authoritative company, title, plain-text description, work arrangement, locations, and canonical URL; it converts only exact annual USD cents to whole-dollar salary fields and leaves the API's ambiguous `permanent` contract label unset.
 - Added a real-shaped Dolby fixture and coverage for strict routing, constrained API construction, structured location/work-mode mapping, contract normalization, salary safety, malformed optional/required values, URL containment, retrieval failures, and Bulk Add source preservation.
+- Added a source-aware `POSTING_UNAVAILABLE` importer outcome for confirmed removed listings. Greenhouse now translates only its posting-specific JSON `404 { status: 404, error: "Job not found" }` response, while 4 Day Week translates the documented per-slug API 404; generic retrieval failures and unverified ATS responses remain conservative.
+- Updated Single Add and Bulk Add to distinguish unavailable listings from importer failures. Unavailable bulk cards are muted amber, unselectable, removable, and counted separately, while the existing review-before-save and duplicate behavior remains unchanged.
 
 ### Notes
 - The fallback does not run for authorization, rate-limit, server, malformed-response, content-type, timeout, or retrieval failures.
@@ -32,7 +34,7 @@ It should document what changed, why it mattered, and what the next step is. It 
 - Rippling retains the existing HTML response cap, redirect revalidation, DNS/IP protections, timeout, content-type restrictions, and no-cookie/no-JavaScript behavior. Its observed Rancho BioSciences posting has no structured salary range, so salary is left blank.
 
 ### Next Step
-- Diagnose Zoho Recruit's public careers data surface and size constraints before deciding whether a narrowly bounded deterministic adapter is justified.
+- Apply the same unavailable classification only when a future source has verified, posting-specific public not-found semantics; keep ambiguous 404s conservative.
 
 ## 2026-08-16
 

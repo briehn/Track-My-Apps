@@ -10,6 +10,13 @@ const FOUR_DAY_WEEK_API_ORIGIN = "https://4dayweek.io";
 const FOUR_DAY_WEEK_MAX_RESPONSE_BYTES = 1_000_000;
 const FOUR_DAY_WEEK_REQUEST_TIMEOUT_MS = 10_000;
 
+class FourDayWeekPostingUnavailableError extends Error {
+  constructor() {
+    super("4 Day Week reported that the requested job posting was not found.");
+    this.name = "FourDayWeekPostingUnavailableError";
+  }
+}
+
 const fourDayWeekJobResponseSchema = z.object({
   company: z
     .object({
@@ -53,6 +60,10 @@ async function fetchFourDayWeekJson(url: URL): Promise<unknown> {
     redirect: "error",
     signal: AbortSignal.timeout(FOUR_DAY_WEEK_REQUEST_TIMEOUT_MS),
   });
+
+  if (response.status === 404) {
+    throw new FourDayWeekPostingUnavailableError();
+  }
 
   if (!response.ok) {
     throw new Error(`4 Day Week returned ${response.status}.`);
@@ -287,7 +298,17 @@ export async function importFourDayWeekJob(
     }
 
     return { seed: parsedSeed.data, source, success: true, warnings };
-  } catch {
+  } catch (error) {
+    if (error instanceof FourDayWeekPostingUnavailableError) {
+      return {
+        error: {
+          code: "POSTING_UNAVAILABLE",
+          message: "This 4 Day Week job posting is no longer available.",
+        },
+        success: false,
+      };
+    }
+
     return {
       error: {
         code: "EXTRACTION_FAILED",

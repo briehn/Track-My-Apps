@@ -216,7 +216,26 @@ describe("importFourDayWeekJob", () => {
     });
   });
 
-  it.each([403, 404, 429, 500])("returns a safe failure when the API responds with HTTP %i", async (status) => {
+  it("reports the documented per-job 404 as an unavailable posting", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({ error: "not found" }), {
+        headers: { "content-type": "application/json" },
+        status: 404,
+      }),
+    );
+
+    const result = await importFourDayWeekJob(getFourDayWeekSource());
+
+    expect(result).toEqual({
+      error: {
+        code: "POSTING_UNAVAILABLE",
+        message: "This 4 Day Week job posting is no longer available.",
+      },
+      success: false,
+    });
+  });
+
+  it.each([403, 429, 500])("returns a safe failure when the API responds with HTTP %i", async (status) => {
     vi.spyOn(globalThis, "fetch").mockResolvedValue(
       new Response(JSON.stringify({ error: "unavailable" }), {
         headers: { "content-type": "application/json" },

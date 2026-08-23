@@ -21,7 +21,12 @@ const initialState: CreateJobActionState = {};
 function ImportNotice({ result }: { result: JobUrlImportActionResult }) {
   if (!result.success) {
     return (
-      <div role="alert" className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+      <div
+        role="alert"
+        className={result.unavailable
+          ? "rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800"
+          : "rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"}
+      >
         {result.message}
       </div>
     );

@@ -27,6 +27,7 @@ import { importJobUrlForCurrentUser } from "@/features/jobs/import-url-actions";
 const nominalUrl = "https://jobs.gem.com/nominal/am9icG9zdDrl9lWhYeSFOCTw_muGyNcp";
 
 beforeEach(() => {
+  vi.clearAllMocks();
   mocks.findMany.mockResolvedValue([]);
   mocks.importJobFromUrl.mockResolvedValue({
     seed: {
@@ -77,5 +78,26 @@ describe("importJobUrlForCurrentUser", () => {
         },
       ],
     });
+  });
+
+  it("returns the distinct unavailable result without running duplicate detection", async () => {
+    mocks.importJobFromUrl.mockResolvedValueOnce({
+      error: {
+        code: "POSTING_UNAVAILABLE",
+        message: "This Greenhouse job posting is no longer available.",
+      },
+      success: false,
+    });
+
+    const result = await importJobUrlForCurrentUser(
+      "https://job-boards.greenhouse.io/66degrees/jobs/6135129004",
+    );
+
+    expect(result).toEqual({
+      message: "This job posting is no longer available. You can still enter the job manually if you previously applied to it.",
+      success: false,
+      unavailable: true,
+    });
+    expect(mocks.findMany).not.toHaveBeenCalled();
   });
 });

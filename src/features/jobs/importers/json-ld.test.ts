@@ -129,4 +129,18 @@ describe("importJsonLdJob", () => {
       success: false,
     });
   });
+
+  it("keeps arbitrary page retrieval failures conservative", async () => {
+    const result = await importJsonLdJob(getJsonLdSource(), async () => {
+      throw new Error("The page returned HTTP 404.");
+    });
+
+    expect(result).toEqual({
+      error: {
+        code: "EXTRACTION_FAILED",
+        message: "The job posting could not be retrieved.",
+      },
+      success: false,
+    });
+  });
 });
