@@ -10,6 +10,7 @@ const LEVER_JOB_HOSTS: ReadonlyMap<string, "EU" | "GLOBAL"> = new Map([
 ] as const);
 const GEM_JOB_HOST = "jobs.gem.com";
 const RIPPLING_JOB_HOST = "ats.rippling.com";
+const FOUR_DAY_WEEK_JOB_HOST = "4dayweek.io";
 
 export type GreenhouseJobSource = {
   boardToken: string;
@@ -44,6 +45,13 @@ export type RipplingJobSource = {
   submittedUrl: string;
 };
 
+export type FourDayWeekJobSource = {
+  canonicalUrl: string;
+  kind: "FOUR_DAY_WEEK";
+  slug: string;
+  submittedUrl: string;
+};
+
 export type JsonLdJobSource = {
   canonicalUrl: string;
   kind: "JSON_LD";
@@ -55,6 +63,7 @@ export type DetectedJobImportSource =
   | LeverJobSource
   | GemJobSource
   | RipplingJobSource
+  | FourDayWeekJobSource
   | JsonLdJobSource;
 
 export type JobUrlDetectionResult =
@@ -189,6 +198,31 @@ function getRipplingJobSource(url: URL, submittedUrl: string): RipplingJobSource
   };
 }
 
+function getFourDayWeekJobSource(
+  url: URL,
+  submittedUrl: string,
+): FourDayWeekJobSource | null {
+  if (url.hostname.toLocaleLowerCase() !== FOUR_DAY_WEEK_JOB_HOST) {
+    return null;
+  }
+
+  const pathSegments = url.pathname.split("/").filter(Boolean);
+  if (
+    pathSegments.length !== 2 ||
+    pathSegments[0] !== "job" ||
+    !/^[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*$/.test(pathSegments[1])
+  ) {
+    return null;
+  }
+
+  return {
+    canonicalUrl: toCanonicalUrl(url),
+    kind: "FOUR_DAY_WEEK",
+    slug: pathSegments[1],
+    submittedUrl,
+  };
+}
+
 export function detectJobImportSource(submittedUrl: string): JobUrlDetectionResult {
   const parsedUrl = safeExternalUrlSchema.safeParse(submittedUrl);
 
@@ -246,11 +280,18 @@ export function detectJobImportSource(submittedUrl: string): JobUrlDetectionResu
     return { source: ripplingSource, success: true };
   }
 
+  const fourDayWeekSource = getFourDayWeekJobSource(url, parsedUrl.data);
+
+  if (fourDayWeekSource) {
+    return { source: fourDayWeekSource, success: true };
+  }
+
   if (
     GREENHOUSE_JOB_HOSTS.has(url.hostname.toLocaleLowerCase()) ||
     LEVER_JOB_HOSTS.has(url.hostname.toLocaleLowerCase()) ||
     url.hostname.toLocaleLowerCase() === GEM_JOB_HOST ||
-    url.hostname.toLocaleLowerCase() === RIPPLING_JOB_HOST
+    url.hostname.toLocaleLowerCase() === RIPPLING_JOB_HOST ||
+    url.hostname.toLocaleLowerCase() === FOUR_DAY_WEEK_JOB_HOST
   ) {
     return {
       error: {

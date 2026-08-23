@@ -1,0 +1,32 @@
+{
+  "id": "01a02755-5bc2-7d32-a746-ee3e6dbe38ed",
+  "slug": "video-software-engineer-at-dolby-01ca96da",
+  "title": "Video Software Engineer",
+  "description": "Join the leader in entertainment innovation.\n\n- Design and develop innovative video algorithms.\n- Partner with QA to improve automation.",
+  "url": "https://4dayweek.io/job/video-software-engineer-at-dolby-01ca96da",
+  "contract_type": "permanent",
+  "work_arrangement": "hybrid",
+  "locations": [
+    {
+      "city": "Sunnyvale",
+      "state": "California",
+      "country": "United States",
+      "work_arrangement": "hybrid",
+      "is_primary": true
+    }
+  ],
+  "salary_min": 13710000,
+  "salary_max": 18830000,
+  "salary_currency": "USD",
+  "salary_period": "year",
+  "posted_at": "2026-08-22T02:38:21Z",
+  "company": {
+    "id": "019b776c-3700-7adb-82d4-04f08d0021b6",
+    "slug": "dolby",
+    "name": "Dolby",
+    "schedule_type": "9_day_fortnight"
+  },
+  "unrelated_future_field": {
+    "ignored": true
+  }
+}

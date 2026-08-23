@@ -129,6 +129,39 @@ describe("detectJobImportSource", () => {
     });
   });
 
+  it("detects the canonical 4 Day Week job URL and preserves query parameters", () => {
+    const result = detectJobImportSource(
+      "https://4dayweek.io/job/video-software-engineer-at-dolby-01ca96da?source=tracker#apply",
+    );
+
+    expect(result).toEqual({
+      source: {
+        canonicalUrl:
+          "https://4dayweek.io/job/video-software-engineer-at-dolby-01ca96da?source=tracker",
+        kind: "FOUR_DAY_WEEK",
+        slug: "video-software-engineer-at-dolby-01ca96da",
+        submittedUrl:
+          "https://4dayweek.io/job/video-software-engineer-at-dolby-01ca96da?source=tracker#apply",
+      },
+      success: true,
+    });
+  });
+
+  it.each([
+    "https://4dayweek.io/job",
+    "https://4dayweek.io/jobs/video-software-engineer-at-dolby-01ca96da",
+    "https://4dayweek.io/job/not a valid slug",
+    "https://4dayweek.io/company/dolby",
+  ])("rejects malformed 4 Day Week paths instead of routing them to generic JSON-LD", (submittedUrl) => {
+    expect(detectJobImportSource(submittedUrl)).toEqual({
+      error: {
+        code: "UNSUPPORTED_SOURCE",
+        message: "This job URL source is not supported yet.",
+      },
+      success: false,
+    });
+  });
+
   it("routes other valid public job URLs to the JSON-LD importer", () => {
     expect(detectJobImportSource("https://jobs.example.com/openings/42#apply")).toEqual({
       source: {
