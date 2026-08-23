@@ -1,0 +1,25 @@
+{
+  "absolute_url": "https://jobs.gem.com/nominal/am9icG9zdDrl9lWhYeSFOCTw_muGyNcp",
+  "content": "<div><strong>About Nominal</strong></div><div><br></div><div>Nominal builds the connected test and operations platform for advanced hardware systems.</div><h3>About the role</h3><ul><li>Own technical problems end-to-end.</li><li>Work directly with engineers.</li></ul>",
+  "content_plain": "About Nominal\nNominal builds the connected test and operations platform for advanced hardware systems.\nAbout the role\nOwn technical problems end-to-end.\nWork directly with engineers.",
+  "created_at": "2026-08-19T16:52:04.736Z",
+  "departments": [
+    {
+      "id": "699aed86dada6ca01ef74013a4464066",
+      "name": "Growth"
+    }
+  ],
+  "employment_type": "full_time",
+  "id": "am9icG9zdDrl9lWhYeSFOCTw_muGyNcp",
+  "location": {
+    "name": "New York, United States"
+  },
+  "location_type": "in_office",
+  "offices": [
+    {
+      "name": "New York, NY"
+    }
+  ],
+  "title": "Product Support Engineer",
+  "updated_at": "2026-08-21T20:29:09.941Z"
+}

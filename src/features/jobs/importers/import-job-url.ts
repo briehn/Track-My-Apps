@@ -1,3 +1,4 @@
+import { importGemJob } from "@/features/jobs/importers/gem";
 import { importGreenhouseJob } from "@/features/jobs/importers/greenhouse";
 import { importJsonLdJob } from "@/features/jobs/importers/json-ld";
 import { detectJobImportSource } from "@/features/jobs/importers/job-url";
@@ -19,6 +20,9 @@ export async function importJobFromUrl(submittedUrl: string): Promise<JobImportR
   }
   if (detectedSource.source.kind === "LEVER") {
     return importLeverJob(detectedSource.source);
+  }
+  if (detectedSource.source.kind === "GEM") {
+    return importGemJob(detectedSource.source);
   }
 
   return importJsonLdJob(detectedSource.source);

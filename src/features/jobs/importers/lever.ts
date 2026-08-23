@@ -1,5 +1,9 @@
 import { z } from "zod";
 
+import {
+  getInferredCompanyWarning,
+  getSuggestedCompanyFromIdentifier,
+} from "@/features/jobs/importers/company-inference";
 import { normalizeImportedHtmlToPlainText } from "@/features/jobs/importers/html-to-plain-text";
 import { normalizeImportedEmploymentType } from "@/features/jobs/importers/employment-type";
 import {
@@ -130,14 +134,6 @@ function normalizeLeverUrl(value: string | null | undefined, fallback: string) {
   }
 }
 
-function getSuggestedCompanyFromSite(site: string) {
-  return site
-    .split(/[-_]+/)
-    .filter(Boolean)
-    .map((segment) => `${segment.charAt(0).toLocaleUpperCase()}${segment.slice(1)}`)
-    .join(" ");
-}
-
 function isValidSalary(value: number | null | undefined): value is number {
   return value !== null && value !== undefined && value >= 0 && Number.isInteger(value);
 }
@@ -161,7 +157,7 @@ function toJobImportSeed(
     warnings.push(normalizedUrl.warning);
   }
 
-  const suggestedCompany = getSuggestedCompanyFromSite(source.site);
+  const suggestedCompany = getSuggestedCompanyFromIdentifier(source.site);
   warnings.push(getLeverInferredCompanyWarning());
 
   const seed: JobImportSeed = {
@@ -189,11 +185,8 @@ function getLeverJsonLdSource(source: LeverJobSource): JsonLdJobSource {
   };
 }
 
-function getLeverInferredCompanyWarning(): JobImportWarning {
-  return {
-    code: "INFERRED_COMPANY",
-    message: "Company was inferred from the Lever site identifier. Verify it before saving.",
-  };
+function getLeverInferredCompanyWarning() {
+  return getInferredCompanyWarning("Lever", "site identifier");
 }
 
 async function importLeverHostedJsonLd(
@@ -210,7 +203,7 @@ async function importLeverHostedJsonLd(
 
     const seed: JobImportSeed = {
       ...jsonLdResult.seed,
-      company: getSuggestedCompanyFromSite(source.site),
+      company: getSuggestedCompanyFromIdentifier(source.site),
       source: "Lever",
     };
     const parsedSeed = jobImportSeedSchema.safeParse(seed);

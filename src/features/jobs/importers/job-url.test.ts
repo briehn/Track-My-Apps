@@ -63,6 +63,39 @@ describe("detectJobImportSource", () => {
     });
   });
 
+  it("detects supported Gem URLs and preserves query parameters while removing fragments", () => {
+    const result = detectJobImportSource(
+      "https://jobs.gem.com/nominal/am9icG9zdDrl9lWhYeSFOCTw_muGyNcp?source=career_site#apply",
+    );
+
+    expect(result.success).toBe(true);
+    if (!result.success) {
+      return;
+    }
+
+    expect(result.source).toEqual({
+      board: "nominal",
+      canonicalUrl: "https://jobs.gem.com/nominal/am9icG9zdDrl9lWhYeSFOCTw_muGyNcp?source=career_site",
+      kind: "GEM",
+      postingId: "am9icG9zdDrl9lWhYeSFOCTw_muGyNcp",
+      submittedUrl: "https://jobs.gem.com/nominal/am9icG9zdDrl9lWhYeSFOCTw_muGyNcp?source=career_site#apply",
+    });
+  });
+
+  it.each([
+    "https://jobs.gem.com/nominal",
+    "https://jobs.gem.com/nominal/posting/extra",
+    "https://jobs.gem.com/nominal/not%20a%20posting",
+  ])("rejects malformed Gem URLs instead of routing them to generic JSON-LD", (submittedUrl) => {
+    expect(detectJobImportSource(submittedUrl)).toEqual({
+      error: {
+        code: "UNSUPPORTED_SOURCE",
+        message: "This job URL source is not supported yet.",
+      },
+      success: false,
+    });
+  });
+
   it("routes other valid public job URLs to the JSON-LD importer", () => {
     expect(detectJobImportSource("https://jobs.example.com/openings/42#apply")).toEqual({
       source: {

@@ -8,6 +8,7 @@ const LEVER_JOB_HOSTS: ReadonlyMap<string, "EU" | "GLOBAL"> = new Map([
   ["jobs.lever.co", "GLOBAL"],
   ["jobs.eu.lever.co", "EU"],
 ] as const);
+const GEM_JOB_HOST = "jobs.gem.com";
 
 export type GreenhouseJobSource = {
   boardToken: string;
@@ -26,6 +27,14 @@ export type LeverJobSource = {
   submittedUrl: string;
 };
 
+export type GemJobSource = {
+  board: string;
+  canonicalUrl: string;
+  kind: "GEM";
+  postingId: string;
+  submittedUrl: string;
+};
+
 export type JsonLdJobSource = {
   canonicalUrl: string;
   kind: "JSON_LD";
@@ -35,6 +44,7 @@ export type JsonLdJobSource = {
 export type DetectedJobImportSource =
   | GreenhouseJobSource
   | LeverJobSource
+  | GemJobSource
   | JsonLdJobSource;
 
 export type JobUrlDetectionResult =
@@ -118,6 +128,30 @@ function getLeverJobSource(url: URL, submittedUrl: string): LeverJobSource | nul
   };
 }
 
+function getGemJobSource(url: URL, submittedUrl: string): GemJobSource | null {
+  if (url.hostname.toLocaleLowerCase() !== GEM_JOB_HOST) {
+    return null;
+  }
+
+  const pathSegments = url.pathname.split("/").filter(Boolean);
+
+  if (
+    pathSegments.length !== 2 ||
+    !/^[A-Za-z0-9-]+$/.test(pathSegments[0]) ||
+    !/^[A-Za-z0-9_-]+$/.test(pathSegments[1])
+  ) {
+    return null;
+  }
+
+  return {
+    board: pathSegments[0],
+    canonicalUrl: toCanonicalUrl(url),
+    kind: "GEM",
+    postingId: pathSegments[1],
+    submittedUrl,
+  };
+}
+
 export function detectJobImportSource(submittedUrl: string): JobUrlDetectionResult {
   const parsedUrl = safeExternalUrlSchema.safeParse(submittedUrl);
 
@@ -153,9 +187,16 @@ export function detectJobImportSource(submittedUrl: string): JobUrlDetectionResu
     return { source: leverSource, success: true };
   }
 
+  const gemSource = getGemJobSource(url, parsedUrl.data);
+
+  if (gemSource) {
+    return { source: gemSource, success: true };
+  }
+
   if (
     GREENHOUSE_JOB_HOSTS.has(url.hostname.toLocaleLowerCase()) ||
-    LEVER_JOB_HOSTS.has(url.hostname.toLocaleLowerCase())
+    LEVER_JOB_HOSTS.has(url.hostname.toLocaleLowerCase()) ||
+    url.hostname.toLocaleLowerCase() === GEM_JOB_HOST
   ) {
     return {
       error: {
