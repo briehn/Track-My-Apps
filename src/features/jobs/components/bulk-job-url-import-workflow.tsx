@@ -52,6 +52,10 @@ function getSourceLabel(item: Extract<BulkJobUrlImportItem, { status: "success" 
     return "4 Day Week";
   }
 
+  if (item.source.kind === "WORK_AT_A_STARTUP") {
+    return "Work at a Startup";
+  }
+
   return "JobPosting JSON-LD";
 }
 

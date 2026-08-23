@@ -11,6 +11,7 @@ const LEVER_JOB_HOSTS: ReadonlyMap<string, "EU" | "GLOBAL"> = new Map([
 const GEM_JOB_HOST = "jobs.gem.com";
 const RIPPLING_JOB_HOST = "ats.rippling.com";
 const FOUR_DAY_WEEK_JOB_HOST = "4dayweek.io";
+const WORK_AT_A_STARTUP_JOB_HOST = "www.workatastartup.com";
 
 export type GreenhouseJobSource = {
   boardToken: string;
@@ -52,6 +53,13 @@ export type FourDayWeekJobSource = {
   submittedUrl: string;
 };
 
+export type WorkAtAStartupJobSource = {
+  canonicalUrl: string;
+  jobId: string;
+  kind: "WORK_AT_A_STARTUP";
+  submittedUrl: string;
+};
+
 export type JsonLdJobSource = {
   canonicalUrl: string;
   kind: "JSON_LD";
@@ -64,6 +72,7 @@ export type DetectedJobImportSource =
   | GemJobSource
   | RipplingJobSource
   | FourDayWeekJobSource
+  | WorkAtAStartupJobSource
   | JsonLdJobSource;
 
 export type JobUrlDetectionResult =
@@ -223,6 +232,34 @@ function getFourDayWeekJobSource(
   };
 }
 
+function getWorkAtAStartupJobSource(
+  url: URL,
+  submittedUrl: string,
+): WorkAtAStartupJobSource | null {
+  if (
+    url.protocol !== "https:" ||
+    url.hostname.toLocaleLowerCase() !== WORK_AT_A_STARTUP_JOB_HOST
+  ) {
+    return null;
+  }
+
+  const pathSegments = url.pathname.split("/").filter(Boolean);
+  if (
+    pathSegments.length !== 2 ||
+    pathSegments[0] !== "jobs" ||
+    !/^[1-9]\d*$/.test(pathSegments[1])
+  ) {
+    return null;
+  }
+
+  return {
+    canonicalUrl: toCanonicalUrl(url),
+    jobId: pathSegments[1],
+    kind: "WORK_AT_A_STARTUP",
+    submittedUrl,
+  };
+}
+
 export function detectJobImportSource(submittedUrl: string): JobUrlDetectionResult {
   const parsedUrl = safeExternalUrlSchema.safeParse(submittedUrl);
 
@@ -286,12 +323,19 @@ export function detectJobImportSource(submittedUrl: string): JobUrlDetectionResu
     return { source: fourDayWeekSource, success: true };
   }
 
+  const workAtAStartupSource = getWorkAtAStartupJobSource(url, parsedUrl.data);
+
+  if (workAtAStartupSource) {
+    return { source: workAtAStartupSource, success: true };
+  }
+
   if (
     GREENHOUSE_JOB_HOSTS.has(url.hostname.toLocaleLowerCase()) ||
     LEVER_JOB_HOSTS.has(url.hostname.toLocaleLowerCase()) ||
     url.hostname.toLocaleLowerCase() === GEM_JOB_HOST ||
     url.hostname.toLocaleLowerCase() === RIPPLING_JOB_HOST ||
-    url.hostname.toLocaleLowerCase() === FOUR_DAY_WEEK_JOB_HOST
+    url.hostname.toLocaleLowerCase() === FOUR_DAY_WEEK_JOB_HOST ||
+    url.hostname.toLocaleLowerCase() === WORK_AT_A_STARTUP_JOB_HOST
   ) {
     return {
       error: {

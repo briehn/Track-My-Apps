@@ -5,6 +5,7 @@ import { importJsonLdJob } from "@/features/jobs/importers/json-ld";
 import { detectJobImportSource } from "@/features/jobs/importers/job-url";
 import { importLeverJob } from "@/features/jobs/importers/lever";
 import { importRipplingJob } from "@/features/jobs/importers/rippling";
+import { importWorkAtAStartupJob } from "@/features/jobs/importers/work-at-a-startup";
 import type { JobImportResult } from "@/features/jobs/importers/types";
 
 export async function importJobFromUrl(submittedUrl: string): Promise<JobImportResult> {
@@ -31,6 +32,9 @@ export async function importJobFromUrl(submittedUrl: string): Promise<JobImportR
   }
   if (detectedSource.source.kind === "FOUR_DAY_WEEK") {
     return importFourDayWeekJob(detectedSource.source);
+  }
+  if (detectedSource.source.kind === "WORK_AT_A_STARTUP") {
+    return importWorkAtAStartupJob(detectedSource.source);
   }
 
   return importJsonLdJob(detectedSource.source);

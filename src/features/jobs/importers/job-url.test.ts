@@ -162,6 +162,39 @@ describe("detectJobImportSource", () => {
     });
   });
 
+  it("detects canonical Work at a Startup URLs, extracts a positive numeric ID, and removes fragments", () => {
+    expect(
+      detectJobImportSource(
+        "https://www.workatastartup.com/jobs/102292?source=tracker#apply",
+      ),
+    ).toEqual({
+      source: {
+        canonicalUrl: "https://www.workatastartup.com/jobs/102292?source=tracker",
+        jobId: "102292",
+        kind: "WORK_AT_A_STARTUP",
+        submittedUrl: "https://www.workatastartup.com/jobs/102292?source=tracker#apply",
+      },
+      success: true,
+    });
+  });
+
+  it.each([
+    "https://www.workatastartup.com/companies/foo",
+    "https://www.workatastartup.com/jobs/",
+    "https://www.workatastartup.com/jobs/0",
+    "https://www.workatastartup.com/jobs/abc",
+    "https://www.workatastartup.com/jobs/102292/extra",
+    "http://www.workatastartup.com/jobs/102292",
+  ])("rejects malformed Work at a Startup paths instead of routing them to generic JSON-LD", (submittedUrl) => {
+    expect(detectJobImportSource(submittedUrl)).toEqual({
+      error: {
+        code: "UNSUPPORTED_SOURCE",
+        message: "This job URL source is not supported yet.",
+      },
+      success: false,
+    });
+  });
+
   it("routes other valid public job URLs to the JSON-LD importer", () => {
     expect(detectJobImportSource("https://jobs.example.com/openings/42#apply")).toEqual({
       source: {

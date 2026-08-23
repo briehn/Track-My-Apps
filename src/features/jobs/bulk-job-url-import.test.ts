@@ -35,6 +35,15 @@ function createImportedJobSource(url: string): DetectedJobImportSource {
     };
   }
 
+  if (url.includes("workatastartup")) {
+    return {
+      canonicalUrl: url,
+      jobId: "102292",
+      kind: "WORK_AT_A_STARTUP",
+      submittedUrl: url,
+    };
+  }
+
   return {
     canonicalUrl: url,
     kind: "JSON_LD",
@@ -167,6 +176,34 @@ describe("prepareBulkJobUrlImport", () => {
 
     expect(requestedExistingJobs).toEqual(["current-user-only"]);
     expect(result.items[0]).toMatchObject({ duplicate: { jobId: "existing-job", reason: "URL" } });
+  });
+
+  it("preserves Work at a Startup as a dedicated successful review source", async () => {
+    const url = "https://www.workatastartup.com/jobs/102292";
+    const result = await prepareBulkJobUrlImport(url, {
+      findExistingJobs: async () => [],
+      importJob: async (): Promise<JobImportResult> => ({
+        seed: {
+          company: "83 Sciences",
+          location: "New York, NY, US",
+          remoteType: "REMOTE",
+          source: "Work at a Startup",
+          title: "Full-Stack Software Engineer",
+          url,
+        },
+        source: createImportedJobSource(url),
+        success: true,
+        warnings: [],
+      }),
+    });
+
+    expect(result.items).toEqual([
+      expect.objectContaining({
+        seed: expect.objectContaining({ source: "Work at a Startup" }),
+        source: expect.objectContaining({ kind: "WORK_AT_A_STARTUP" }),
+        status: "success",
+      }),
+    ]);
   });
 
   it("flags later canonical URL duplicates within a batch", async () => {

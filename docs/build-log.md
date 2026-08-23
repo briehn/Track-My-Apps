@@ -9,6 +9,9 @@ It should document what changed, why it mattered, and what the next step is. It 
 ## 2026-08-23
 
 ### Changes
+- Added a first-class Y Combinator Work at a Startup importer for the strict public `www.workatastartup.com/jobs/{positiveNumericId}` URL pattern. It requests only the internally constructed canonical HTTPS job page and parses the server-provided Inertia `data-page` attribute; it does not execute JavaScript or use the undocumented Inertia JSON representation.
+- The adapter validates the expected job-detail component, matching job ID and canonical page URL, then maps authoritative company/title, normalized job HTML, full-time employment, and source-owned physical locations with explicit Remote/Hybrid markers into the existing review-first import seed. Salary display strings and YC-specific fields remain intentionally unpersisted.
+- Added fixtures for the observed 83 Sciences and Numeral posting payloads plus coverage for strict routing, entity decoding, malformed/mismatched payloads, source-bound retrieval, work-mode normalization, conservative failures, and Bulk Add source preservation. Updated the README supported-source list.
 - Fixed a real-world Lever import gap where an otherwise valid public hosted posting can return `404` from Lever's individual Postings API endpoint while the canonical `jobs.lever.co` page still exposes a public `JobPosting` JSON-LD record.
 - Preserved the constrained Lever API as the primary import path. Only its typed HTTP 404 result now triggers a fallback to the already-detected canonical Lever hosted URL through the existing SSRF-safe HTML fetcher.
 - Extracted the existing JSON-LD HTML parsing and normalization step into a small reusable helper so Lever reuses the established structured-data behavior without re-running generic source detection or changing the user-facing source label.
@@ -32,6 +35,7 @@ It should document what changed, why it mattered, and what the next step is. It 
 - Added a 10-second wall-clock deadline to SSRF-safe HTML retrieval. The deadline spans hostname resolution, request bodies, and all redirect hops; native requests retain their socket timeout and now abort and clean up when the shared deadline expires.
 
 ### Notes
+- Work at a Startup `404` responses remain ordinary retrieval failures because a generic nonexistent-ID page is not a verified removed-posting contract.
 - The fallback does not run for authorization, rate-limit, server, malformed-response, content-type, timeout, or retrieval failures.
 - No generic HTML scraping, browser execution, or additional ATS source support was added. The existing HTML response cap, redirect validation, DNS/IP checks, timeout, and content-type restrictions remain unchanged.
 - Gem does not add salary, department, office, persistence, duplicate, or review-flow behavior; it produces the same source-independent import seed used by the existing bulk and one-job workflows.
