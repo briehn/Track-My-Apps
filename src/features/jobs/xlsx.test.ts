@@ -30,6 +30,31 @@ describe("buildJobsXlsxRow", () => {
     expect(row[4]).toBe("'@remote");
   });
 
+  it("uses the shared sanitizer for leading whitespace and control-character formula prefixes", () => {
+    const row = buildJobsXlsxRow({
+      company: " \t=SUM(A1:A2)",
+      title: "\u0000@cmd",
+      status: "SAVED",
+      location: null,
+      remoteType: null,
+      employmentType: null,
+      url: null,
+      source: null,
+      salaryMin: null,
+      salaryMax: null,
+      salaryCurrency: null,
+      deadline: null,
+      followUpDate: null,
+      createdAt: new Date("2026-05-01T00:00:00.000Z"),
+      updatedAt: new Date("2026-05-01T00:00:00.000Z"),
+      notesCount: 0,
+      hasJobAnalysis: false,
+    });
+
+    expect(row[0]).toBe("'=SUM(A1:A2)");
+    expect(row[1]).toBe("'\u0000@cmd");
+  });
+
   it("formats salary ranges and AI analysis status", () => {
     const row = buildJobsXlsxRow({
       company: "ACME",
@@ -56,4 +81,3 @@ describe("buildJobsXlsxRow", () => {
     expect(row[14]).toBe("Ready");
   });
 });
-

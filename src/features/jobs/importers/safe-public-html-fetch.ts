@@ -22,6 +22,8 @@ type ResolveHostname = (hostname: string) => Promise<ResolvedAddress[]>;
 type RequestPublicHtml = (
   url: URL,
   addresses: readonly ResolvedAddress[],
+  deadlineAt: number,
+  signal: AbortSignal,
 ) => Promise<PublicHtmlResponse>;
 
 type SafePublicHtmlFetchDependencies = {
@@ -244,17 +246,35 @@ export function createPinnedLookup(
 async function requestPublicHtml(
   url: URL,
   addresses: readonly ResolvedAddress[],
+  deadlineAt: number,
+  signal: AbortSignal,
 ): Promise<PublicHtmlResponse> {
   const request = url.protocol === "https:" ? requestHttps : requestHttp;
 
   return new Promise((resolve, reject) => {
     let settled = false;
-    const settle = (callback: () => void) => {
+    const remainingDeadlineMs = deadlineAt - Date.now();
+
+    if (remainingDeadlineMs <= 0) {
+      reject(new PublicHtmlFetchError("RETRIEVAL_FAILED"));
+      return;
+    }
+
+    function rejectForDeadline() {
+      requestHandle.destroy();
+      settle(() => reject(new PublicHtmlFetchError("RETRIEVAL_FAILED")));
+    }
+    function settle(callback: () => void) {
       if (!settled) {
         settled = true;
+        clearTimeout(deadlineTimer);
+        signal.removeEventListener("abort", rejectForDeadline);
+        requestHandle.setTimeout(0);
         callback();
       }
-    };
+    }
+
+    const deadlineTimer = setTimeout(rejectForDeadline, remainingDeadlineMs);
     const requestHandle = request(
       url,
       {
@@ -299,7 +319,41 @@ async function requestPublicHtml(
     requestHandle.on("error", () => {
       settle(() => reject(new PublicHtmlFetchError("RETRIEVAL_FAILED")));
     });
+    signal.addEventListener("abort", rejectForDeadline, { once: true });
+    if (signal.aborted) {
+      rejectForDeadline();
+      return;
+    }
     requestHandle.end();
+  });
+}
+
+function awaitWithinFetchDeadline<T>(
+  operation: Promise<T>,
+  deadlineAt: number,
+  abortController: AbortController,
+) {
+  const remainingDeadlineMs = deadlineAt - Date.now();
+  if (remainingDeadlineMs <= 0) {
+    return Promise.reject<T>(new PublicHtmlFetchError("RETRIEVAL_FAILED"));
+  }
+
+  return new Promise<T>((resolve, reject) => {
+    const deadlineTimer = setTimeout(() => {
+      abortController.abort();
+      reject(new PublicHtmlFetchError("RETRIEVAL_FAILED"));
+    }, remainingDeadlineMs);
+
+    operation.then(
+      (value) => {
+        clearTimeout(deadlineTimer);
+        resolve(value);
+      },
+      (error: unknown) => {
+        clearTimeout(deadlineTimer);
+        reject(error);
+      },
+    );
   });
 }
 
@@ -323,17 +377,27 @@ export async function fetchSafePublicHtml(
 ) {
   const resolveHostname = dependencies.resolveHostname ?? resolvePublicHostname;
   const requestHtml = dependencies.requestPublicHtml ?? requestPublicHtml;
+  const abortController = new AbortController();
+  const deadlineAt = Date.now() + REQUEST_TIMEOUT_MS;
   let currentUrl = new URL(submittedUrl);
 
   for (let redirectCount = 0; redirectCount <= MAX_REDIRECTS; redirectCount += 1) {
     assertSafePublicUrl(currentUrl);
-    const addresses = await resolveHostname(currentUrl.hostname);
+    const addresses = await awaitWithinFetchDeadline(
+      resolveHostname(currentUrl.hostname),
+      deadlineAt,
+      abortController,
+    );
 
     if (addresses.length === 0 || addresses.some((address) => !isPublicIpAddress(address.address))) {
       throw new PublicHtmlFetchError("UNSAFE_URL");
     }
 
-    const response = await requestHtml(currentUrl, addresses);
+    const response = await awaitWithinFetchDeadline(
+      requestHtml(currentUrl, addresses, deadlineAt, abortController.signal),
+      deadlineAt,
+      abortController,
+    );
     const contentLength = Number(getHeader(response.headers, "content-length"));
     if (Number.isFinite(contentLength) && contentLength > MAX_RESPONSE_BYTES) {
       throw new PublicHtmlFetchError("BODY_TOO_LARGE");

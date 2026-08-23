@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
+  canStartSingleJobUrlImport: vi.fn(),
   findMany: vi.fn(),
   importJobFromUrl: vi.fn(),
   requireUser: vi.fn(),
@@ -12,6 +13,10 @@ vi.mock("@/features/auth/require-user", () => ({
 
 vi.mock("@/features/jobs/importers/import-job-url", () => ({
   importJobFromUrl: mocks.importJobFromUrl,
+}));
+
+vi.mock("@/features/jobs/import-rate-limit", () => ({
+  canStartSingleJobUrlImport: mocks.canStartSingleJobUrlImport,
 }));
 
 vi.mock("@/server/db/prisma", () => ({
@@ -28,6 +33,7 @@ const nominalUrl = "https://jobs.gem.com/nominal/am9icG9zdDrl9lWhYeSFOCTw_muGyNc
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mocks.canStartSingleJobUrlImport.mockResolvedValue(true);
   mocks.findMany.mockResolvedValue([]);
   mocks.importJobFromUrl.mockResolvedValue({
     seed: {
@@ -59,6 +65,7 @@ describe("importJobUrlForCurrentUser", () => {
     const result = await importJobUrlForCurrentUser(nominalUrl);
 
     expect(mocks.importJobFromUrl).toHaveBeenCalledWith(nominalUrl);
+    expect(mocks.canStartSingleJobUrlImport).toHaveBeenCalledWith("current-user");
     expect(mocks.findMany).toHaveBeenCalledWith({
       select: { company: true, id: true, title: true, url: true },
       where: { userId: "current-user" },
@@ -78,6 +85,27 @@ describe("importJobUrlForCurrentUser", () => {
         },
       ],
     });
+  });
+
+  it("does not invoke the importer when the authenticated user exceeds the single-import limit", async () => {
+    mocks.canStartSingleJobUrlImport.mockResolvedValueOnce(false);
+
+    const result = await importJobUrlForCurrentUser(nominalUrl);
+
+    expect(result).toEqual({
+      message: "URL imports are temporarily limited. Please try again in a minute.",
+      success: false,
+    });
+    expect(mocks.importJobFromUrl).not.toHaveBeenCalled();
+    expect(mocks.findMany).not.toHaveBeenCalled();
+  });
+
+  it("always scopes the limiter to requireUser rather than client input", async () => {
+    mocks.requireUser.mockResolvedValueOnce({ id: "server-derived-user" });
+
+    await importJobUrlForCurrentUser(nominalUrl);
+
+    expect(mocks.canStartSingleJobUrlImport).toHaveBeenCalledWith("server-derived-user");
   });
 
   it("returns the distinct unavailable result without running duplicate detection", async () => {

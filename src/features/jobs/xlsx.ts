@@ -1,5 +1,6 @@
 import ExcelJS from "exceljs";
 
+import { sanitizeSpreadsheetCellText } from "@/features/jobs/spreadsheet-cell";
 import { statusLabels, type JobStatus } from "@/features/jobs/status";
 
 export type JobXlsxExportRow = {
@@ -40,19 +41,6 @@ const HEADER_ROW = [
   "AI Analysis",
 ] as const;
 
-function normalizeCellText(value: string | null | undefined) {
-  if (!value) {
-    return "";
-  }
-
-  const trimmed = value.trim();
-  if (!trimmed) {
-    return "";
-  }
-
-  return /^[=+\-@]/.test(trimmed) ? `'${trimmed}` : trimmed;
-}
-
 function formatSalaryRange(
   salaryMin: number | null,
   salaryMax: number | null,
@@ -62,7 +50,7 @@ function formatSalaryRange(
     return "";
   }
 
-  const currencyPrefix = normalizeCellText(salaryCurrency);
+  const currencyPrefix = sanitizeSpreadsheetCellText(salaryCurrency);
   const minLabel = salaryMin === null ? "" : String(salaryMin);
   const maxLabel = salaryMax === null ? "" : String(salaryMax);
 
@@ -75,14 +63,14 @@ function formatSalaryRange(
 
 export function buildJobsXlsxRow(row: JobXlsxExportRow) {
   return [
-    normalizeCellText(row.company),
-    normalizeCellText(row.title),
-    normalizeCellText(statusLabels[row.status] ?? row.status),
-    normalizeCellText(row.location),
-    normalizeCellText(row.remoteType),
-    normalizeCellText(row.employmentType),
-    normalizeCellText(row.url),
-    normalizeCellText(row.source),
+    sanitizeSpreadsheetCellText(row.company),
+    sanitizeSpreadsheetCellText(row.title),
+    sanitizeSpreadsheetCellText(statusLabels[row.status] ?? row.status),
+    sanitizeSpreadsheetCellText(row.location),
+    sanitizeSpreadsheetCellText(row.remoteType),
+    sanitizeSpreadsheetCellText(row.employmentType),
+    sanitizeSpreadsheetCellText(row.url),
+    sanitizeSpreadsheetCellText(row.source),
     formatSalaryRange(row.salaryMin, row.salaryMax, row.salaryCurrency),
     row.deadline,
     row.followUpDate,

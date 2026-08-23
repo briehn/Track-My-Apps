@@ -1,3 +1,5 @@
+import { sanitizeSpreadsheetCellText } from "@/features/jobs/spreadsheet-cell";
+
 type JobExportRow = {
   company: string;
   title: string;
@@ -39,7 +41,7 @@ function formatCsvScalar(value: string | number | null | undefined) {
     return "";
   }
 
-  const stringValue = String(value);
+  const stringValue = typeof value === "string" ? sanitizeSpreadsheetCellText(value) : String(value);
 
   if (
     stringValue.includes(",") ||
@@ -84,4 +86,3 @@ export function buildJobsCsv(rows: JobExportRow[]) {
 
   return [headerLine, ...dataLines].join("\n");
 }
-

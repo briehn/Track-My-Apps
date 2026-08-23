@@ -6,6 +6,7 @@ import {
   type JobImportDuplicateWarning,
 } from "@/features/jobs/importers/duplicate-detection";
 import { importJobFromUrl } from "@/features/jobs/importers/import-job-url";
+import { canStartSingleJobUrlImport } from "@/features/jobs/import-rate-limit";
 import type { JobImportWarning } from "@/features/jobs/importers/types";
 import { getJobImportFailureMessage } from "@/features/jobs/job-import-error-message";
 import type { JobImportSeed } from "@/features/jobs/schemas";
@@ -40,6 +41,14 @@ export async function importJobUrlForCurrentUser(
   submittedUrl: string,
 ): Promise<JobUrlImportActionResult> {
   const user = await requireUser();
+
+  if (!(await canStartSingleJobUrlImport(user.id))) {
+    return {
+      message: "URL imports are temporarily limited. Please try again in a minute.",
+      success: false,
+    };
+  }
+
   const result = await importJobFromUrl(submittedUrl);
 
   if (!result.success) {

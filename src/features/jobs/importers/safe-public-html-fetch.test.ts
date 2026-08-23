@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   createPinnedLookup,
@@ -17,6 +17,10 @@ function htmlResponse(html = "<html></html>") {
     statusCode: 200,
   };
 }
+
+afterEach(() => {
+  vi.useRealTimers();
+});
 
 describe("safe public HTML fetch", () => {
   it("returns the first validated address in normal lookup mode", () => {
@@ -61,6 +65,105 @@ describe("safe public HTML fetch", () => {
 
     expect(result.html).toBe("<html>job</html>");
     expect(result.finalUrl.toString()).toBe("https://careers.example.com/job/1");
+  });
+
+  it("cleans up the total-deadline timer after a successful response", async () => {
+    vi.useFakeTimers();
+
+    await expect(
+      fetchSafePublicHtml(new URL("https://careers.example.com/job/1"), {
+        requestPublicHtml: async () => htmlResponse("<html>job</html>"),
+        resolveHostname: async () => [publicAddress],
+      }),
+    ).resolves.toMatchObject({ html: "<html>job</html>" });
+
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it("enforces the total deadline when a request never responds", async () => {
+    vi.useFakeTimers();
+    let signal: AbortSignal | undefined;
+    const result = fetchSafePublicHtml(new URL("https://careers.example.com/job/1"), {
+      requestPublicHtml: async (_url, _addresses, _deadlineAt, requestSignal) => {
+        signal = requestSignal;
+        return new Promise(() => undefined);
+      },
+      resolveHostname: async () => [publicAddress],
+    });
+    const assertion = expect(result).rejects.toMatchObject({
+      code: "RETRIEVAL_FAILED",
+    } satisfies Partial<PublicHtmlFetchError>);
+
+    await vi.advanceTimersByTimeAsync(10_000);
+
+    await assertion;
+    expect(signal?.aborted).toBe(true);
+  });
+
+  it("aborts a continuously active request when the shared wall-clock deadline expires", async () => {
+    vi.useFakeTimers();
+    let receivedChunks = 0;
+    const result = fetchSafePublicHtml(new URL("https://careers.example.com/job/1"), {
+      requestPublicHtml: async (_url, _addresses, _deadlineAt, signal) =>
+        new Promise((resolve, reject) => {
+          const interval = setInterval(() => {
+            receivedChunks += 1;
+          }, 1_000);
+          signal.addEventListener("abort", () => {
+            clearInterval(interval);
+            reject(new Error("request aborted"));
+          }, { once: true });
+        }),
+      resolveHostname: async () => [publicAddress],
+    });
+    const assertion = expect(result).rejects.toMatchObject({
+      code: "RETRIEVAL_FAILED",
+    } satisfies Partial<PublicHtmlFetchError>);
+
+    await vi.advanceTimersByTimeAsync(10_000);
+
+    await assertion;
+    expect(receivedChunks).toBeGreaterThan(0);
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it("shares one deadline across redirects instead of resetting it per hop", async () => {
+    vi.useFakeTimers();
+    const requestedUrls: string[] = [];
+    const result = fetchSafePublicHtml(new URL("https://careers.example.com/job/1"), {
+      requestPublicHtml: async (url, _addresses, _deadlineAt, signal) => {
+        requestedUrls.push(url.toString());
+        return new Promise((resolve, reject) => {
+          const timeout = setTimeout(() => {
+            resolve(
+              requestedUrls.length === 1
+                ? {
+                    body: new Uint8Array(),
+                    headers: { location: "/job/2" },
+                    statusCode: 302,
+                  }
+                : htmlResponse("<html>job</html>"),
+            );
+          }, 6_000);
+          signal.addEventListener("abort", () => {
+            clearTimeout(timeout);
+            reject(new Error("request aborted"));
+          }, { once: true });
+        });
+      },
+      resolveHostname: async () => [publicAddress],
+    });
+    const assertion = expect(result).rejects.toMatchObject({
+      code: "RETRIEVAL_FAILED",
+    } satisfies Partial<PublicHtmlFetchError>);
+
+    await vi.advanceTimersByTimeAsync(10_000);
+
+    await assertion;
+    expect(requestedUrls).toEqual([
+      "https://careers.example.com/job/1",
+      "https://careers.example.com/job/2",
+    ]);
   });
 
   it.each(["ftp://example.com/job", "file:///etc/passwd", "https://user:pass@example.com/job"])(
