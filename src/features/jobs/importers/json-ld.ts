@@ -311,60 +311,67 @@ function toJobImportSeed(source: JsonLdJobSource, jobPosting: JsonLdObject) {
   return { seed, warnings };
 }
 
+export function importJsonLdJobFromHtml(
+  source: JsonLdJobSource,
+  html: string,
+): JobImportResult {
+  const { candidates, malformedScriptCount } = extractJobPostingFromHtml(html);
+
+  if (candidates.length === 0) {
+    return {
+      error: {
+        code: "UNSUPPORTED_SOURCE",
+        message: "No supported structured job data was found on this page.",
+      },
+      success: false,
+    };
+  }
+
+  const { seed, warnings } = toJobImportSeed(source, candidates[0]);
+  if (malformedScriptCount > 0) {
+    warnings.push({
+      code: "MALFORMED_JSON_LD",
+      message: "Some structured data on this page was malformed and was ignored.",
+    });
+  }
+  if (candidates.length > 1) {
+    warnings.push({
+      code: "MULTIPLE_JOB_POSTINGS",
+      message: "Multiple job postings were found; the first structured posting was imported.",
+    });
+  }
+
+  if (!seed.title) {
+    return {
+      error: {
+        code: "MALFORMED_EXTERNAL_DATA",
+        message: "The structured job data did not include a usable title.",
+      },
+      success: false,
+    };
+  }
+
+  const parsedSeed = jobImportSeedSchema.safeParse(seed);
+  if (!parsedSeed.success) {
+    return {
+      error: {
+        code: "INVALID_DRAFT",
+        message: "The structured job data could not be imported.",
+      },
+      success: false,
+    };
+  }
+
+  return { seed: parsedSeed.data, source, success: true, warnings };
+}
+
 export async function importJsonLdJob(
   source: JsonLdJobSource,
   fetchHtml: JsonLdHtmlFetcher = fetchSafePublicHtml,
 ): Promise<JobImportResult> {
   try {
     const { html } = await fetchHtml(new URL(source.canonicalUrl));
-    const { candidates, malformedScriptCount } = extractJobPostingFromHtml(html);
-
-    if (candidates.length === 0) {
-      return {
-        error: {
-          code: "UNSUPPORTED_SOURCE",
-          message: "No supported structured job data was found on this page.",
-        },
-        success: false,
-      };
-    }
-
-    const { seed, warnings } = toJobImportSeed(source, candidates[0]);
-    if (malformedScriptCount > 0) {
-      warnings.push({
-        code: "MALFORMED_JSON_LD",
-        message: "Some structured data on this page was malformed and was ignored.",
-      });
-    }
-    if (candidates.length > 1) {
-      warnings.push({
-        code: "MULTIPLE_JOB_POSTINGS",
-        message: "Multiple job postings were found; the first structured posting was imported.",
-      });
-    }
-
-    if (!seed.title) {
-      return {
-        error: {
-          code: "MALFORMED_EXTERNAL_DATA",
-          message: "The structured job data did not include a usable title.",
-        },
-        success: false,
-      };
-    }
-
-    const parsedSeed = jobImportSeedSchema.safeParse(seed);
-    if (!parsedSeed.success) {
-      return {
-        error: {
-          code: "INVALID_DRAFT",
-          message: "The structured job data could not be imported.",
-        },
-        success: false,
-      };
-    }
-
-    return { seed: parsedSeed.data, source, success: true, warnings };
+    return importJsonLdJobFromHtml(source, html);
   } catch (error) {
     if (error instanceof PublicHtmlFetchError && error.code === "UNSAFE_URL") {
       return {

@@ -1,10 +1,13 @@
 import { readFile } from "node:fs/promises";
 
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
-import { importLeverJob } from "@/features/jobs/importers/lever";
+import {
+  importLeverJob,
+  LeverApiNotFoundError,
+} from "@/features/jobs/importers/lever";
 import { detectJobImportSource } from "@/features/jobs/importers/job-url";
-import { jobDraftSchema } from "@/features/jobs/schemas";
+import { jobDraftSchema, jobImportSeedSchema } from "@/features/jobs/schemas";
 
 async function loadFixture() {
   const fixtureUrl = new URL("./__fixtures__/lever-job.json", import.meta.url);
@@ -14,6 +17,11 @@ async function loadFixture() {
 async function loadOnsiteFixture() {
   const fixtureUrl = new URL("./__fixtures__/lever-job-onsite.json", import.meta.url);
   return JSON.parse(await readFile(fixtureUrl, "utf8")) as unknown;
+}
+
+async function loadHostedJsonLdFixture() {
+  const fixtureUrl = new URL("./__fixtures__/lever-hosted-job.json-ld.html", import.meta.url);
+  return readFile(fixtureUrl, "utf8");
 }
 
 function getLeverSource() {
@@ -28,17 +36,37 @@ function getLeverSource() {
   return result.source;
 }
 
+function getSalvoHealthSource() {
+  const result = detectJobImportSource(
+    "https://jobs.lever.co/salvohealth/285d6b09-7961-490b-8927-3b24698affe9",
+  );
+
+  if (!result.success || result.source.kind !== "LEVER") {
+    throw new Error("Expected the SalvoHealth URL to be detected as Lever.");
+  }
+
+  return result.source;
+}
+
 describe("importLeverJob", () => {
   it("normalizes a realistic Lever response into a review seed with a warned company suggestion", async () => {
     const requestedUrls: string[] = [];
-    const result = await importLeverJob(getLeverSource(), async (url) => {
-      requestedUrls.push(url.toString());
-      return loadFixture();
+    const hostedFetch = vi.fn(async () => {
+      throw new Error("The hosted fallback must not run after a successful API response.");
     });
+    const result = await importLeverJob(
+      getLeverSource(),
+      async (url) => {
+        requestedUrls.push(url.toString());
+        return loadFixture();
+      },
+      hostedFetch,
+    );
 
     expect(requestedUrls).toEqual([
       "https://api.lever.co/v0/postings/acme/9b4bbf16-2cd5-4a29-bfef-3fc72aa0243f",
     ]);
+    expect(hostedFetch).not.toHaveBeenCalled();
     expect(result.success).toBe(true);
     if (!result.success) {
       return;
@@ -88,6 +116,124 @@ describe("importLeverJob", () => {
         message: "Company was inferred from the Lever site identifier. Verify it before saving.",
       },
     ]);
+  });
+
+  it("falls back to the submitted Lever hosted URL only after an API 404", async () => {
+    const source = getSalvoHealthSource();
+    const requestedApiUrls: string[] = [];
+    const requestedHostedUrls: string[] = [];
+    const result = await importLeverJob(
+      source,
+      async (url) => {
+        requestedApiUrls.push(url.toString());
+        throw new LeverApiNotFoundError();
+      },
+      async (url) => {
+        requestedHostedUrls.push(url.toString());
+        return { finalUrl: new URL(url), html: await loadHostedJsonLdFixture() };
+      },
+    );
+
+    expect(requestedApiUrls).toEqual([
+      "https://api.lever.co/v0/postings/salvohealth/285d6b09-7961-490b-8927-3b24698affe9",
+    ]);
+    expect(requestedHostedUrls).toEqual([source.canonicalUrl]);
+    expect(result.success).toBe(true);
+    if (!result.success) {
+      return;
+    }
+
+    expect(result.source).toEqual(source);
+    expect(result.seed).toMatchObject({
+      company: "Salvohealth",
+      description: "Build accessible healthcare software with a collaborative remote team.",
+      employmentType: "FULL_TIME",
+      location: "New York, NY",
+      source: "Lever",
+      title: "Junior Software Engineer",
+      url: source.canonicalUrl,
+    });
+    expect(result.seed.salaryMin).toBeUndefined();
+    expect(result.seed.salaryMax).toBeUndefined();
+    expect(jobImportSeedSchema.safeParse(result.seed).success).toBe(true);
+    expect(jobDraftSchema.safeParse(result.seed).success).toBe(true);
+    expect(result.warnings).toEqual([
+      {
+        code: "INFERRED_COMPANY",
+        message: "Company was inferred from the Lever site identifier. Verify it before saving.",
+      },
+    ]);
+  });
+
+  it.each([
+    ["403 response", new Error("Lever returned 403.")],
+    ["429 response", new Error("Lever returned 429.")],
+    ["5xx response", new Error("Lever returned 503.")],
+    ["timeout", new Error("The operation was aborted due to timeout.")],
+    ["retrieval failure", new Error("Network connection failed.")],
+  ])("does not use hosted JSON-LD fallback after a %s", async (_scenario, apiError) => {
+    const fetchHostedHtml = vi.fn();
+    const result = await importLeverJob(
+      getLeverSource(),
+      async () => {
+        throw apiError;
+      },
+      fetchHostedHtml,
+    );
+
+    expect(fetchHostedHtml).not.toHaveBeenCalled();
+    expect(result).toEqual({
+      error: {
+        code: "EXTRACTION_FAILED",
+        message: "The Lever job could not be retrieved.",
+      },
+      success: false,
+    });
+  });
+
+  it("returns a safe failure when the hosted JSON-LD is malformed", async () => {
+    const result = await importLeverJob(
+      getLeverSource(),
+      async () => {
+        throw new LeverApiNotFoundError();
+      },
+      async (url) => ({
+        finalUrl: new URL(url),
+        html: '<script type="application/ld+json">{ malformed }</script>',
+      }),
+    );
+
+    expect(result).toEqual({
+      error: {
+        code: "UNSUPPORTED_SOURCE",
+        message: "No supported structured job data was found on this page.",
+      },
+      success: false,
+    });
+  });
+
+  it("accepts the additional salaryRange.interval field returned by Lever", async () => {
+    const fixture = await loadFixture();
+    const result = await importLeverJob(getLeverSource(), async () => ({
+      ...(fixture as Record<string, unknown>),
+      salaryRange: {
+        currency: "USD",
+        interval: "per-year-salary",
+        max: 195000,
+        min: 160000,
+      },
+    }));
+
+    expect(result.success).toBe(true);
+    if (!result.success) {
+      return;
+    }
+
+    expect(result.seed).toMatchObject({
+      salaryCurrency: "USD",
+      salaryMax: 195000,
+      salaryMin: 160000,
+    });
   });
 
   it("accepts Lever's real-world onsite workplace type variant", async () => {

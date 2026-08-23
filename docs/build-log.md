@@ -6,6 +6,21 @@ It should document what changed, why it mattered, and what the next step is. It 
 
 ---
 
+## 2026-08-23
+
+### Changes
+- Fixed a real-world Lever import gap where an otherwise valid public hosted posting can return `404` from Lever's individual Postings API endpoint while the canonical `jobs.lever.co` page still exposes a public `JobPosting` JSON-LD record.
+- Preserved the constrained Lever API as the primary import path. Only its typed HTTP 404 result now triggers a fallback to the already-detected canonical Lever hosted URL through the existing SSRF-safe HTML fetcher.
+- Extracted the existing JSON-LD HTML parsing and normalization step into a small reusable helper so Lever reuses the established structured-data behavior without re-running generic source detection or changing the user-facing source label.
+- Kept Lever's inferred-company warning and `source: Lever` result contract on successful fallback, and added fixture-backed regression coverage for API success, 404 fallback, non-404 failures, malformed hosted JSON-LD, and the optional `salaryRange.interval` response field.
+
+### Notes
+- The fallback does not run for authorization, rate-limit, server, malformed-response, content-type, timeout, or retrieval failures.
+- No generic HTML scraping, browser execution, or additional ATS source support was added. The existing HTML response cap, redirect validation, DNS/IP checks, timeout, and content-type restrictions remain unchanged.
+
+### Next Step
+- Consider the Gem public Job Board API as the next source-specific adapter only after a separate design and fixture pass.
+
 ## 2026-08-16
 
 ### Changes

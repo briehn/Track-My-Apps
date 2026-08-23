@@ -2,7 +2,15 @@ import { z } from "zod";
 
 import { normalizeImportedHtmlToPlainText } from "@/features/jobs/importers/html-to-plain-text";
 import { normalizeImportedEmploymentType } from "@/features/jobs/importers/employment-type";
-import type { LeverJobSource } from "@/features/jobs/importers/job-url";
+import {
+  importJsonLdJobFromHtml,
+  type JsonLdHtmlFetcher,
+} from "@/features/jobs/importers/json-ld";
+import type { JsonLdJobSource, LeverJobSource } from "@/features/jobs/importers/job-url";
+import {
+  fetchSafePublicHtml,
+  PublicHtmlFetchError,
+} from "@/features/jobs/importers/safe-public-html-fetch";
 import type { JobImportResult, JobImportWarning } from "@/features/jobs/importers/types";
 import { inferImportedRemoteType } from "@/features/jobs/importers/work-mode";
 import { jobImportSeedSchema, type JobImportSeed } from "@/features/jobs/schemas";
@@ -42,6 +50,12 @@ const leverJobResponseSchema = z.object({
 
 export type LeverJsonFetcher = (url: URL) => Promise<unknown>;
 
+export class LeverApiNotFoundError extends Error {
+  constructor() {
+    super("Lever returned 404.");
+  }
+}
+
 function getLeverApiUrl(source: LeverJobSource) {
   const apiOrigin = LEVER_API_ORIGINS[source.instance];
   const apiUrl = new URL(
@@ -62,6 +76,10 @@ async function fetchLeverJson(url: URL): Promise<unknown> {
     redirect: "error",
     signal: AbortSignal.timeout(LEVER_REQUEST_TIMEOUT_MS),
   });
+
+  if (response.status === 404) {
+    throw new LeverApiNotFoundError();
+  }
 
   if (!response.ok) {
     throw new Error(`Lever returned ${response.status}.`);
@@ -144,10 +162,7 @@ function toJobImportSeed(
   }
 
   const suggestedCompany = getSuggestedCompanyFromSite(source.site);
-  warnings.push({
-    code: "INFERRED_COMPANY",
-    message: "Company was inferred from the Lever site identifier. Verify it before saving.",
-  });
+  warnings.push(getLeverInferredCompanyWarning());
 
   const seed: JobImportSeed = {
     company: suggestedCompany,
@@ -166,9 +181,81 @@ function toJobImportSeed(
   return { seed, warnings };
 }
 
+function getLeverJsonLdSource(source: LeverJobSource): JsonLdJobSource {
+  return {
+    canonicalUrl: source.canonicalUrl,
+    kind: "JSON_LD",
+    submittedUrl: source.submittedUrl,
+  };
+}
+
+function getLeverInferredCompanyWarning(): JobImportWarning {
+  return {
+    code: "INFERRED_COMPANY",
+    message: "Company was inferred from the Lever site identifier. Verify it before saving.",
+  };
+}
+
+async function importLeverHostedJsonLd(
+  source: LeverJobSource,
+  fetchHtml: JsonLdHtmlFetcher,
+): Promise<JobImportResult> {
+  try {
+    const { html } = await fetchHtml(new URL(source.canonicalUrl));
+    const jsonLdResult = importJsonLdJobFromHtml(getLeverJsonLdSource(source), html);
+
+    if (!jsonLdResult.success) {
+      return jsonLdResult;
+    }
+
+    const seed: JobImportSeed = {
+      ...jsonLdResult.seed,
+      company: getSuggestedCompanyFromSite(source.site),
+      source: "Lever",
+    };
+    const parsedSeed = jobImportSeedSchema.safeParse(seed);
+
+    if (!parsedSeed.success) {
+      return {
+        error: {
+          code: "INVALID_DRAFT",
+          message: "Lever did not provide usable job details.",
+        },
+        success: false,
+      };
+    }
+
+    return {
+      seed: parsedSeed.data,
+      source,
+      success: true,
+      warnings: [...jsonLdResult.warnings, getLeverInferredCompanyWarning()],
+    };
+  } catch (error) {
+    if (error instanceof PublicHtmlFetchError && error.code === "UNSAFE_URL") {
+      return {
+        error: {
+          code: "UNSAFE_URL",
+          message: "This URL can't be imported.",
+        },
+        success: false,
+      };
+    }
+
+    return {
+      error: {
+        code: "EXTRACTION_FAILED",
+        message: "The Lever job could not be retrieved.",
+      },
+      success: false,
+    };
+  }
+}
+
 export async function importLeverJob(
   source: LeverJobSource,
   fetchJson: LeverJsonFetcher = fetchLeverJson,
+  fetchHtml: JsonLdHtmlFetcher = fetchSafePublicHtml,
 ): Promise<JobImportResult> {
   try {
     const rawResponse = await fetchJson(getLeverApiUrl(source));
@@ -198,7 +285,11 @@ export async function importLeverJob(
     }
 
     return { seed: parsedSeed.data, source, success: true, warnings };
-  } catch {
+  } catch (error) {
+    if (error instanceof LeverApiNotFoundError) {
+      return importLeverHostedJsonLd(source, fetchHtml);
+    }
+
     return {
       error: {
         code: "EXTRACTION_FAILED",
