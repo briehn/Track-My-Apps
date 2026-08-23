@@ -1,34 +1,34 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { JobDeleteDialog } from "@/features/jobs/components/job-delete-dialog";
 import {
   archiveJob,
-  deleteJob,
   type JobManagementActionState,
 } from "@/features/jobs/actions";
 
 type JobManagementActionsProps = {
+  company: string;
   jobId: string;
   isArchived: boolean;
+  title: string;
 };
 
 const initialArchiveState: JobManagementActionState = {};
-const initialDeleteState: JobManagementActionState = {};
 
 export function JobManagementActions({
+  company,
   jobId,
   isArchived,
+  title,
 }: JobManagementActionsProps) {
   const [archiveState, archiveAction, isArchiving] = useActionState(
     archiveJob,
     initialArchiveState,
   );
-  const [deleteState, deleteAction, isDeleting] = useActionState(
-    deleteJob,
-    initialDeleteState,
-  );
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   return (
     <div className="space-y-4">
@@ -56,39 +56,29 @@ export function JobManagementActions({
         )}
       </form>
 
-      <details className="border-t border-slate-200/80 pt-3 dark:border-slate-800">
-        <summary className="cursor-pointer rounded-md text-sm font-medium text-red-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/50 focus-visible:ring-offset-2 dark:text-red-200 dark:focus-visible:ring-offset-slate-950">
-          Permanently delete
-        </summary>
-        <form action={deleteAction} className="mt-4 space-y-3">
-          <input type="hidden" name="jobId" value={jobId} />
-          <div className="flex items-start gap-2">
-            <input
-              id="confirmDelete"
-              name="confirmDelete"
-              type="checkbox"
-              className="mt-1 h-4 w-4 rounded border-slate-300 text-slate-950 focus:ring-slate-400"
-            />
-            <label htmlFor="confirmDelete" className="text-sm text-slate-700 dark:text-slate-300">
-              I understand this permanently deletes the job and its related data.
-            </label>
-          </div>
-          {deleteState.formError ? (
-            <p className="text-sm text-red-700" role="alert">
-              {deleteState.formError}
-            </p>
-          ) : null}
-          <Button
-            type="submit"
-            variant="secondary"
-            disabled={isDeleting}
-            size="sm"
-            className="text-red-700 hover:bg-red-100 dark:text-red-300 dark:hover:bg-red-500/20"
-          >
-            {isDeleting ? "Deleting..." : "Permanent Delete"}
-          </Button>
-        </form>
-      </details>
+      <div className="border-t border-slate-200/80 pt-3 dark:border-slate-800">
+        <p className="text-sm font-medium text-red-800 dark:text-red-200">Permanently delete</p>
+        <p className="mt-1 text-xs leading-5 text-slate-600 dark:text-slate-400">
+          This permanently deletes the job and its related data.
+        </p>
+        <Button
+          type="button"
+          variant="destructive"
+          size="sm"
+          className="mt-3"
+          onClick={() => setIsDeleteDialogOpen(true)}
+        >
+          Delete job
+        </Button>
+      </div>
+
+      <JobDeleteDialog
+        company={company}
+        jobId={jobId}
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        title={title}
+      />
     </div>
   );
 }

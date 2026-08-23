@@ -287,8 +287,10 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
           <h2 className="text-sm font-semibold text-slate-950 dark:text-slate-100">Manage job</h2>
           <div className="mt-3">
             <JobManagementActions
+              company={job.company}
               jobId={job.id}
               isArchived={job.status === "ARCHIVED"}
+              title={job.title}
             />
           </div>
         </aside>

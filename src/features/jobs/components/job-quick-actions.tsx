@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, type FormEvent } from "react";
+import { useActionState, useState } from "react";
 import { Menu } from "@base-ui/react/menu";
 import {
   ArchiveIcon,
@@ -14,11 +14,11 @@ import {
 
 import {
   archiveJob,
-  deleteJob,
   type JobManagementActionState,
   type UpdateJobStatusActionState,
   updateJobStatus,
 } from "@/features/jobs/actions";
+import { JobDeleteDialog } from "@/features/jobs/components/job-delete-dialog";
 import {
   getJobQuickActions,
   type JobQuickActionTarget,
@@ -45,22 +45,9 @@ export function JobQuickActions({ job }: JobQuickActionsProps) {
     archiveJob,
     initialManagementState,
   );
-  const [deleteState, deleteAction, isDeleting] = useActionState(
-    deleteJob,
-    initialManagementState,
-  );
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const formError =
-    statusState.formError ?? archiveState.formError ?? deleteState.formError;
-
-  function confirmDelete(event: FormEvent<HTMLFormElement>) {
-    const confirmed = window.confirm(
-      `Delete ${job.title} at ${job.company}? This permanently deletes the job and its related data and cannot be undone.`,
-    );
-
-    if (!confirmed) {
-      event.preventDefault();
-    }
-  }
+    statusState.formError ?? archiveState.formError;
 
   return (
     <div className="relative flex justify-end">
@@ -170,23 +157,19 @@ export function JobQuickActions({ job }: JobQuickActionsProps) {
                 </form>
               )}
 
-              <form action={deleteAction} onSubmit={confirmDelete}>
-                <input type="hidden" name="jobId" value={job.id} />
-                <input type="hidden" name="confirmDelete" value="on" />
-                <Menu.Item
-                  nativeButton
-                  disabled={isDeleting}
-                  render={
-                    <button
-                      type="submit"
-                      className={`${menuItemClassName} text-red-700 data-[highlighted]:bg-red-50 data-[highlighted]:text-red-800 dark:text-red-300 dark:data-[highlighted]:bg-red-500/10 dark:data-[highlighted]:text-red-200`}
-                    />
-                  }
-                >
-                  <Trash2Icon aria-hidden="true" className="size-4" />
-                  Delete
-                </Menu.Item>
-              </form>
+              <Menu.Item
+                nativeButton
+                onClick={() => setIsDeleteDialogOpen(true)}
+                render={
+                  <button
+                    type="button"
+                    className={`${menuItemClassName} text-red-700 data-[highlighted]:bg-red-50 data-[highlighted]:text-red-800 dark:text-red-300 dark:data-[highlighted]:bg-red-500/10 dark:data-[highlighted]:text-red-200`}
+                  />
+                }
+              >
+                <Trash2Icon aria-hidden="true" className="size-4" />
+                Delete
+              </Menu.Item>
             </Menu.Popup>
           </Menu.Positioner>
         </Menu.Portal>
@@ -200,6 +183,13 @@ export function JobQuickActions({ job }: JobQuickActionsProps) {
           {formError}
         </p>
       ) : null}
+      <JobDeleteDialog
+        company={job.company}
+        jobId={job.id}
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        title={job.title}
+      />
     </div>
   );
 }
