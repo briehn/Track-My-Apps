@@ -12,22 +12,27 @@ export type ResolvedAddress = {
   family: 4 | 6;
 };
 
-type PublicHtmlResponse = {
+type PublicResponse = {
   body: Uint8Array;
   headers: Record<string, string | string[] | undefined>;
   statusCode: number;
 };
 
 type ResolveHostname = (hostname: string) => Promise<ResolvedAddress[]>;
-type RequestPublicHtml = (
+type RequestPublicResponse = (
   url: URL,
   addresses: readonly ResolvedAddress[],
   deadlineAt: number,
   signal: AbortSignal,
-) => Promise<PublicHtmlResponse>;
+) => Promise<PublicResponse>;
 
 type SafePublicHtmlFetchDependencies = {
-  requestPublicHtml?: RequestPublicHtml;
+  requestPublicHtml?: RequestPublicResponse;
+  resolveHostname?: ResolveHostname;
+};
+
+type SafePublicJsonFetchDependencies = {
+  requestPublicJson?: RequestPublicResponse;
   resolveHostname?: ResolveHostname;
 };
 
@@ -243,12 +248,13 @@ export function createPinnedLookup(
   };
 }
 
-async function requestPublicHtml(
+async function requestPublicResponse(
   url: URL,
   addresses: readonly ResolvedAddress[],
   deadlineAt: number,
   signal: AbortSignal,
-): Promise<PublicHtmlResponse> {
+  accept: string,
+): Promise<PublicResponse> {
   const request = url.protocol === "https:" ? requestHttps : requestHttp;
 
   return new Promise((resolve, reject) => {
@@ -279,7 +285,7 @@ async function requestPublicHtml(
       url,
       {
         headers: {
-          Accept: "text/html, application/xhtml+xml",
+          Accept: accept,
         },
         lookup: createPinnedLookup(addresses),
         method: "GET",
@@ -357,7 +363,7 @@ function awaitWithinFetchDeadline<T>(
   });
 }
 
-function getHeader(headers: PublicHtmlResponse["headers"], name: string) {
+function getHeader(headers: PublicResponse["headers"], name: string) {
   const value = headers[name] ?? headers[name.toLocaleLowerCase()];
   return Array.isArray(value) ? value[0] : value;
 }
@@ -367,16 +373,26 @@ function isHtmlContentType(contentType: string | undefined) {
   return mediaType === "text/html" || mediaType === "application/xhtml+xml";
 }
 
+function isJsonContentType(contentType: string | undefined) {
+  return contentType?.split(";", 1)[0]?.trim().toLocaleLowerCase() === "application/json";
+}
+
 function isRedirect(statusCode: number) {
   return [301, 302, 303, 307, 308].includes(statusCode);
 }
 
-export async function fetchSafePublicHtml(
+type SafePublicDocumentFetchOptions = {
+  acceptedStatusCodes?: readonly number[];
+  allowRedirects: boolean;
+  isExpectedContentType: (contentType: string | undefined) => boolean;
+  requestPublicResponse: RequestPublicResponse;
+  resolveHostname: ResolveHostname;
+};
+
+async function fetchSafePublicDocument(
   submittedUrl: URL,
-  dependencies: SafePublicHtmlFetchDependencies = {},
+  options: SafePublicDocumentFetchOptions,
 ) {
-  const resolveHostname = dependencies.resolveHostname ?? resolvePublicHostname;
-  const requestHtml = dependencies.requestPublicHtml ?? requestPublicHtml;
   const abortController = new AbortController();
   const deadlineAt = Date.now() + REQUEST_TIMEOUT_MS;
   let currentUrl = new URL(submittedUrl);
@@ -384,7 +400,7 @@ export async function fetchSafePublicHtml(
   for (let redirectCount = 0; redirectCount <= MAX_REDIRECTS; redirectCount += 1) {
     assertSafePublicUrl(currentUrl);
     const addresses = await awaitWithinFetchDeadline(
-      resolveHostname(currentUrl.hostname),
+      options.resolveHostname(currentUrl.hostname),
       deadlineAt,
       abortController,
     );
@@ -394,7 +410,7 @@ export async function fetchSafePublicHtml(
     }
 
     const response = await awaitWithinFetchDeadline(
-      requestHtml(currentUrl, addresses, deadlineAt, abortController.signal),
+      options.requestPublicResponse(currentUrl, addresses, deadlineAt, abortController.signal),
       deadlineAt,
       abortController,
     );
@@ -407,6 +423,10 @@ export async function fetchSafePublicHtml(
     }
 
     if (isRedirect(response.statusCode)) {
+      if (!options.allowRedirects) {
+        throw new PublicHtmlFetchError("RETRIEVAL_FAILED");
+      }
+
       const location = getHeader(response.headers, "location");
       if (!location) {
         throw new PublicHtmlFetchError("RETRIEVAL_FAILED");
@@ -423,18 +443,67 @@ export async function fetchSafePublicHtml(
       continue;
     }
 
-    if (response.statusCode < 200 || response.statusCode >= 300) {
+    const isSuccessful = response.statusCode >= 200 && response.statusCode < 300;
+    if (!isSuccessful && !options.acceptedStatusCodes?.includes(response.statusCode)) {
       throw new PublicHtmlFetchError("RETRIEVAL_FAILED");
     }
-    if (!isHtmlContentType(getHeader(response.headers, "content-type"))) {
+    if (!options.isExpectedContentType(getHeader(response.headers, "content-type"))) {
       throw new PublicHtmlFetchError("INVALID_CONTENT_TYPE");
     }
 
     return {
+      body: response.body,
       finalUrl: currentUrl,
-      html: new TextDecoder().decode(response.body),
+      statusCode: response.statusCode,
     };
   }
 
   throw new PublicHtmlFetchError("TOO_MANY_REDIRECTS");
+}
+
+export async function fetchSafePublicHtml(
+  submittedUrl: URL,
+  dependencies: SafePublicHtmlFetchDependencies = {},
+) {
+  const response = await fetchSafePublicDocument(submittedUrl, {
+    allowRedirects: true,
+    isExpectedContentType: isHtmlContentType,
+    requestPublicResponse:
+      dependencies.requestPublicHtml ??
+      ((url, addresses, deadlineAt, signal) =>
+        requestPublicResponse(url, addresses, deadlineAt, signal, "text/html, application/xhtml+xml")),
+    resolveHostname: dependencies.resolveHostname ?? resolvePublicHostname,
+  });
+
+  return {
+    finalUrl: response.finalUrl,
+    html: new TextDecoder().decode(response.body),
+  };
+}
+
+export async function fetchSafePublicJson(
+  submittedUrl: URL,
+  dependencies: SafePublicJsonFetchDependencies = {},
+  options: { acceptedStatusCodes?: readonly number[] } = {},
+): Promise<{ finalUrl: URL; json: unknown; statusCode: number }> {
+  const response = await fetchSafePublicDocument(submittedUrl, {
+    acceptedStatusCodes: options.acceptedStatusCodes,
+    allowRedirects: false,
+    isExpectedContentType: isJsonContentType,
+    requestPublicResponse:
+      dependencies.requestPublicJson ??
+      ((url, addresses, deadlineAt, signal) =>
+        requestPublicResponse(url, addresses, deadlineAt, signal, "application/json")),
+    resolveHostname: dependencies.resolveHostname ?? resolvePublicHostname,
+  });
+
+  try {
+    return {
+      finalUrl: response.finalUrl,
+      json: JSON.parse(new TextDecoder().decode(response.body)),
+      statusCode: response.statusCode,
+    };
+  } catch {
+    throw new PublicHtmlFetchError("RETRIEVAL_FAILED");
+  }
 }

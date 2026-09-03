@@ -12,6 +12,10 @@ const GEM_JOB_HOST = "jobs.gem.com";
 const RIPPLING_JOB_HOST = "ats.rippling.com";
 const FOUR_DAY_WEEK_JOB_HOST = "4dayweek.io";
 const WORK_AT_A_STARTUP_JOB_HOST = "www.workatastartup.com";
+const DOVER_JOB_HOST = "app.dover.com";
+const DOVER_RELATED_HOSTS = new Set([DOVER_JOB_HOST, "www.dover.com"]);
+const UUID_PATTERN =
+  /^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$/;
 
 export type GreenhouseJobSource = {
   boardToken: string;
@@ -60,6 +64,13 @@ export type WorkAtAStartupJobSource = {
   submittedUrl: string;
 };
 
+export type DoverJobSource = {
+  canonicalUrl: string;
+  kind: "DOVER";
+  postingId: string;
+  submittedUrl: string;
+};
+
 export type JsonLdJobSource = {
   canonicalUrl: string;
   kind: "JSON_LD";
@@ -73,6 +84,7 @@ export type DetectedJobImportSource =
   | RipplingJobSource
   | FourDayWeekJobSource
   | WorkAtAStartupJobSource
+  | DoverJobSource
   | JsonLdJobSource;
 
 export type JobUrlDetectionResult =
@@ -260,6 +272,29 @@ function getWorkAtAStartupJobSource(
   };
 }
 
+function getDoverJobSource(url: URL, submittedUrl: string): DoverJobSource | null {
+  if (url.protocol !== "https:" || url.hostname.toLocaleLowerCase() !== DOVER_JOB_HOST) {
+    return null;
+  }
+
+  const pathSegments = url.pathname.split("/").filter(Boolean);
+  if (
+    pathSegments.length !== 3 ||
+    pathSegments[0] !== "apply" ||
+    !pathSegments[1] ||
+    !UUID_PATTERN.test(pathSegments[2])
+  ) {
+    return null;
+  }
+
+  return {
+    canonicalUrl: toCanonicalUrl(url),
+    kind: "DOVER",
+    postingId: pathSegments[2].toLocaleLowerCase(),
+    submittedUrl,
+  };
+}
+
 export function detectJobImportSource(submittedUrl: string): JobUrlDetectionResult {
   const parsedUrl = safeExternalUrlSchema.safeParse(submittedUrl);
 
@@ -329,13 +364,20 @@ export function detectJobImportSource(submittedUrl: string): JobUrlDetectionResu
     return { source: workAtAStartupSource, success: true };
   }
 
+  const doverSource = getDoverJobSource(url, parsedUrl.data);
+
+  if (doverSource) {
+    return { source: doverSource, success: true };
+  }
+
   if (
     GREENHOUSE_JOB_HOSTS.has(url.hostname.toLocaleLowerCase()) ||
     LEVER_JOB_HOSTS.has(url.hostname.toLocaleLowerCase()) ||
     url.hostname.toLocaleLowerCase() === GEM_JOB_HOST ||
     url.hostname.toLocaleLowerCase() === RIPPLING_JOB_HOST ||
     url.hostname.toLocaleLowerCase() === FOUR_DAY_WEEK_JOB_HOST ||
-    url.hostname.toLocaleLowerCase() === WORK_AT_A_STARTUP_JOB_HOST
+    url.hostname.toLocaleLowerCase() === WORK_AT_A_STARTUP_JOB_HOST ||
+    DOVER_RELATED_HOSTS.has(url.hostname.toLocaleLowerCase())
   ) {
     return {
       error: {

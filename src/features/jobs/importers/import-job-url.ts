@@ -1,3 +1,4 @@
+import { importDoverJob } from "@/features/jobs/importers/dover";
 import { importFourDayWeekJob } from "@/features/jobs/importers/four-day-week";
 import { importGemJob } from "@/features/jobs/importers/gem";
 import { importGreenhouseJob } from "@/features/jobs/importers/greenhouse";
@@ -35,6 +36,9 @@ export async function importJobFromUrl(submittedUrl: string): Promise<JobImportR
   }
   if (detectedSource.source.kind === "WORK_AT_A_STARTUP") {
     return importWorkAtAStartupJob(detectedSource.source);
+  }
+  if (detectedSource.source.kind === "DOVER") {
+    return importDoverJob(detectedSource.source);
   }
 
   return importJsonLdJob(detectedSource.source);

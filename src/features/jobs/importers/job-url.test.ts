@@ -195,6 +195,52 @@ describe("detectJobImportSource", () => {
     });
   });
 
+  it("detects canonical Dover application URLs, preserves query parameters, and removes fragments", () => {
+    expect(
+      detectJobImportSource(
+        "https://app.dover.com/apply/Mural%20Pay/96D27537-F76C-4FC0-9F7A-D5A0070C6D6C?source=tracker#apply",
+      ),
+    ).toEqual({
+      source: {
+        canonicalUrl:
+          "https://app.dover.com/apply/Mural%20Pay/96D27537-F76C-4FC0-9F7A-D5A0070C6D6C?source=tracker",
+        kind: "DOVER",
+        postingId: "96d27537-f76c-4fc0-9f7a-d5a0070c6d6c",
+        submittedUrl:
+          "https://app.dover.com/apply/Mural%20Pay/96D27537-F76C-4FC0-9F7A-D5A0070C6D6C?source=tracker#apply",
+      },
+      success: true,
+    });
+  });
+
+  it.each([
+    "http://app.dover.com/apply/Mural%20Pay/96d27537-f76c-4fc0-9f7a-d5a0070c6d6c",
+    "https://www.dover.com/apply/Mural%20Pay/96d27537-f76c-4fc0-9f7a-d5a0070c6d6c",
+    "https://app.dover.com/apply//96d27537-f76c-4fc0-9f7a-d5a0070c6d6c",
+    "https://app.dover.com/apply/Mural%20Pay",
+    "https://app.dover.com/apply/Mural%20Pay/not-a-uuid",
+    "https://app.dover.com/apply/Mural%20Pay/96d27537-f76c-4fc0-9f7a-d5a0070c6d6c/extra",
+  ])("rejects malformed Dover URLs instead of routing them to generic JSON-LD", (submittedUrl) => {
+    expect(detectJobImportSource(submittedUrl)).toEqual({
+      error: {
+        code: "UNSUPPORTED_SOURCE",
+        message: "This job URL source is not supported yet.",
+      },
+      success: false,
+    });
+  });
+
+  it("rejects Dover credentials before selecting its adapter", () => {
+    expect(
+      detectJobImportSource(
+        "https://user:pass@app.dover.com/apply/Mural%20Pay/96d27537-f76c-4fc0-9f7a-d5a0070c6d6c",
+      ),
+    ).toEqual({
+      error: { code: "UNSAFE_URL", message: "This URL can't be imported." },
+      success: false,
+    });
+  });
+
   it("routes other valid public job URLs to the JSON-LD importer", () => {
     expect(detectJobImportSource("https://jobs.example.com/openings/42#apply")).toEqual({
       source: {

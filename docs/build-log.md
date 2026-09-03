@@ -6,6 +6,16 @@ It should document what changed, why it mattered, and what the next step is. It 
 
 ---
 
+## 2026-09-03
+
+### Changes
+- Added a dedicated Dover importer for the narrow public `https://app.dover.com/apply/{company-segment}/{uuid}` contract. It ignores the cosmetic company path segment, retrieves only Dover's fixed public application-portal JSON endpoint, and regenerates the saved application URL from the authoritative response company and UUID while preserving submitted query parameters.
+- Added a hardened public JSON retrieval wrapper over the existing pinned-DNS/public-IP network path. It retains the shared deadline and 1 MB cap, requires JSON responses, has no cookie or authentication support, and rejects redirects for Dover's fixed endpoint without changing the established HTML-fetch behavior.
+- Added mock-backed Dover coverage for strict URL recognition, source routing, authoritative company handling, description normalization, physical-location/work-mode mapping, conservative annual compensation import, unavailable posting handling, malformed payloads, and Bulk Add review results. Updated the README supported-source list.
+
+### Next Step
+- Keep future importer additions constrained to similarly verifiable public contracts; do not broaden Dover beyond UUID-backed application URLs without new evidence.
+
 ## 2026-08-23
 
 ### Changes

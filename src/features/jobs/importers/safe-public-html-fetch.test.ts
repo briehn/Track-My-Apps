@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   createPinnedLookup,
   fetchSafePublicHtml,
+  fetchSafePublicJson,
   isPublicIpAddress,
   PublicHtmlFetchError,
 } from "@/features/jobs/importers/safe-public-html-fetch";
@@ -15,6 +16,14 @@ function htmlResponse(html = "<html></html>") {
     body: new TextEncoder().encode(html),
     headers: { "content-type": "text/html; charset=utf-8" },
     statusCode: 200,
+  };
+}
+
+function jsonResponse(json: unknown, statusCode = 200) {
+  return {
+    body: new TextEncoder().encode(JSON.stringify(json)),
+    headers: { "content-type": "application/json; charset=utf-8" },
+    statusCode,
   };
 }
 
@@ -252,5 +261,125 @@ describe("safe public HTML fetch", () => {
         resolveHostname: async () => [publicAddress],
       }),
     ).rejects.toMatchObject({ code: "INVALID_CONTENT_TYPE" } satisfies Partial<PublicHtmlFetchError>);
+  });
+});
+
+describe("safe public JSON fetch", () => {
+  it("uses the same validated, pinned public-host transport for JSON", async () => {
+    const requestedUrls: string[] = [];
+    const result = await fetchSafePublicJson(new URL("https://api.example.com/jobs/1"), {
+      requestPublicJson: async (url) => {
+        requestedUrls.push(url.toString());
+        return jsonResponse({ id: "1" });
+      },
+      resolveHostname: async () => [publicAddress],
+    });
+
+    expect(requestedUrls).toEqual(["https://api.example.com/jobs/1"]);
+    expect(result).toEqual({
+      finalUrl: new URL("https://api.example.com/jobs/1"),
+      json: { id: "1" },
+      statusCode: 200,
+    });
+  });
+
+  it("rejects redirects rather than following a JSON endpoint to another destination", async () => {
+    await expect(
+      fetchSafePublicJson(new URL("https://api.example.com/jobs/1"), {
+        requestPublicJson: async () => ({
+          body: new Uint8Array(),
+          headers: { location: "https://elsewhere.example/jobs/1" },
+          statusCode: 302,
+        }),
+        resolveHostname: async () => [publicAddress],
+      }),
+    ).rejects.toMatchObject({ code: "RETRIEVAL_FAILED" } satisfies Partial<PublicHtmlFetchError>);
+  });
+
+  it("allows only explicitly configured non-success statuses after JSON validation", async () => {
+    await expect(
+      fetchSafePublicJson(
+        new URL("https://api.example.com/jobs/1"),
+        {
+          requestPublicJson: async () => jsonResponse({ detail: "Not found." }, 404),
+          resolveHostname: async () => [publicAddress],
+        },
+        { acceptedStatusCodes: [404] },
+      ),
+    ).resolves.toMatchObject({ json: { detail: "Not found." }, statusCode: 404 });
+
+    await expect(
+      fetchSafePublicJson(new URL("https://api.example.com/jobs/1"), {
+        requestPublicJson: async () => jsonResponse({ detail: "Not found." }, 404),
+        resolveHostname: async () => [publicAddress],
+      }),
+    ).rejects.toMatchObject({ code: "RETRIEVAL_FAILED" } satisfies Partial<PublicHtmlFetchError>);
+  });
+
+  it("rejects private destinations, non-JSON content, and oversized JSON responses", async () => {
+    let requestCount = 0;
+    await expect(
+      fetchSafePublicJson(new URL("https://api.example.com/jobs/1"), {
+        requestPublicJson: async () => {
+          requestCount += 1;
+          return jsonResponse({ id: "1" });
+        },
+        resolveHostname: async () => [{ address: "127.0.0.1", family: 4 }],
+      }),
+    ).rejects.toMatchObject({ code: "UNSAFE_URL" } satisfies Partial<PublicHtmlFetchError>);
+    expect(requestCount).toBe(0);
+
+    await expect(
+      fetchSafePublicJson(new URL("https://api.example.com/jobs/1"), {
+        requestPublicJson: async () => ({
+          body: new TextEncoder().encode("<html></html>"),
+          headers: { "content-type": "text/html" },
+          statusCode: 200,
+        }),
+        resolveHostname: async () => [publicAddress],
+      }),
+    ).rejects.toMatchObject({ code: "INVALID_CONTENT_TYPE" } satisfies Partial<PublicHtmlFetchError>);
+
+    await expect(
+      fetchSafePublicJson(new URL("https://api.example.com/jobs/1"), {
+        requestPublicJson: async () => ({
+          body: new Uint8Array(1_000_001),
+          headers: { "content-type": "application/json" },
+          statusCode: 200,
+        }),
+        resolveHostname: async () => [publicAddress],
+      }),
+    ).rejects.toMatchObject({ code: "BODY_TOO_LARGE" } satisfies Partial<PublicHtmlFetchError>);
+
+    await expect(
+      fetchSafePublicJson(new URL("https://api.example.com/jobs/1"), {
+        requestPublicJson: async () => ({
+          body: new TextEncoder().encode("{ malformed }"),
+          headers: { "content-type": "application/json" },
+          statusCode: 200,
+        }),
+        resolveHostname: async () => [publicAddress],
+      }),
+    ).rejects.toMatchObject({ code: "RETRIEVAL_FAILED" } satisfies Partial<PublicHtmlFetchError>);
+  });
+
+  it("uses the shared total deadline for JSON requests", async () => {
+    vi.useFakeTimers();
+    let signal: AbortSignal | undefined;
+    const result = fetchSafePublicJson(new URL("https://api.example.com/jobs/1"), {
+      requestPublicJson: async (_url, _addresses, _deadlineAt, requestSignal) => {
+        signal = requestSignal;
+        return new Promise(() => undefined);
+      },
+      resolveHostname: async () => [publicAddress],
+    });
+    const assertion = expect(result).rejects.toMatchObject({
+      code: "RETRIEVAL_FAILED",
+    } satisfies Partial<PublicHtmlFetchError>);
+
+    await vi.advanceTimersByTimeAsync(10_000);
+
+    await assertion;
+    expect(signal?.aborted).toBe(true);
   });
 });
